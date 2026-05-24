@@ -1,0 +1,14 @@
+{
+  "name": "ai-mock-interviewer",
+  "version": "1.0.0",
+  "description": "Voice-Based AI Mock Interviewer — Full Stack Portfolio Project",
+  "scripts": {
+    "install:all": "cd backend && npm install && cd ../frontend && npm install",
+    "dev:backend": "cd backend && npm run dev",
+    "dev:frontend": "cd frontend && npm run dev",
+    "build:frontend": "cd frontend && npm run build"
+  },
+  "keywords": ["interview", "ai", "voice", "mock-interview", "react", "nodejs"],
+  "author": "InterviewAI",
+  "license": "MIT"
+}
