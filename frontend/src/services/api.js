@@ -54,12 +54,18 @@ export const interviewAPI = {
   create: (config) => api.post('/interviews', config),
   submitAnswer: (interviewId, questionIndex, data) =>
     api.post(`/interviews/${interviewId}/answer/${questionIndex}`, data),
+  nextQuestion: (interviewId) =>
+    api.post(`/interviews/${interviewId}/next-question`),
   generateFollowUp: (interviewId, questionIndex) =>
     api.post(`/interviews/${interviewId}/follow-up/${questionIndex}`),
   complete: (interviewId) => api.post(`/interviews/${interviewId}/complete`),
   getById: (id) => api.get(`/interviews/${id}`),
   getHistory: (params) => api.get('/interviews/history', { params }),
   abandon: (id) => api.patch(`/interviews/${id}/abandon`),
+  getPersonalities: () => api.get('/interviews/personalities'),
+  getRounds: () => api.get('/interviews/rounds'),
+  nudge: (interviewId, data) => api.post(`/interviews/${interviewId}/nudge`, data),
+  resume: (interviewId) => api.post(`/interviews/${interviewId}/resume`),
 };
 
 // TTS (server-side ElevenLabs; falls back to browser SpeechSynthesis automatically)

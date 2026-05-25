@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useDropzone } from 'react-dropzone';
@@ -75,9 +75,25 @@ const InterviewSetupPage = () => {
     role: '', experienceLevel: '', companyType: 'any', targetCompany: '',
     interviewType: 'mixed', difficulty: 'medium', totalQuestions: 5,
     jobDescription: '', useResume: false,
+    lengthIntent: 'auto',     // 'auto' | 'breadth' | 'depth'
+    pressure: 'standard',     // 'relaxed' | 'standard' | 'intense' — interview pressure level
+    personalityId: '',        // '' = auto-derive from company/role; otherwise explicit pick
+    round: 'general',         // interview round type — drives focus / type mix / persona hint
   });
   const [customCompany, setCustomCompany] = useState('');
   const [showCustomInput, setShowCustomInput] = useState(false);
+
+  // Load available interviewer personalities + round profiles for pickers
+  const [personalities, setPersonalities] = useState([]);
+  const [rounds, setRounds] = useState([]);
+  useEffect(() => {
+    interviewAPI.getPersonalities()
+      .then(res => setPersonalities(res.personalities || []))
+      .catch(() => {});
+    interviewAPI.getRounds()
+      .then(res => setRounds(res.rounds || []))
+      .catch(() => {});
+  }, []);
 
   const update = (key, val) => setConfig(p => ({ ...p, [key]: val }));
 
@@ -255,7 +271,110 @@ const InterviewSetupPage = () => {
               </button>
             ))}
           </div>
+          <p className="text-xs text-white/30 mt-2">
+            Difficulty adapts during the interview based on your performance.
+          </p>
         </div>
+
+        <div>
+          <label className="block text-sm font-medium text-white/70 mb-3">Interview Style</label>
+          <div className="flex gap-3">
+            {[
+              { value: 'auto',    label: 'Auto',    desc: 'Adapts to question count' },
+              { value: 'breadth', label: 'Breadth', desc: 'More topics, lighter probing' },
+              { value: 'depth',   label: 'Depth',   desc: 'Fewer topics, deeper follow-ups' },
+            ].map(opt => (
+              <button key={opt.value} type="button"
+                className={`flex-1 py-2.5 px-2 rounded-xl border text-xs font-medium transition-all ${
+                  config.lengthIntent === opt.value
+                    ? 'border-primary-500 bg-primary-600/10 text-white' : 'border-white/10 text-white/40 hover:border-white/20'
+                }`}
+                onClick={() => update('lengthIntent', opt.value)}
+              >
+                <div className="text-sm">{opt.label}</div>
+                <div className="text-white/40 mt-0.5 leading-tight">{opt.desc}</div>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {rounds.length > 0 && (
+          <div>
+            <label className="block text-sm font-medium text-white/70 mb-3">
+              Interview Round
+              <span className="text-white/40 text-xs ml-2">(shapes focus + question style)</span>
+            </label>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+              {rounds.map(r => (
+                <button key={r.id} type="button"
+                  className={`py-2 px-3 rounded-xl border text-xs font-medium transition-all text-left ${
+                    config.round === r.id
+                      ? 'border-primary-500 bg-primary-600/10 text-white' : 'border-white/10 text-white/40 hover:border-white/20'
+                  }`}
+                  onClick={() => update('round', r.id)}
+                >
+                  <div className="text-sm">{r.label}</div>
+                  <div className="text-white/40 mt-0.5 leading-tight truncate" title={r.focus}>{r.focus}</div>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div>
+          <label className="block text-sm font-medium text-white/70 mb-3">Pressure Level</label>
+          <div className="flex gap-3">
+            {[
+              { value: 'relaxed',  label: 'Relaxed',  desc: 'Supportive, patient interviewer' },
+              { value: 'standard', label: 'Standard', desc: 'Balanced, realistic pacing' },
+              { value: 'intense',  label: 'Intense',  desc: 'Direct, fast, tougher probing' },
+            ].map(opt => (
+              <button key={opt.value} type="button"
+                className={`flex-1 py-2.5 px-2 rounded-xl border text-xs font-medium transition-all ${
+                  config.pressure === opt.value
+                    ? 'border-primary-500 bg-primary-600/10 text-white' : 'border-white/10 text-white/40 hover:border-white/20'
+                }`}
+                onClick={() => update('pressure', opt.value)}
+              >
+                <div className="text-sm">{opt.label}</div>
+                <div className="text-white/40 mt-0.5 leading-tight">{opt.desc}</div>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {personalities.length > 0 && (
+          <div>
+            <label className="block text-sm font-medium text-white/70 mb-3">
+              Interviewer Personality
+              <span className="text-white/40 text-xs ml-2">(optional — auto-picked if left blank)</span>
+            </label>
+            <div className="grid grid-cols-2 gap-2">
+              <button type="button"
+                className={`py-2 px-3 rounded-xl border text-xs font-medium transition-all text-left ${
+                  config.personalityId === ''
+                    ? 'border-primary-500 bg-primary-600/10 text-white' : 'border-white/10 text-white/40 hover:border-white/20'
+                }`}
+                onClick={() => update('personalityId', '')}
+              >
+                <div className="text-sm">Auto</div>
+                <div className="text-white/40 mt-0.5 leading-tight">Based on company &amp; role</div>
+              </button>
+              {personalities.map(p => (
+                <button key={p.id} type="button"
+                  className={`py-2 px-3 rounded-xl border text-xs font-medium transition-all text-left ${
+                    config.personalityId === p.id
+                      ? 'border-primary-500 bg-primary-600/10 text-white' : 'border-white/10 text-white/40 hover:border-white/20'
+                  }`}
+                  onClick={() => update('personalityId', p.id)}
+                >
+                  <div className="text-sm">{p.label}</div>
+                  <div className="text-white/40 mt-0.5 leading-tight truncate">{p.style}</div>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div>
           <label className="block text-sm font-medium text-white/70 mb-2">Job Description (Optional)</label>

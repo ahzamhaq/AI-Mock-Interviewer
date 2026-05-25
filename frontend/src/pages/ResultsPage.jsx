@@ -219,6 +219,18 @@ const ResultsPage = () => {
               </div>
             </div>
 
+            {/* Natural closing line — adaptive interviews only. Sits above the
+                analytical feedback so the conversation wraps up like an interview,
+                not a report card. */}
+            {results.closing && (
+              <p
+                className="text-white/70 text-sm italic max-w-xl mx-auto mb-4 leading-relaxed"
+                style={{ borderLeft: '2px solid rgba(88,166,255,0.4)', paddingLeft: 12 }}
+              >
+                {results.closing}
+              </p>
+            )}
+
             {results.overallFeedback && (
               <p className="text-white/60 text-sm max-w-xl mx-auto bg-white/3 rounded-xl p-4">
                 {results.overallFeedback}

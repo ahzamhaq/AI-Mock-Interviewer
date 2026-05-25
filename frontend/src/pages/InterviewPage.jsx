@@ -123,6 +123,15 @@ const InterviewPage = () => {
   const timerRef = useRef(null);
   const logIdRef = useRef(0);
 
+  // ── Silence / thinking tracker ─────────────────────────────────────────
+  // We track the user's idle time since the AI finished speaking. If a
+  // threshold is crossed AND we're in WAITING phase, we fetch a nudge from
+  // the backend.
+  const silenceStartRef = useRef(null);  // ms timestamp when WAITING began (or last user activity)
+  const lastNudgeAtRef  = useRef(0);     // ms since last nudge to avoid spam
+  const prevNudgesRef   = useRef([]);    // nudges already issued for the current question
+  const nudgeIntervalRef = useRef(null);
+
   const pushLog = useCallback((tag, msg, tone = '#9CA3AF') => {
     const now = new Date();
     const t = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
@@ -177,7 +186,27 @@ const InterviewPage = () => {
     const q = interview.questions[currentIdx];
     if (!q) return;
     pushLog('AI', `Speaking question ${currentIdx + 1} · ${q.questionType || 'technical'}`, '#58A6FF');
-    const text = `Question ${currentIdx + 1}. ${q.questionText}`;
+
+    // Build the spoken text with conversational layering:
+    //   [reaction]   <pause>   [transition]   <pause>   [question]
+    // For adaptive interviews, reaction/transition come from the backend.
+    // For the first question we suppress the "Question N." preamble because the
+    // greeting handled the lead-in.
+    const parts = [];
+    if (q.reaction)     parts.push(q.reaction);
+    if (q.transition)   parts.push(q.transition);
+
+    const isFirstQuestion = currentIdx === 0;
+    if (interview.adaptive) {
+      // Avoid "Question 1. ..." numbering for adaptive — feels less like a quiz
+      parts.push(q.questionText);
+    } else {
+      parts.push(`Question ${currentIdx + 1}. ${q.questionText}`);
+    }
+
+    // Join with a punctuation pause that TTS engines naturally hold on
+    const text = parts.filter(Boolean).join(' … ');
+
     if (voiceEnabled) {
       speak(text, () => setPhase(PHASE.WAITING));
     } else {
@@ -195,6 +224,63 @@ const InterviewPage = () => {
     }
     return () => clearInterval(timerRef.current);
   }, [phase]);
+
+  // ── Silence / thinking nudge loop ──────────────────────────────────────
+  // While in WAITING phase, poll every 4s. Compute idle time since the AI
+  // finished speaking; if it crosses a threshold, fetch a backend nudge.
+  // Only fires for adaptive interviews.
+  useEffect(() => {
+    if (!interview?.adaptive) return;
+    if (phase !== PHASE.WAITING) {
+      // Reset trackers when leaving WAITING — and when a new question starts
+      if (phase === PHASE.AI_SPEAKING) {
+        silenceStartRef.current = null;
+        prevNudgesRef.current = [];
+      }
+      clearInterval(nudgeIntervalRef.current);
+      return;
+    }
+    // Mark the moment WAITING began
+    if (silenceStartRef.current == null) silenceStartRef.current = Date.now();
+
+    nudgeIntervalRef.current = setInterval(async () => {
+      // If the user is typing or transcript is filling, reset the idle timer
+      if (textAnswer.length > 0 || (transcript && transcript.length > 0) || listening) {
+        silenceStartRef.current = Date.now();
+        return;
+      }
+      const silenceMs = Date.now() - silenceStartRef.current;
+      if (silenceMs < 6000) return; // first tier is ~6s, don't bother below
+      // Throttle nudge calls — at most once every ~10s
+      if (Date.now() - lastNudgeAtRef.current < 10000) return;
+
+      lastNudgeAtRef.current = Date.now();
+      try {
+        const res = await interviewAPI.nudge(id, {
+          silenceMs,
+          prevNudges: prevNudgesRef.current,
+        });
+        const nudge = res?.nudge;
+        if (!nudge || !nudge.nudgeType) return;
+        prevNudgesRef.current = [...prevNudgesRef.current, nudge.nudgeType];
+
+        if (nudge.spoken && nudge.phrase) {
+          pushLog('NUDGE', `${nudge.nudgeType}: "${nudge.phrase}"`, '#D29922');
+          if (voiceEnabled) speak(nudge.phrase);
+        } else if (nudge.nudgeType === 'silent') {
+          // Silent tier — interviewer waits patiently; just log it
+          pushLog('NUDGE', 'silent · waiting…', '#6B7280');
+        }
+      } catch {
+        // Best-effort — silence-handling failures shouldn't break the interview
+      }
+    }, 4000);
+
+    return () => clearInterval(nudgeIntervalRef.current);
+    // We deliberately don't depend on textAnswer/transcript to avoid resetting
+    // the interval; instead we read them inside the polling callback.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase, interview?.adaptive]);
 
   const startQuestion = useCallback(() => {
     if (!interview?.questions[currentIdx]) return;
@@ -282,10 +368,58 @@ const InterviewPage = () => {
     } catch { nextQuestion(); }
   };
 
-  const nextQuestion = () => {
+  const nextQuestion = async () => {
     stopSpeaking();
-    const nextIdx = currentIdx + 1;
     if (!interview) return;
+
+    // Adaptive mode: ask the backend for the next question (engine decides what)
+    if (interview.adaptive) {
+      setPhase(PHASE.PROCESSING);
+      pushLog('AI', 'Selecting next question…', '#58A6FF');
+      try {
+        const res = await interviewAPI.nextQuestion(id);
+        if (res.done || res.isComplete) {
+          handleFinish();
+          return;
+        }
+        const newQ = res.question;
+        // Append the new question into local interview state and refresh liveState
+        // (so toolbar flags like project-mode, pacing tempo stay up to date).
+        setInterview(prev => ({
+          ...prev,
+          questions: [...prev.questions, newQ],
+          liveState: { ...(prev.liveState || {}), ...(res.liveState || {}) },
+        }));
+        setCurrentIdx(newQ.index);
+        setFeedback(null);
+        resetTranscript();
+        setTextAnswer('');
+        setPendingMetrics(null);
+        if (res.decision?.rationale) {
+          const tag = res.decision.action === 'follow_up' ? 'FOLLOW-UP'
+            : res.decision.action === 'revisit_weak' ? 'REVISIT'
+            : res.decision.action === 'memorized_probe' ? 'PROBE'
+            : 'PIVOT';
+          pushLog(tag, res.decision.rationale, '#D29922');
+        }
+        if (res.liveState?.currentDifficulty) {
+          const tempo = res.liveState.pacingTempo ? ` · ${res.liveState.pacingTempo} pace` : '';
+          pushLog('ENGINE', `Difficulty: ${res.liveState.currentDifficulty} · avg ${res.liveState.rollingAvgScore}${tempo}`, '#9CA3AF');
+        }
+        if (res.liveState?.projectContext?.active && res.liveState.projectContext.coveredAxes?.length) {
+          const axes = res.liveState.projectContext.coveredAxes.join(' → ');
+          pushLog('PROJECT', `Deep-dive · ${axes}`, '#3FB950');
+        }
+        setPhase(PHASE.AI_SPEAKING);
+      } catch (err) {
+        toast.error('Failed to fetch next question');
+        setPhase(PHASE.WAITING);
+      }
+      return;
+    }
+
+    // Legacy linear flow
+    const nextIdx = currentIdx + 1;
     if (nextIdx >= interview.questions.length) { handleFinish(); return; }
     setCurrentIdx(nextIdx);
     setFeedback(null);
@@ -340,8 +474,23 @@ const InterviewPage = () => {
   }
 
   const question = interview.questions[currentIdx];
-  const progress = ((currentIdx) / interview.questions.length) * 100;
-  const isLastQuestion = currentIdx === interview.questions.length - 1;
+
+  // For adaptive interviews, progress is measured against the BLUEPRINT's planned
+  // count (number of primary questions), not the array length (which grows as
+  // follow-ups are appended).
+  const plannedCount = interview.adaptive
+    ? (interview.blueprint?.totalPlanned || interview.config?.totalQuestions || 5)
+    : interview.questions.length;
+  const primaryAskedCount = interview.adaptive
+    ? interview.questions.filter(q => !q.isFollowUp).length
+    : currentIdx + 1;
+  const progress = (Math.max(0, primaryAskedCount - 1) / plannedCount) * 100;
+  // In adaptive mode we don't know if it's the "last" question — the engine decides.
+  // We still flag the UI button so the user can finish manually if they want.
+  const isLastQuestion = interview.adaptive
+    ? primaryAskedCount >= plannedCount
+    : currentIdx === interview.questions.length - 1;
+
   const avgScore = sessionMetrics.answers.length
     ? (sessionMetrics.answers.reduce((a, b) => a + b, 0) / sessionMetrics.answers.length).toFixed(1)
     : '—';
@@ -376,14 +525,72 @@ const InterviewPage = () => {
           </span>
           <span className="text-xs" style={{ color: '#30363D' }}>/</span>
           <span className="text-xs" style={{ color: '#6B7280' }}>
-            {interview.config?.difficulty}
+            {interview.adaptive
+              ? (interview.liveState?.currentDifficulty || interview.config?.difficulty)
+              : interview.config?.difficulty}
           </span>
+          {interview.adaptive && interview.roundInfo && interview.roundInfo.id !== 'general' && (
+            <>
+              <span className="text-xs" style={{ color: '#30363D' }}>·</span>
+              <span
+                className="text-2xs px-1.5 py-0.5 rounded font-mono"
+                style={{ background: 'rgba(210,153,34,0.1)', color: '#D29922', border: '1px solid rgba(210,153,34,0.3)' }}
+                title={interview.roundInfo.focus}
+              >
+                {interview.roundInfo.label}
+              </span>
+            </>
+          )}
+          {interview.adaptive && interview.personality?.label && (
+            <>
+              <span className="text-xs" style={{ color: '#30363D' }}>·</span>
+              <span
+                className="text-2xs px-1.5 py-0.5 rounded font-mono"
+                style={{ background: 'rgba(88,166,255,0.08)', color: '#58A6FF', border: '1px solid rgba(88,166,255,0.2)' }}
+                title={interview.personality.style}
+              >
+                {interview.personality.label}
+              </span>
+            </>
+          )}
+          {interview.adaptive && interview.pressure && interview.pressure !== 'standard' && (
+            <span
+              className="text-2xs px-1.5 py-0.5 rounded font-mono"
+              style={{
+                background: interview.pressure === 'intense' ? 'rgba(248,81,73,0.1)' : 'rgba(63,185,80,0.1)',
+                color: interview.pressure === 'intense' ? '#F85149' : '#3FB950',
+                border: `1px solid ${interview.pressure === 'intense' ? 'rgba(248,81,73,0.3)' : 'rgba(63,185,80,0.3)'}`,
+              }}
+            >
+              {interview.pressure}
+            </span>
+          )}
+          {interview.adaptive && interview.liveState?.projectContext?.active && (
+            <span
+              className="text-2xs px-1.5 py-0.5 rounded font-mono"
+              style={{ background: 'rgba(63,185,80,0.1)', color: '#3FB950', border: '1px solid rgba(63,185,80,0.3)' }}
+              title="Project deep-dive in progress"
+            >
+              project
+            </span>
+          )}
+          {interview.adaptive && question?.isFollowUp && (
+            <>
+              <span className="text-xs" style={{ color: '#30363D' }}>·</span>
+              <span
+                className="text-2xs px-1.5 py-0.5 rounded font-mono"
+                style={{ background: 'rgba(210,153,34,0.1)', color: '#D29922', border: '1px solid rgba(210,153,34,0.3)' }}
+              >
+                follow-up
+              </span>
+            </>
+          )}
         </div>
 
         {/* Center: progress */}
         <div className="flex items-center gap-2">
           <span className="metric text-xs" style={{ color: '#6B7280' }}>
-            Q{currentIdx + 1}/{interview.questions.length}
+            Q{primaryAskedCount}/{plannedCount}
           </span>
           <div className="w-24 h-1 rounded-full" style={{ background: '#21262D' }}>
             <motion.div
@@ -620,13 +827,45 @@ const InterviewPage = () => {
                 exit={{ opacity: 0, y: -6 }}
                 transition={{ duration: 0.2 }}
               >
-                <div className="flex items-center gap-2 mb-3">
+                <div className="flex items-center gap-2 mb-3 flex-wrap">
                   <span
                     className="metric text-2xs px-2 py-0.5 rounded"
                     style={{ background: '#21262D', color: '#9CA3AF', border: '1px solid #30363D' }}
                   >
-                    Q{currentIdx + 1} of {interview.questions.length}
+                    Q{primaryAskedCount} of {plannedCount}
                   </span>
+                  {question?.isFollowUp && (
+                    <span
+                      className="text-2xs px-2 py-0.5 rounded"
+                      style={{ background: 'rgba(210,153,34,0.1)', color: '#D29922', border: '1px solid rgba(210,153,34,0.3)' }}
+                    >
+                      follow-up
+                    </span>
+                  )}
+                  {question?.selectionReason === 'revisit_weak' && (
+                    <span
+                      className="text-2xs px-2 py-0.5 rounded"
+                      style={{ background: 'rgba(248,81,73,0.1)', color: '#F85149', border: '1px solid rgba(248,81,73,0.3)' }}
+                    >
+                      revisit
+                    </span>
+                  )}
+                  {question?.selectionReason === 'memorized_probe' && (
+                    <span
+                      className="text-2xs px-2 py-0.5 rounded"
+                      style={{ background: 'rgba(248,81,73,0.1)', color: '#F85149', border: '1px solid rgba(248,81,73,0.3)' }}
+                    >
+                      depth probe
+                    </span>
+                  )}
+                  {question?.topic && (
+                    <span
+                      className="text-2xs px-2 py-0.5 rounded font-mono"
+                      style={{ background: 'rgba(63,185,80,0.06)', color: '#3FB950', border: '1px solid rgba(63,185,80,0.2)' }}
+                    >
+                      {question.topic}
+                    </span>
+                  )}
                   {question?.questionType && (
                     <span
                       className="text-2xs px-2 py-0.5 rounded"
@@ -641,6 +880,20 @@ const InterviewPage = () => {
                     </span>
                   )}
                 </div>
+
+                {/* Conversational lead-in: reaction + transition.
+                    Shown as italic muted text above the question to mimic the
+                    spoken layering of a real interviewer. */}
+                {(question?.reaction || question?.transition) && (
+                  <p
+                    className="text-sm italic mb-2"
+                    style={{ color: '#9CA3AF', lineHeight: 1.5 }}
+                  >
+                    {question.reaction && <span>{question.reaction} </span>}
+                    {question.transition && <span style={{ color: '#6B7280' }}>{question.transition}</span>}
+                  </p>
+                )}
+
                 <p className="text-base font-medium leading-relaxed" style={{ color: '#F0F6FC', lineHeight: 1.65 }}>
                   {question?.questionText}
                 </p>
@@ -1043,7 +1296,7 @@ const InterviewPage = () => {
             {interview.config?.targetCompany || interview.config?.companyType}
           </div>
           <div className="status-bar-item metric">
-            Q{currentIdx + 1}/{interview.questions.length}
+            Q{primaryAskedCount}/{plannedCount}
           </div>
         </div>
       </div>
