@@ -24,6 +24,10 @@ const answerSchema = new mongoose.Schema({
   qualityFlags: { type: [String], default: [] },
   primaryQualityFlag: { type: String, default: null },
 
+  // Expected concepts for this question — extracted once at evaluation time and
+  // cached so we can re-show them on the results page without re-asking the LLM.
+  expectedConcepts: { type: [String], default: [] },
+
   // Silence events recorded for this question (timestamps + nudge types issued)
   silenceEvents: {
     type: [{
@@ -50,6 +54,36 @@ const answerSchema = new mongoose.Schema({
     grammarScore: { type: Number, min: 0, max: 10, default: 0 },
     reasoningScore: { type: Number, min: 0, max: 10, default: 0 },
     practicalScore: { type: Number, min: 0, max: 10, default: 0 },
+
+    // ── Strict rubric fields (new) ────────────────────────────────────
+    // Relevance is the GATEKEEPER — low relevance hard-caps the overall score
+    // regardless of fluency, length, or confidence.
+    relevanceScore:           { type: Number, min: 0, max: 10, default: 0 },
+    technicalAccuracyScore:   { type: Number, min: 0, max: 10, default: 0 },
+    implementationDepthScore: { type: Number, min: 0, max: 10, default: 0 },
+    conceptualGroundingScore: { type: Number, min: 0, max: 10, default: 0 },
+
+    // Concept-grounding evidence — feeds the results UI and the engine's
+    // weak-topic tracker. `mentionedConcepts` is a subset of expectedConcepts
+    // (stored on the question) that the candidate actually touched.
+    mentionedConcepts: { type: [String], default: [] },
+    missingConcepts:   { type: [String], default: [] },
+
+    // Coarse-grained category — drives follow-up strategy in the adaptive engine.
+    responseCategory: {
+      type: String,
+      enum: [
+        'excellent', 'strong', 'partially_correct', 'vague', 'off_topic',
+        'memorized', 'buzzword_heavy', 'shallow', 'technically_incorrect',
+        'implementation_weak', 'empty',
+      ],
+      default: 'partially_correct',
+    },
+
+    // The reason the score was capped (if any) — e.g. "off_topic", "no_implementation_depth"
+    scoreCapReason: { type: String, default: '' },
+    rawScore: { type: Number, min: 0, max: 10, default: 0 }, // pre-cap score for transparency
+
     summary: String,
   },
   voiceMetrics: {
