@@ -3,6 +3,21 @@
 const aiManager = require('./aiProviderManager');
 const topicGraph = require('./topicGraph');
 
+// ── Helpers ──────────────────────────────────────────────────────────────────
+
+// Fallback category inference when the model doesn't return a valid category.
+// Uses the same thresholds the evaluator prompt describes.
+function inferCategoryFromScores({ relevance, techAccuracy, implDepth, conceptGround, finalScore }) {
+  if (relevance <= 2) return 'off_topic';
+  if (techAccuracy <= 3) return 'technically_incorrect';
+  if (conceptGround <= 3 && relevance >= 5) return 'shallow';
+  if (implDepth <= 3 && techAccuracy >= 6) return 'implementation_weak';
+  if (finalScore >= 8.5) return 'excellent';
+  if (finalScore >= 7) return 'strong';
+  if (finalScore >= 5) return 'partially_correct';
+  return 'vague';
+}
+
 class AIService {
   async generateText(prompt, options = {}) {
     try {
@@ -134,7 +149,7 @@ Return ONLY the follow-up question text. No quotes, no JSON, no commentary.`;
   //   }
   async generateAdaptiveQuestion(context) {
     const {
-      action, topic, questionType, difficulty, intent, qualityIntentHint, persona, personality, pacingHint, pressure,
+      action, topic, questionType, difficulty, intent, qualityIntentHint, missingConcepts, persona, personality, pacingHint, pressure,
       projectAxis, round, config,
       parentQuestion, parentAnswer, askedQuestions = [], resumeText, jobDescription, graphHint,
       callback, answerLength, consecutiveLowScores,
@@ -229,6 +244,12 @@ Ask a PRACTICAL, implementation-oriented question they can't fake. Examples: "Wa
       ? `Previous answer signal: ${qualityIntentHint}. Bias this question accordingly (without explaining why).`
       : '';
 
+    // Missing-concept hint — when the evaluator identified specific concepts
+    // the candidate failed to ground, the follow-up can target one of them.
+    const missingConceptsLine = (Array.isArray(missingConcepts) && missingConcepts.length)
+      ? `The candidate did not demonstrate understanding of: ${missingConcepts.join(', ')}. If natural, probe one of these specifically — but phrase it as a question, not an accusation.`
+      : '';
+
     const prompt = `${personaLine}
 ${companyLine}
 ${pressureLine}
@@ -243,6 +264,7 @@ ${actionInstruction}
 ${lengthLine}
 ${recoveryLine}
 ${callbackLine}
+${missingConceptsLine}
 
 Question type to ask: ${questionType}
 Target topic: ${topic}
@@ -358,65 +380,378 @@ Return ONLY JSON: {"memorized": true|false, "reason": "one short sentence"}`;
     }
   }
 
-  async evaluateAnswer(question, answer, config) {
+  // ───────────────────────────────────────────────────────────────────────
+  // Question understanding phase.
+  //
+  // Extracts the core technical concepts an answer should touch. Called once
+  // per question (lazily, the first time we evaluate an answer for it) and
+  // cached on the Interview document so future operations can reuse it.
+  //
+  // The output is intentionally small — 4 to 7 concept tokens. The evaluator
+  // then checks which of these the candidate actually mentioned/explained.
+  // ───────────────────────────────────────────────────────────────────────
+  async extractExpectedConcepts(questionText, config) {
+    if (!questionText || questionText.trim().length < 5) return [];
+
+    const prompt = `You are preparing to evaluate an answer to this interview question:
+"${questionText}"
+
+Role: ${config.role || 'engineer'} | Level: ${config.experienceLevel || 'mid'}
+
+List 4 to 7 SHORT concept tokens (1-3 words each) that a good answer MUST touch to demonstrate
+real understanding. These are the mechanisms / ideas / techniques the answer should ground itself in.
+
+Examples:
+- For "What is useMemo?": ["memoization","dependency array","recomputation","performance","cached value"]
+- For "How does JWT auth work?": ["signed token","header.payload.signature","stateless","verification","secret/key","expiration"]
+- For "Explain React reconciliation": ["virtual DOM","diffing","keys","component types","fiber","render tree"]
+
+Rules:
+- Pick concepts ESSENTIAL to demonstrating understanding, not nice-to-haves.
+- No filler ("the question", "answer", "developer", "code").
+- Concepts should be specific enough that an off-topic answer would clearly miss them.
+
+Return ONLY a JSON array of strings, no markdown:
+["concept1","concept2","concept3","concept4","concept5"]`;
+
+    try {
+      const text = await this.generateText(prompt, { temperature: 0.2, maxTokens: 200 });
+      const m = text.match(/\[[\s\S]*?\]/);
+      if (!m) return [];
+      const arr = JSON.parse(m[0]);
+      if (!Array.isArray(arr)) return [];
+      return arr
+        .filter(x => typeof x === 'string')
+        .map(s => s.trim())
+        .filter(s => s.length > 0 && s.length < 60)
+        .slice(0, 7);
+    } catch {
+      return [];
+    }
+  }
+
+  // ───────────────────────────────────────────────────────────────────────
+  // Strict evaluator.
+  //
+  // Design principles (driven by user requirements):
+  //
+  //   - RELEVANCE is the gatekeeper. If the answer doesn't actually answer
+  //     the question, the overall score collapses regardless of fluency.
+  //   - Communication/grammar have very low weight in the final score.
+  //   - Buzzwords without mechanisms → low technical_accuracy.
+  //   - Imperfect grammar / broken transcripts are tolerated when the
+  //     technical meaning is visible.
+  //   - The LLM proposes scores; we then apply DETERMINISTIC caps in code so
+  //     the model can't over-score regardless of what it returns.
+  //
+  // `expectedConcepts` is required for full strictness; if absent, the
+  // evaluator falls back to a less strict (but still skeptical) evaluation.
+  // ───────────────────────────────────────────────────────────────────────
+  async evaluateAnswer(question, answer, config, options = {}) {
     if (!answer || answer.trim().length < 5) {
       return this._getDefaultFeedback('Answer too short or empty');
     }
 
-    // Nuanced multi-dimensional scoring. The prompt instructs the model to
-    // award PARTIAL CREDIT — strong reasoning with incomplete answers should
-    // not collapse to a low score, and shallow-but-fluent answers should not
-    // be inflated. Each dimension is scored independently.
-    const prompt = `You are evaluating an interview answer for a ${config.role} (${config.experienceLevel}).
+    const expectedConcepts = options.expectedConcepts || [];
+    const conceptList = expectedConcepts.length
+      ? expectedConcepts.map(c => `- ${c}`).join('\n')
+      : '(not provided — evaluate based on question alone)';
 
-Q: "${question}"
-A: "${answer.substring(0, 700)}"
+    const prompt = `You are a SKEPTICAL SENIOR INTERVIEWER evaluating an answer.
+Role: ${config.role} | Level: ${config.experienceLevel}
 
-Evaluate across these INDEPENDENT dimensions. Score nuanced — partial credit matters:
+QUESTION: "${question}"
 
-- technicalScore (0-10): correctness, accuracy of facts/concepts
-- communicationScore (0-10): clarity, structure, conciseness
-- confidenceScore (0-100): how grounded vs. hedged the answer sounds
-- completenessScore (0-10): coverage of the question (edge cases, all parts addressed)
-- grammarScore (0-10): language quality
-- reasoningScore (0-10): quality of thinking even when the answer is wrong/incomplete
-- practicalScore (0-10): implementation/production awareness, real-world grounding
+CANDIDATE ANSWER: "${answer.substring(0, 900)}"
 
-PARTIAL CREDIT RULES:
-- A wrong final answer with strong reasoning may still score 6-7 on technicalScore.
-- A technically correct but textbook-sounding answer should score lower on practicalScore.
-- High grammar + low completeness often signals memorization — note it in weaknesses.
-- Strong reasoning toward the right direction (even if not finished) → high reasoningScore.
+CORE CONCEPTS expected in a good answer:
+${conceptList}
 
-The overall "score" should NOT be a simple average. Weight technical correctness
-more for technical questions; weight communication/reasoning more for behavioral.
+═══════════════════════════════════════════════════════════════════════════
+EVALUATION PHILOSOPHY (CRITICAL — follow strictly):
+═══════════════════════════════════════════════════════════════════════════
 
-Return ONLY valid JSON (no markdown):
-{"score":7,"technicalScore":7,"communicationScore":7,"confidenceScore":70,"completenessScore":7,"grammarScore":8,"reasoningScore":7,"practicalScore":6,"strengths":["s1","s2"],"weaknesses":["w1"],"betterAnswer":"model answer here","improvements":["i1","i2"],"followUpQuestion":"follow up?","summary":"brief summary"}`;
+You are NOT a supportive teacher. You are NOT scoring an essay.
+You evaluate technical UNDERSTANDING, not presentation.
+
+REWARD:
+  - Technical mechanisms ("the dependency array tells React when to recompute")
+  - Implementation details ("we used Redis with a 30s TTL")
+  - Reasoning ("we chose this because the alternative would cause stale reads")
+  - Tradeoff awareness, edge cases, production thinking
+  - Concrete examples / first-person experience
+
+PENALIZE HEAVILY:
+  - Vague tech-speak: "JWT is secure and scalable", "React is performant"
+  - Buzzwords without mechanisms: "leverages best practices", "robust ecosystem"
+  - Off-topic answers that drift away from what was asked
+  - Restating the question without answering it
+  - Confident-sounding fluff that contains no mechanism or example
+
+IGNORE / TOLERATE:
+  - Imperfect grammar, broken sentences, missing words
+  - Filler words, repetition, transcription noise
+  - Hesitation, pauses, informal phrasing
+  - Accent / pronunciation issues (you only see text)
+
+  → As long as TECHNICAL MEANING is visible, do NOT penalize for delivery.
+
+═══════════════════════════════════════════════════════════════════════════
+RUBRIC — score each dimension INDEPENDENTLY, 0-10
+═══════════════════════════════════════════════════════════════════════════
+
+1. relevanceScore (GATEKEEPER):
+   - 0-2  = does not address the question / off-topic
+   - 3-4  = tangentially related, mostly drifts
+   - 5-6  = touches the question but stays at surface level
+   - 7-8  = directly answers the question with on-target content
+   - 9-10 = directly answers AND covers what matters
+
+2. technicalAccuracyScore:
+   - How CORRECT is the content actually said?
+   - Wrong claims with confidence = LOW.
+   - Right reasoning with hedging = HIGH.
+
+3. completenessScore:
+   - Does the answer cover the parts the question asks for?
+   - Multi-part question only partially covered = LOW.
+   - Concise but covers all parts = HIGH.
+
+4. implementationDepthScore:
+   - Does it sound like the candidate has BUILT something with this?
+   - Concrete examples, debugging stories, version numbers, real numbers = HIGH.
+   - Textbook-only / no first-person depth = LOW.
+
+5. reasoningScore:
+   - Quality of THINKING — even if the final answer is incomplete.
+   - "I'd try X first because Y" = HIGH even if X is wrong.
+   - No reasoning visible / pure recall = LOW.
+
+6. conceptualGroundingScore:
+   - How many of the CORE CONCEPTS (listed above) were actually explained
+     (not just name-dropped)?
+   - Naming a concept ≠ explaining it.
+
+7. practicalScore:
+   - Production / real-world awareness.
+
+LOW-WEIGHT dimensions (these should NOT drive the overall score):
+- communicationScore (0-10): light credit for coherence; do NOT reward eloquence
+- grammarScore (0-10): ignore unless it makes the answer literally unintelligible
+- confidenceScore (0-100): SEPARATE from correctness. Confident + wrong = low.
+
+═══════════════════════════════════════════════════════════════════════════
+CONCEPT GROUNDING
+═══════════════════════════════════════════════════════════════════════════
+
+Compare the answer against the CORE CONCEPTS above. For each concept:
+  - If the candidate explained the underlying mechanism → "mentioned"
+  - If they only name-dropped without explanation → NOT mentioned
+  - If they didn't touch it at all → "missing"
+
+Return:
+  - mentionedConcepts: subset of CORE CONCEPTS actually explained (not just named)
+  - missingConcepts:   CORE CONCEPTS the candidate didn't ground
+
+═══════════════════════════════════════════════════════════════════════════
+RESPONSE CATEGORY
+═══════════════════════════════════════════════════════════════════════════
+
+Classify the response as exactly one of:
+  excellent          — comprehensive, accurate, concrete, with reasoning
+  strong             — covers most concepts well, minor gaps
+  partially_correct  — right direction, missing pieces
+  vague              — relates to the topic but lacks substance
+  off_topic          — doesn't address the question
+  memorized          — textbook phrasing, no personal/practical grounding
+  buzzword_heavy     — keywords with no mechanism
+  shallow            — names ideas without explaining them
+  technically_incorrect — contains factual errors
+  implementation_weak — conceptually OK but no implementation grounding
+
+═══════════════════════════════════════════════════════════════════════════
+OVERALL SCORE
+═══════════════════════════════════════════════════════════════════════════
+
+Propose an overall "score" 0-10. Weight it as:
+  - 35% relevance
+  - 25% technicalAccuracy
+  - 15% conceptualGrounding
+  - 10% implementationDepth
+  - 10% reasoning
+  -  5% completeness
+
+Communication and grammar should NOT factor into the overall score.
+
+DO NOT inflate. Moderate/high scores must be EARNED with mechanisms,
+examples, and reasoning — not fluency.
+
+═══════════════════════════════════════════════════════════════════════════
+
+Return ONLY valid JSON (no markdown, no commentary):
+{
+  "score": 6.5,
+  "relevanceScore": 8,
+  "technicalAccuracyScore": 6,
+  "completenessScore": 5,
+  "implementationDepthScore": 4,
+  "reasoningScore": 7,
+  "conceptualGroundingScore": 6,
+  "practicalScore": 5,
+  "technicalScore": 6,
+  "communicationScore": 7,
+  "grammarScore": 8,
+  "confidenceScore": 65,
+  "mentionedConcepts": ["concept actually explained","..."],
+  "missingConcepts": ["concept not touched","..."],
+  "responseCategory": "partially_correct",
+  "strengths": ["specific thing they did well"],
+  "weaknesses": ["specific gap, not a general critique"],
+  "betterAnswer": "a 2-3 sentence model answer focused on mechanisms",
+  "improvements": ["concrete improvement 1","concrete improvement 2"],
+  "followUpQuestion": "a probing follow-up",
+  "summary": "one sentence honest assessment"
+}`;
 
     try {
-      const text = await this.generateText(prompt, { temperature: 0.4 });
+      const text = await this.generateText(prompt, { temperature: 0.3 });
       const jsonMatch = text.match(/\{[\s\S]*\}/);
       if (!jsonMatch) throw new Error('Parse error');
-      const feedback = JSON.parse(jsonMatch[0]);
+      const fb = JSON.parse(jsonMatch[0]);
+
+      // Clamp helper
+      const clamp10 = (n) => Math.min(10, Math.max(0, Number(n) || 0));
+      const clamp100 = (n) => Math.min(100, Math.max(0, Number(n) || 0));
+
+      // ── Pull rubric values ────────────────────────────────────────────
+      const relevance       = clamp10(fb.relevanceScore);
+      const techAccuracy    = clamp10(fb.technicalAccuracyScore ?? fb.technicalScore);
+      const completeness    = clamp10(fb.completenessScore);
+      const implDepth       = clamp10(fb.implementationDepthScore ?? fb.practicalScore);
+      const reasoning       = clamp10(fb.reasoningScore);
+      const conceptGround   = clamp10(fb.conceptualGroundingScore);
+      const practical       = clamp10(fb.practicalScore);
+
+      // Low-weight dimensions
+      const communication   = clamp10(fb.communicationScore);
+      const grammar         = clamp10(fb.grammarScore);
+      const confidence      = clamp100(fb.confidenceScore);
+
+      // ── Deterministic weighted overall score ──────────────────────────
+      // Communication & grammar deliberately have 0 weight here. The LLM
+      // proposes a score; we ignore it and compute our own to enforce policy.
+      const computed =
+        0.35 * relevance +
+        0.25 * techAccuracy +
+        0.15 * conceptGround +
+        0.10 * implDepth +
+        0.10 * reasoning +
+        0.05 * completeness;
+
+      const rawScore = Math.round(computed * 10) / 10;
+
+      // ── Strict caps (the "skeptical interviewer" guarantees) ──────────
+      let finalScore = rawScore;
+      let capReason = '';
+
+      // Off-topic / irrelevant → cap at 3
+      if (relevance <= 3) {
+        finalScore = Math.min(finalScore, 3);
+        capReason = 'low_relevance';
+      }
+      // Tangential answer → cap at 5
+      else if (relevance <= 5 && !capReason) {
+        finalScore = Math.min(finalScore, 5.5);
+        capReason = 'tangential';
+      }
+
+      // Buzzword-heavy / no mechanisms → cap at 5
+      const category = (fb.responseCategory || '').toLowerCase();
+      if (category === 'buzzword_heavy' || category === 'memorized') {
+        finalScore = Math.min(finalScore, 5);
+        if (!capReason) capReason = category;
+      }
+
+      // Technically incorrect → cap at 4
+      if (category === 'technically_incorrect' || techAccuracy <= 3) {
+        finalScore = Math.min(finalScore, 4);
+        if (!capReason) capReason = 'technically_incorrect';
+      }
+
+      // Off-topic category override
+      if (category === 'off_topic') {
+        finalScore = Math.min(finalScore, 2.5);
+        if (!capReason) capReason = 'off_topic';
+      }
+
+      // Vague / shallow → cap at 6
+      if (category === 'vague' || category === 'shallow') {
+        finalScore = Math.min(finalScore, 6);
+        if (!capReason) capReason = category;
+      }
+
+      // High score requires implementation depth — engineers don't get 8+ from theory alone
+      if (finalScore >= 8 && implDepth < 6) {
+        finalScore = Math.min(finalScore, 7.5);
+        if (!capReason) capReason = 'no_implementation_depth';
+      }
+
+      finalScore = clamp10(finalScore);
+
+      // ── Concept grounding lists ───────────────────────────────────────
+      const mentionedConcepts = Array.isArray(fb.mentionedConcepts)
+        ? fb.mentionedConcepts.filter(x => typeof x === 'string').slice(0, 10)
+        : [];
+      const missingConcepts = Array.isArray(fb.missingConcepts)
+        ? fb.missingConcepts.filter(x => typeof x === 'string').slice(0, 10)
+        : [];
+
+      // ── Response category fallback ────────────────────────────────────
+      const validCategories = new Set([
+        'excellent', 'strong', 'partially_correct', 'vague', 'off_topic',
+        'memorized', 'buzzword_heavy', 'shallow', 'technically_incorrect',
+        'implementation_weak', 'empty',
+      ]);
+      const responseCategory = validCategories.has(category) ? category : inferCategoryFromScores({
+        relevance, techAccuracy, implDepth, conceptGround, finalScore,
+      });
+
+      // Legacy `technicalScore` field — keep populated for backward compat
+      // but use the strict accuracy value, not the LLM's loose number.
+      const technicalScore = techAccuracy;
 
       return {
-        score: Math.min(10, Math.max(0, Number(feedback.score) || 5)),
-        technicalScore: Math.min(10, Math.max(0, Number(feedback.technicalScore) || 5)),
-        communicationScore: Math.min(10, Math.max(0, Number(feedback.communicationScore) || 5)),
-        confidenceScore: Math.min(100, Math.max(0, Number(feedback.confidenceScore) || 50)),
-        completenessScore: Math.min(10, Math.max(0, Number(feedback.completenessScore) || 5)),
-        grammarScore: Math.min(10, Math.max(0, Number(feedback.grammarScore) || 5)),
-        // New partial-credit dimensions — fall back to a reasonable default
-        // if the model didn't return them (handles older responses gracefully).
-        reasoningScore: Math.min(10, Math.max(0, Number(feedback.reasoningScore) || Number(feedback.technicalScore) || 5)),
-        practicalScore: Math.min(10, Math.max(0, Number(feedback.practicalScore) || Number(feedback.completenessScore) || 5)),
-        strengths: Array.isArray(feedback.strengths) ? feedback.strengths : [],
-        weaknesses: Array.isArray(feedback.weaknesses) ? feedback.weaknesses : [],
-        betterAnswer: feedback.betterAnswer || '',
-        improvements: Array.isArray(feedback.improvements) ? feedback.improvements : [],
-        followUpQuestion: feedback.followUpQuestion || '',
-        summary: feedback.summary || '',
+        score: finalScore,
+        rawScore,
+        scoreCapReason: capReason,
+
+        // Strict rubric
+        relevanceScore: relevance,
+        technicalAccuracyScore: techAccuracy,
+        completenessScore: completeness,
+        implementationDepthScore: implDepth,
+        reasoningScore: reasoning,
+        conceptualGroundingScore: conceptGround,
+        practicalScore: practical,
+
+        // Legacy / low-weight
+        technicalScore,
+        communicationScore: communication,
+        grammarScore: grammar,
+        confidenceScore: confidence,
+
+        // Concept grounding evidence
+        mentionedConcepts,
+        missingConcepts,
+
+        // Category + narrative
+        responseCategory,
+        strengths: Array.isArray(fb.strengths) ? fb.strengths : [],
+        weaknesses: Array.isArray(fb.weaknesses) ? fb.weaknesses : [],
+        betterAnswer: fb.betterAnswer || '',
+        improvements: Array.isArray(fb.improvements) ? fb.improvements : [],
+        followUpQuestion: fb.followUpQuestion || '',
+        summary: fb.summary || '',
       };
     } catch {
       return this._getDefaultFeedback('Unable to evaluate answer');
@@ -490,13 +825,26 @@ Return JSON array:
   _getDefaultFeedback(reason) {
     return {
       score: 0,
+      rawScore: 0,
+      scoreCapReason: 'empty',
+
+      relevanceScore: 0,
+      technicalAccuracyScore: 0,
+      completenessScore: 0,
+      implementationDepthScore: 0,
+      reasoningScore: 0,
+      conceptualGroundingScore: 0,
+      practicalScore: 0,
+
       technicalScore: 0,
       communicationScore: 0,
-      confidenceScore: 0,
-      completenessScore: 0,
       grammarScore: 0,
-      reasoningScore: 0,
-      practicalScore: 0,
+      confidenceScore: 0,
+
+      mentionedConcepts: [],
+      missingConcepts: [],
+
+      responseCategory: 'empty',
       strengths: [],
       weaknesses: [reason],
       betterAnswer: '',

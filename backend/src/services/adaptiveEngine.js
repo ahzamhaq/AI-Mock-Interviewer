@@ -44,7 +44,23 @@ function rollingAvg(scores, window = ROLLING_WINDOW) {
 
 function isMemorizedSignal(feedback) {
   if (!feedback) return false;
-  // Heuristic: high grammar but low practical/completeness depth → probably memorized
+
+  // PRIMARY signal: the evaluator's LLM-derived category. This is more reliable
+  // than the older heuristic because it looks at concept-grounding, not just
+  // grammar vs. completeness.
+  if (feedback.responseCategory === 'memorized') return true;
+  if (feedback.responseCategory === 'buzzword_heavy') return true;
+
+  // SECONDARY signal: low implementation depth + decent technical accuracy.
+  // Suggests theoretical recall without practical grounding.
+  const implDepth = feedback.implementationDepthScore;
+  const techAcc   = feedback.technicalAccuracyScore;
+  if (typeof implDepth === 'number' && typeof techAcc === 'number') {
+    if (techAcc >= 6 && implDepth <= 3) return true;
+  }
+
+  // FALLBACK: original heuristic for backwards compat (older evaluations
+  // without rubric fields).
   const g = feedback.grammarScore || 0;
   const c = feedback.completenessScore || 0;
   const t = feedback.technicalScore || 0;
@@ -347,6 +363,18 @@ function decideFollowUp(interview, lastIndex, lastFb, mode, pace) {
   const qFlag = lastQ.primaryQualityFlag;
   if (qFlag === 'vague' || qFlag === 'buzzwordy' || qFlag === 'generic') probability += 0.25;
   if (qFlag === 'overconfident' || qFlag === 'contradicted_self') probability += 0.3;
+
+  // LLM-derived response category from the strict evaluator — much stronger
+  // signal than the regex flags above. These probe-worthy categories almost
+  // always warrant a follow-up to extract real understanding.
+  const cat = lastFb.responseCategory;
+  if (cat === 'shallow' || cat === 'vague' || cat === 'buzzword_heavy') probability += 0.3;
+  if (cat === 'memorized' || cat === 'implementation_weak')             probability += 0.35;
+  if (cat === 'partially_correct')                                       probability += 0.15;
+  // Excellent / strong → probe for depth only sometimes (push the strong candidate)
+  if (cat === 'excellent') probability += 0.1;
+  // Off-topic → pivot, don't pile on
+  if (cat === 'off_topic') probability -= 0.6;
 
   // Round depth bias — system_design / architecture rounds expect deep probing.
   const round = roundProfiles.get(interview.round || 'general');

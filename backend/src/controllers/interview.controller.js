@@ -72,6 +72,7 @@ async function buildGenContext(interview, decision, resumeText) {
     difficulty: decision.difficulty || ls.currentDifficulty || 'medium',
     intent: decision.intent,
     qualityIntentHint: decision.qualityIntentHint,
+    missingConcepts: decision.missingConcepts,
     persona: persona(interview),
     personality: personalities.get(interview.personalityId),
     pressure: interview.pressure,
@@ -274,7 +275,29 @@ const submitAnswer = async (req, res, next) => {
 
     let aiFeedback = null;
     if (!skipped && answer && answer.trim().length >= 5) {
-      aiFeedback = await aiService.evaluateAnswer(question.questionText, answer, interview.config);
+      // ── Question understanding phase ──────────────────────────────────
+      // Lazy-extract the expected concepts the first time we evaluate this
+      // question, then cache them on the question itself. Subsequent
+      // evaluations (rare, only if the user re-submits) reuse the cache.
+      if (!question.expectedConcepts || question.expectedConcepts.length === 0) {
+        try {
+          const concepts = await aiService.extractExpectedConcepts(
+            question.questionText,
+            interview.config
+          );
+          if (concepts && concepts.length) {
+            question.expectedConcepts = concepts;
+            interview.markModified('questions');
+          }
+        } catch { /* concepts are optional — fall through to less-strict eval */ }
+      }
+
+      aiFeedback = await aiService.evaluateAnswer(
+        question.questionText,
+        answer,
+        interview.config,
+        { expectedConcepts: question.expectedConcepts || [] }
+      );
       question.aiFeedback = aiFeedback;
     }
 
@@ -359,13 +382,34 @@ const getNextQuestion = async (req, res, next) => {
     // ── Layer 1: pick the hidden intent (drives prompt) ────────────────────
     decision.intent = conversation.pickIntent(decision, interview.liveState, decision.questionType);
 
-    // ── Layer 1b: quality-flag-driven intent hint ──────────────────────────
-    // If the previous answer had a flag like vague / buzzwordy / overconfident,
-    // pass a tailored hint to the AI prompt to bias the next question shape.
+    // ── Layer 1b: response-category-driven intent hint ─────────────────────
+    // The strict evaluator's `responseCategory` is the strongest signal —
+    // use it first; fall back to the regex `primaryQualityFlag` if absent.
     const lastAnsweredQ = interview.questions[interview.questions.length - 1];
-    if (lastAnsweredQ?.primaryQualityFlag && !decision.projectAxis) {
-      const qHint = responseQuality.intentForFlag(lastAnsweredQ.primaryQualityFlag);
-      if (qHint) decision.qualityIntentHint = qHint;
+    if (lastAnsweredQ && !decision.projectAxis) {
+      const cat = lastAnsweredQ.aiFeedback?.responseCategory;
+      const CATEGORY_TO_HINT = {
+        vague:                 'implementation_detail',
+        shallow:               'implementation_detail',
+        buzzword_heavy:        'concrete_example',
+        memorized:             'real_example',
+        implementation_weak:   'production_example',
+        partially_correct:    'fill_missing_concept',
+        technically_incorrect:'reconcile_or_correct',
+        off_topic:             'redirect_to_question',
+      };
+      if (cat && CATEGORY_TO_HINT[cat]) {
+        decision.qualityIntentHint = CATEGORY_TO_HINT[cat];
+      } else if (lastAnsweredQ.primaryQualityFlag) {
+        const qHint = responseQuality.intentForFlag(lastAnsweredQ.primaryQualityFlag);
+        if (qHint) decision.qualityIntentHint = qHint;
+      }
+
+      // Also surface missing concepts so the follow-up prompt can probe them directly.
+      const missing = lastAnsweredQ.aiFeedback?.missingConcepts;
+      if (Array.isArray(missing) && missing.length) {
+        decision.missingConcepts = missing.slice(0, 3);
+      }
     }
 
     // ── Layer 2: pick a callback phrase from earlier answers (sometimes) ───
