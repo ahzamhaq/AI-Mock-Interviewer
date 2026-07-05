@@ -20,16 +20,19 @@ const Navbar = () => {
   if (inSession) return null;
 
   const navLinks = user ? [
-    { to: '/dashboard',   label: 'Dashboard' },
-    { to: '/analytics',   label: 'Analytics' },
-    { to: '/history',     label: 'History' },
-    { to: '/leaderboard', label: 'Leaderboard' },
+    { to: '/dashboard',   label: 'Dashboard'  },
+    { to: '/interviews',  label: 'Interviews' },
+    { to: '/projects',    label: 'Projects'   },
+    { to: '/analytics',   label: 'Analytics'  },
+    { to: '/history',     label: 'History'    },
+    { to: '/leaderboard', label: 'Leaderboard'},
   ] : [
     { to: '#features',     label: 'Features', isHash: true },
     { to: '#workflow',     label: 'Workflow',  isHash: true },
   ];
 
-  const isActive = (to) => location.pathname === to;
+  const isActive = (to) =>
+    location.pathname === to || location.pathname.startsWith(`${to}/`);
 
   return (
     <nav
