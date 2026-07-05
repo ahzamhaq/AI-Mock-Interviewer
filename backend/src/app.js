@@ -33,7 +33,10 @@ app.use(cors({
       'http://localhost:3000',
     ];
     // Allow requests with no origin (curl, mobile apps, Postman)
-    if (!origin || allowed.includes(origin)) return callback(null, true);
+    if (!origin) return callback(null, true);
+    if (allowed.includes(origin)) return callback(null, true);
+    // Allow any *.vercel.app deployment (production, preview, branch deploys)
+    if (/^https:\/\/[a-z0-9-]+\.vercel\.app$/i.test(origin)) return callback(null, true);
     callback(new Error(`CORS blocked: ${origin}`));
   },
   credentials: true,

@@ -95,7 +95,9 @@ class AIProviderManager {
   }
 
   async _groq(prompt, opts) {
-    const MODELS = ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant', 'llama3-8b-8192'];
+    // Llama 3.3 70B is deprecated (decommission 2026-08-16). Migrated to GPT-OSS 120B
+    // as primary with Qwen3 32B as fallback per Groq's recommendation.
+    const MODELS = ['openai/gpt-oss-120b', 'qwen/qwen3-32b', 'llama-3.1-8b-instant'];
     let lastErr;
     for (const model of MODELS) {
       try {
