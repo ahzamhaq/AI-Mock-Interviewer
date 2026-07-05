@@ -753,7 +753,8 @@ Return ONLY valid JSON (no markdown, no commentary):
         followUpQuestion: fb.followUpQuestion || '',
         summary: fb.summary || '',
       };
-    } catch {
+    } catch (err) {
+      console.error('[evaluateAnswer] failed:', err?.message, err?.stack?.split('\n')[1]);
       return this._getDefaultFeedback('Unable to evaluate answer');
     }
   }
