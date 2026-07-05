@@ -12,8 +12,8 @@ import React from 'react';
  *   action  – optional right-aligned action node (link, button)
  */
 const SectionHeader = ({ eyebrow, title, subtitle, action }) => (
-  <div className="flex items-end justify-between gap-4 mb-3">
-    <div className="min-w-0">
+  <div className="flex flex-wrap items-end justify-between gap-3 mb-3">
+    <div className="min-w-0 flex-1">
       {eyebrow && (
         <div
           className="font-mono text-2xs uppercase tracking-wide mb-1"

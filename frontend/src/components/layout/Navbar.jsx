@@ -19,13 +19,15 @@ const Navbar = () => {
   const inSession = /^\/interview\/[^/]+$/.test(location.pathname) && !location.pathname.endsWith('/results');
   if (inSession) return null;
 
+  // `desktopClass` lets us hide low-priority links in the tablet range where
+  // horizontal space is tight; mobile menu ignores it and shows every link.
   const navLinks = user ? [
     { to: '/dashboard',   label: 'Dashboard'  },
     { to: '/interviews',  label: 'Interviews' },
     { to: '/projects',    label: 'Projects'   },
     { to: '/analytics',   label: 'Analytics'  },
     { to: '/history',     label: 'History'    },
-    { to: '/leaderboard', label: 'Leaderboard'},
+    { to: '/leaderboard', label: 'Leaderboard', desktopClass: 'hidden lg:inline-flex' },
   ] : [
     { to: '#features',     label: 'Features', isHash: true },
     { to: '#workflow',     label: 'Workflow',  isHash: true },
@@ -89,7 +91,7 @@ const Navbar = () => {
               <Link
                 key={link.to}
                 to={link.to}
-                className="relative px-3 py-1.5 text-xs font-medium transition-colors"
+                className={`relative px-3 py-1.5 text-xs font-medium transition-colors ${link.desktopClass || ''}`}
                 style={{ color: active ? '#F0F6FC' : '#9CA3AF' }}
                 onMouseEnter={e => { if (!active) e.currentTarget.style.color = '#F0F6FC'; }}
                 onMouseLeave={e => { if (!active) e.currentTarget.style.color = '#9CA3AF'; }}
