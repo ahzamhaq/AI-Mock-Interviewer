@@ -84,7 +84,7 @@ const DashboardPage = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[1fr_1fr_300px] gap-3 mb-4">
             <RecentInterviews interviews={data?.recentInterviews} />
-            <RecentProjects projects={[]} />
+            <RecentProjects />
 
             {/* Right rail — insights preserved from previous dashboard so no
                 functionality regresses. Weak topics, next session, system

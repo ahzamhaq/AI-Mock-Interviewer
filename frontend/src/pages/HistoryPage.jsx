@@ -142,12 +142,32 @@ const HistoryPage = () => {
                             {Math.floor(iv.duration / 60)}m {iv.duration % 60}s
                           </span>
                         )}
-                        {iv.config?.interviewType && (
+                        {iv.mode === 'project' && (
+                          <span
+                            className="font-mono text-2xs px-1.5 py-0.5 rounded inline-flex items-center gap-1"
+                            style={{
+                              background: 'rgba(88,166,255,0.1)',
+                              color: '#58A6FF',
+                              border: '1px solid rgba(88,166,255,0.3)',
+                            }}
+                          >
+                            project
+                          </span>
+                        )}
+                        {iv.config?.interviewType && iv.mode !== 'project' && (
                           <span
                             className="font-mono text-2xs px-1.5 py-0.5 rounded"
                             style={{ background: '#21262D', color: '#6B7280', border: '1px solid #30363D' }}
                           >
                             {iv.config.interviewType}
+                          </span>
+                        )}
+                        {iv.mode === 'project' && iv.config?.projectMode?.subMode && (
+                          <span
+                            className="font-mono text-2xs px-1.5 py-0.5 rounded"
+                            style={{ background: '#21262D', color: '#6B7280', border: '1px solid #30363D' }}
+                          >
+                            {iv.config.projectMode.subMode.replace('_', ' ')}
                           </span>
                         )}
                         {iv.config?.role && (

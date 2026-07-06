@@ -8,6 +8,7 @@ import {
 import { userAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import Navbar from '../components/layout/Navbar';
+import GitHubConnectionCard from '../components/settings/GitHubConnectionCard';
 import toast from 'react-hot-toast';
 
 const ROLES = [
@@ -37,7 +38,13 @@ const ProfilePage = () => {
   const [passwords, setPasswords] = useState({ current: '', new: '' });
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [tab, setTab] = useState('profile');
+  // Default tab jumps to "connections" when we land here from the GitHub
+  // OAuth callback so the connection card is mounted and can toast the
+  // outcome + clean the query params.
+  const initialTab = typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('github')
+    ? 'connections'
+    : 'profile';
+  const [tab, setTab] = useState(initialTab);
 
   const onDrop = useCallback(async (files) => {
     const file = files[0];
@@ -126,7 +133,7 @@ const ProfilePage = () => {
 
         {/* Tabs */}
         <div className="flex gap-2 mb-6 glass rounded-2xl p-1">
-          {['profile', 'security', 'resume', 'privacy'].map(t => (
+          {['profile', 'security', 'resume', 'connections', 'privacy'].map(t => (
             <button key={t}
               className={`flex-1 py-2.5 rounded-xl text-sm font-medium capitalize transition-all ${tab === t ? 'bg-primary-600 text-white' : 'text-white/50 hover:text-white'}`}
               onClick={() => setTab(t)}
@@ -275,6 +282,8 @@ const ProfilePage = () => {
               </button>
             </div>
           )}
+
+          {tab === 'connections' && <GitHubConnectionCard />}
 
           {tab === 'resume' && (
             <div className="glass rounded-2xl p-6">

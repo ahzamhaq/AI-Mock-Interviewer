@@ -1,5 +1,7 @@
 const Interview = require('../models/Interview.model');
 const User = require('../models/User.model');
+const Project = require('../models/Project.model');
+const RepositoryAnalysis = require('../models/RepositoryAnalysis.model');
 const aiService = require('../services/ai.service');
 const memoryService = require('../services/memory.service');
 const blueprintService = require('../services/blueprint.service');
@@ -95,6 +97,18 @@ async function buildGenContext(interview, decision, resumeText) {
     callback: decision.callback,
     answerLength: ls.lastAnswerLength,
     consecutiveLowScores: ls.consecutiveLowScores,
+
+    // Project-mode context (Sprint 2). Present only when the interview was
+    // created from a Workspace. The AI service consumes this to ground
+    // question generation in the candidate's real code. When absent, the
+    // engine behaves exactly as before.
+    projectMode: cfg.projectMode?.projectId ? {
+      subMode:             cfg.projectMode.subMode,
+      analysisSummary:     cfg.projectMode.analysisSummary,
+      techStack:           cfg.projectMode.techStack || [],
+      importantFiles:      cfg.projectMode.importantFiles || [],
+      architectureSummary: cfg.projectMode.architectureSummary,
+    } : null,
   };
 }
 
@@ -121,6 +135,47 @@ function serializeQuestion(q, index) {
 
 // ── Create interview (adaptive) ───────────────────────────────────────────────
 
+// Map project sub-mode → engine `round`. Reuses existing round profiles so
+// no new round type is introduced; the engine already knows how to steer
+// these. If the sub-mode is unknown or absent, falls back to the caller-
+// provided `round` (or the engine default).
+function roundForSubMode(subMode) {
+  switch (subMode) {
+    case 'architecture':  return 'system_design';
+    case 'debugging':     return 'technical';
+    case 'code_review':   return 'technical';
+    default:              return null;
+  }
+}
+
+// Resolve a projectMode snapshot from a projectId. Returns null when the
+// interview is not project-scoped. Throws with a user-safe message when the
+// caller passed a projectId but the project cannot be used (missing,
+// unauthorized, or analysis not ready). Callers translate to HTTP 400.
+async function resolveProjectMode(userId, projectId, subMode) {
+  if (!projectId) return null;
+  const project = await Project.findOne({ _id: projectId, userId });
+  if (!project) throw new Error('Project not found.');
+  const analysis = project.latestAnalysisId
+    ? await RepositoryAnalysis.findById(project.latestAnalysisId).lean()
+    : null;
+  if (!analysis || analysis.status !== 'ready') {
+    throw new Error('This project is still being analyzed. Try again once analysis completes.');
+  }
+  const validSubMode = ['architecture', 'debugging', 'code_review'].includes(subMode)
+    ? subMode
+    : 'architecture';
+  return {
+    projectId: project._id,
+    subMode: validSubMode,
+    analysisSummary: analysis.summary || '',
+    techStack: (analysis.techStack || []).map((t) => t.name).filter(Boolean),
+    importantFiles: (analysis.importantFiles || []).map((f) => f.path).filter(Boolean),
+    architectureSummary: analysis.architectureSummary || '',
+    _repoLabel: `${project.repoOwner}/${project.repoName}`,
+  };
+}
+
 const createInterview = async (req, res, next) => {
   try {
     const {
@@ -130,10 +185,27 @@ const createInterview = async (req, res, next) => {
       personalityId,
       pressure,
       round, // 'technical' | 'behavioral' | 'system_design' | 'hiring_manager' | etc.
+      // Sprint 2: project-mode fields. Both optional. Presence of projectId
+      // switches this interview into project mode.
+      projectId,
+      subMode,
     } = req.body;
+
+    // Resolve project mode BEFORE the user/memory lookup so a bad projectId
+    // fails fast without creating any state.
+    let projectMode = null;
+    try {
+      projectMode = await resolveProjectMode(req.user._id, projectId, subMode);
+    } catch (err) {
+      return res.status(400).json({ success: false, error: err.message });
+    }
 
     const user = await User.findById(req.user._id);
     const resumeText = useResume ? user.resumeText : '';
+
+    // Project mode overrides the round to something the engine already
+    // understands, unless the caller explicitly passed a round.
+    const effectiveRound = round || (projectMode ? roundForSubMode(projectMode.subMode) : null);
 
     // Memory context — known weak topics, recent interviews
     const memory = await memoryService.getUserMemory(req.user._id, role);
@@ -143,14 +215,34 @@ const createInterview = async (req, res, next) => {
     const blueprint = blueprintService.build(
       { role, experienceLevel, companyType, targetCompany, interviewType, difficulty, totalQuestions, jobDescription, lengthIntent },
       memory,
-      { personalityId, pressure, round }
+      { personalityId, pressure, round: effectiveRound }
     );
+
+    // Title reflects the source: project interviews show the repo name so
+    // the History and Recent Sessions surfaces are self-describing.
+    const title = projectMode
+      ? `${projectMode._repoLabel} · ${projectMode.subMode.replace('_', ' ')}`
+      : `${role.replace(/_/g, ' ')} - ${interviewType} Interview`;
 
     // Create the interview document with the blueprint + initial liveState
     const interview = await Interview.create({
       userId: req.user._id,
-      title: `${role.replace(/_/g, ' ')} - ${interviewType} Interview`,
-      config: { role, experienceLevel, companyType, targetCompany, interviewType, difficulty, totalQuestions: blueprint.totalPlanned, jobDescription, useResume },
+      title,
+      mode: projectMode ? 'project' : 'general',
+      config: {
+        role, experienceLevel, companyType, targetCompany, interviewType,
+        difficulty, totalQuestions: blueprint.totalPlanned, jobDescription, useResume,
+        // Snapshot the analysis so scoring and (future) replay are reproducible
+        // even if the underlying analysis is re-run later.
+        projectMode: projectMode ? {
+          projectId: projectMode.projectId,
+          subMode: projectMode.subMode,
+          analysisSummary: projectMode.analysisSummary,
+          techStack: projectMode.techStack,
+          importantFiles: projectMode.importantFiles,
+          architectureSummary: projectMode.architectureSummary,
+        } : undefined,
+      },
       adaptive: true,
       persona: blueprint.persona,
       personalityId: blueprint.personalityId,
@@ -221,6 +313,7 @@ const createInterview = async (req, res, next) => {
       interview: {
         id: interview._id,
         title: interview.title,
+        mode: interview.mode,
         config: interview.config,
         adaptive: true,
         persona: interview.persona,
@@ -661,7 +754,7 @@ const getInterviewHistory = async (req, res, next) => {
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
-        .select('title config results duration completedAt createdAt'),
+        .select('title mode config results duration completedAt createdAt'),
       Interview.countDocuments({ userId: req.user._id, status: 'completed' }),
     ]);
 

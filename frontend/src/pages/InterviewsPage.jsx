@@ -1,17 +1,16 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Mic, GitBranch } from 'lucide-react';
 import Navbar from '../components/layout/Navbar';
 import SectionHeader from '../components/common/SectionHeader';
 import InterviewTypeCard from '../components/interview/InterviewTypeCard';
+import { projectsAPI } from '../services/api';
 
 /**
  * INTERVIEW_MODES — data-driven list. New modes (Mock Recruiter, Custom, etc.)
- * plug in here without touching the page layout.
- *
- *   route     – destination on click
- *   badge     – optional right-corner label (used for "Sprint 2" placeholder)
- *   disabled  – renders muted (not used today; reserved for future gating)
+ * plug in here without touching the page layout. `route` is a function so a
+ * mode can inspect runtime context (e.g. whether the user has projects) to
+ * decide its destination.
  */
 const INTERVIEW_MODES = [
   {
@@ -21,7 +20,7 @@ const INTERVIEW_MODES = [
     title: 'General Interview',
     description:
       'Configure a mock interview by role, experience, company type, and topic. The classic practice flow.',
-    route: '/interview/setup',
+    route: () => '/interview/setup',
   },
   {
     id: 'project',
@@ -29,26 +28,26 @@ const INTERVIEW_MODES = [
     tagline: 'grounded in your repo',
     title: 'Project Interview',
     description:
-      'Connect a GitHub repository and practice interviews grounded in your real code, architecture, and decisions.',
-    route: '/projects/new',
-    badge: (
-      <span
-        className="font-mono text-2xs uppercase tracking-wide px-1.5 py-0.5"
-        style={{
-          color: '#D29922',
-          background: 'rgba(210,153,34,0.1)',
-          border: '1px solid rgba(210,153,34,0.3)',
-          borderRadius: 4,
-        }}
-      >
-        Sprint 2
-      </span>
-    ),
+      'Analyze a GitHub repository and practice interviews grounded in your real code, architecture, and decisions.',
+    // Users with existing projects land on the list; new users go straight
+    // to the creation flow to avoid an empty page as their first touch.
+    route: ({ hasProjects }) => (hasProjects ? '/projects' : '/projects/new'),
   },
 ];
 
 const InterviewsPage = () => {
   const navigate = useNavigate();
+  const [hasProjects, setHasProjects] = useState(false);
+
+  useEffect(() => {
+    let alive = true;
+    projectsAPI.list()
+      .then((res) => { if (alive) setHasProjects((res.projects || []).length > 0); })
+      .catch(() => { if (alive) setHasProjects(false); });
+    return () => { alive = false; };
+  }, []);
+
+  const context = { hasProjects };
 
   return (
     <div className="min-h-screen flex flex-col" style={{ background: '#0D1117' }}>
@@ -70,9 +69,8 @@ const InterviewsPage = () => {
                 tagline={mode.tagline}
                 title={mode.title}
                 description={mode.description}
-                onClick={() => navigate(mode.route)}
+                onClick={() => navigate(mode.route(context))}
                 disabled={mode.disabled}
-                badge={mode.badge}
               />
             ))}
           </div>

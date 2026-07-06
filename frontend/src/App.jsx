@@ -21,6 +21,9 @@ const HistoryPage = lazy(() => import('./pages/HistoryPage'));
 const InterviewsPage = lazy(() => import('./pages/InterviewsPage'));
 const ProjectsPage = lazy(() => import('./pages/ProjectsPage'));
 const ProjectNewPage = lazy(() => import('./pages/ProjectNewPage'));
+const ProjectAnalyzingPage = lazy(() => import('./pages/ProjectAnalyzingPage'));
+const WorkspacePage = lazy(() => import('./pages/WorkspacePage'));
+const ProjectInterviewSetupPage = lazy(() => import('./pages/ProjectInterviewSetupPage'));
 
 const ProtectedRoute = ({ children, adminOnly = false }) => {
   const { user, loading } = useAuth();
@@ -47,6 +50,9 @@ const AppRoutes = () => (
       <Route path="/interviews" element={<ProtectedRoute><InterviewsPage /></ProtectedRoute>} />
       <Route path="/projects" element={<ProtectedRoute><ProjectsPage /></ProtectedRoute>} />
       <Route path="/projects/new" element={<ProtectedRoute><ProjectNewPage /></ProtectedRoute>} />
+      <Route path="/projects/:id/analyzing" element={<ProtectedRoute><ProjectAnalyzingPage /></ProtectedRoute>} />
+      <Route path="/projects/:id" element={<ProtectedRoute><WorkspacePage /></ProtectedRoute>} />
+      <Route path="/projects/:id/interview/setup" element={<ProtectedRoute><ProjectInterviewSetupPage /></ProtectedRoute>} />
       <Route path="/interview/setup" element={<ProtectedRoute><InterviewSetupPage /></ProtectedRoute>} />
       <Route path="/interview/:id" element={<ProtectedRoute><InterviewPage /></ProtectedRoute>} />
       <Route path="/interview/:id/results" element={<ProtectedRoute><ResultsPage /></ProtectedRoute>} />

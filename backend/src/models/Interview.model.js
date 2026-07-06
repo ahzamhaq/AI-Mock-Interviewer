@@ -111,6 +111,17 @@ const interviewSchema = new mongoose.Schema({
     enum: ['setup', 'in_progress', 'completed', 'abandoned'],
     default: 'setup',
   },
+
+  // ── Interview mode ────────────────────────────────────────────────────
+  // Distinguishes the two Sprint-2 first-class flows. Defaults to 'general'
+  // so every pre-existing interview keeps behaving exactly as before; the
+  // analytics pipeline treats missing/legacy values as 'general'.
+  mode: {
+    type: String,
+    enum: ['general', 'project'],
+    default: 'general',
+    index: true,
+  },
   config: {
     role: {
       type: String,
@@ -141,6 +152,26 @@ const interviewSchema = new mongoose.Schema({
     totalQuestions: { type: Number, default: 5, min: 1, max: 20 },
     jobDescription: { type: String, default: '' },
     useResume: { type: Boolean, default: false },
+
+    // ── Project-mode enrichment (Sprint 2) ──────────────────────────────
+    // Present only when this interview was created from a Workspace. All
+    // fields are SNAPSHOTS taken at creation time: analyses can be re-run
+    // later, but this interview's grounding context should stay immutable
+    // so scoring and (future) replay remain reproducible.
+    //
+    // The engine itself is not modified — controllers pass these fields
+    // into the existing question-generation context. NOTE the deliberate
+    // naming: this `config.projectMode` is distinct from
+    // `liveState.projectContext`, which is the adaptive engine's live
+    // detection of "the candidate started describing a personal project."
+    projectMode: {
+      projectId:           { type: mongoose.Schema.Types.ObjectId, ref: 'Project', default: null },
+      subMode:             { type: String, enum: ['architecture', 'debugging', 'code_review'], default: 'architecture' },
+      analysisSummary:     { type: String, default: '' },
+      techStack:           { type: [String], default: [] },
+      importantFiles:      { type: [String], default: [] },
+      architectureSummary: { type: String, default: '' },
+    },
   },
   questions: { type: [answerSchema], default: [] },
   currentQuestionIndex: { type: Number, default: 0 },

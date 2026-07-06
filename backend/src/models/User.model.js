@@ -54,6 +54,25 @@ const userSchema = new mongoose.Schema({
   averageScore: { type: Number, default: 0 },
   bestScore: { type: Number, default: 0 },
 
+  // ── Connected accounts ────────────────────────────────────────────────
+  // GitHub is an OPTIONAL linked account, never part of login. Users who
+  // never connect GitHub retain full access to the platform; the only
+  // feature that requires connection is private-repo import.
+  //
+  // `accessTokenEncrypted` holds the OAuth token wrapped by
+  // services/crypto.service.js (AES-256-GCM). It is `select: false` so it
+  // is never returned by default queries, and every user-facing controller
+  // strips it before responding.
+  githubIntegration: {
+    connected:            { type: Boolean, default: false },
+    githubId:             { type: Number,  default: null },
+    login:                { type: String,  default: '' },
+    avatarUrl:            { type: String,  default: '' },
+    accessTokenEncrypted: { type: String,  default: '', select: false },
+    scopes:               { type: [String], default: [] },
+    connectedAt:          { type: Date,    default: null },
+  },
+
   isActive: { type: Boolean, default: true },
   showOnLeaderboard: { type: Boolean, default: true },
   emailVerified: { type: Boolean, default: false },

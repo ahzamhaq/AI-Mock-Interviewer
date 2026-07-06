@@ -1,14 +1,18 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Mic, GitBranch } from 'lucide-react';
 import ActionCard from '../common/ActionCard';
 import SectionHeader from '../common/SectionHeader';
+import { projectsAPI } from '../../services/api';
 
 /**
  * PrimaryActions — "What would you like to do today?" row. Two equally
  * weighted ActionCards routing to General Interview and Project Interview.
- * The Project card carries a Sprint-2 badge (honest signalling) but is fully
- * clickable to the placeholder page.
+ *
+ * The Project card's destination depends on whether the user has any
+ * projects yet: existing users land on the list, new users go straight to
+ * the create flow so their first touch isn't an empty page. Mirrors the
+ * same logic on InterviewsPage.
  */
 const ACTIONS = [
   {
@@ -17,7 +21,7 @@ const ACTIONS = [
     eyebrow: 'interview · general',
     title: 'Start a General Interview',
     description: 'Configure by role, experience, and company. The classic mock flow.',
-    route: '/interview/setup',
+    route: () => '/interview/setup',
   },
   {
     id: 'project',
@@ -25,25 +29,23 @@ const ACTIONS = [
     eyebrow: 'interview · project',
     title: 'Start a Project Interview',
     description: 'Practice grounded in a real repository from your GitHub.',
-    route: '/projects/new',
-    badge: (
-      <span
-        className="font-mono text-2xs uppercase tracking-wide px-1.5 py-0.5"
-        style={{
-          color: '#D29922',
-          background: 'rgba(210,153,34,0.1)',
-          border: '1px solid rgba(210,153,34,0.3)',
-          borderRadius: 4,
-        }}
-      >
-        Sprint 2
-      </span>
-    ),
+    route: ({ hasProjects }) => (hasProjects ? '/projects' : '/projects/new'),
   },
 ];
 
 const PrimaryActions = () => {
   const navigate = useNavigate();
+  const [hasProjects, setHasProjects] = useState(false);
+
+  useEffect(() => {
+    let alive = true;
+    projectsAPI.list()
+      .then((res) => { if (alive) setHasProjects((res.projects || []).length > 0); })
+      .catch(() => { if (alive) setHasProjects(false); });
+    return () => { alive = false; };
+  }, []);
+
+  const context = { hasProjects };
 
   return (
     <div className="mb-4">
@@ -59,8 +61,7 @@ const PrimaryActions = () => {
             eyebrow={a.eyebrow}
             title={a.title}
             description={a.description}
-            onClick={() => navigate(a.route)}
-            badge={a.badge}
+            onClick={() => navigate(a.route(context))}
           />
         ))}
       </div>

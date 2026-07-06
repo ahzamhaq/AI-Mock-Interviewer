@@ -86,4 +86,28 @@ export const adminAPI = {
   toggleUser: (id) => api.patch(`/admin/users/${id}/toggle`),
 };
 
+// Projects (Sprint 2 — Workspace / Repository Analysis)
+// createFromUrl and createFromGithub return { project, analysis } where
+// analysis.status starts as 'processing'. Callers should navigate to the
+// analyzing page and poll getById until status flips to 'ready' or 'failed'.
+export const projectsAPI = {
+  list: () => api.get('/projects'),
+  getById: (id) => api.get(`/projects/${id}`),
+  createFromUrl: (url) => api.post('/projects/from-url', { url }),
+  createFromGithub: (owner, repo) => api.post('/projects/from-github', { owner, repo }),
+  reanalyze: (id) => api.post(`/projects/${id}/reanalyze`),
+  remove: (id) => api.delete(`/projects/${id}`),
+};
+
+// Integrations (Sprint 2 — GitHub as an OPTIONAL linked account, never login)
+// The `authorize` call returns { url }; the caller navigates window.location
+// there. GitHub redirects back to the backend, which finalizes and redirects
+// to /profile?github=connected|error.
+export const integrationsAPI = {
+  githubStatus: () => api.get('/integrations/github/status'),
+  githubAuthorize: () => api.get('/integrations/github/authorize'),
+  githubDisconnect: () => api.delete('/integrations/github'),
+  githubListRepos: (params) => api.get('/integrations/github/repos', { params }),
+};
+
 export default api;
