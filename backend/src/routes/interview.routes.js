@@ -4,6 +4,7 @@ const {
   createInterview, submitAnswer, getNextQuestion, completeInterview,
   getInterview, getInterviewHistory, abandonInterview, generateFollowUp,
   listPersonalities, listRounds, handleNudge, resumeInterview,
+  retryQuestion,
 } = require('../controllers/interview.controller');
 
 const router = express.Router();
@@ -21,6 +22,7 @@ router.post('/:interviewId/nudge', handleNudge);             // silence/thinking
 router.post('/:interviewId/resume', resumeInterview);        // session resume + recap
 router.post('/:interviewId/follow-up/:questionIndex', generateFollowUp); // legacy / manual follow-up
 router.post('/:interviewId/complete', completeInterview);
+router.post('/:id/retry-question', retryQuestion); // create a NEW short interview from one question of an old one
 router.patch('/:id/abandon', abandonInterview);
 
 module.exports = router;

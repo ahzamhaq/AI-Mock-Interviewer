@@ -10,7 +10,7 @@ import Navbar from '../components/layout/Navbar';
 import { Panel, PanelHeader } from '../components/common/Panel';
 import DashboardHero from '../components/dashboard/DashboardHero';
 import PrimaryActions from '../components/dashboard/PrimaryActions';
-import ContinueWorking from '../components/dashboard/ContinueWorking';
+import ContinueLearning from '../components/dashboard/ContinueLearning';
 import RecentInterviews from '../components/dashboard/RecentInterviews';
 import RecentProjects from '../components/dashboard/RecentProjects';
 import AnalyticsPreview from '../components/dashboard/AnalyticsPreview';
@@ -56,8 +56,6 @@ const DashboardPage = () => {
       ? { label: 'Medium · Weak topics', reason: `Target ${weakTopics[0]?.topic || 'weak areas'}` }
       : { label: 'Hard · FAANG-style',   reason: 'You are ready to push' };
 
-  const lastInterview = data?.recentInterviews?.[0] || null;
-
   return (
     <div className="min-h-screen flex flex-col" style={{ background: '#0D1117' }}>
       <Navbar />
@@ -77,10 +75,15 @@ const DashboardPage = () => {
           {/* ── Top · Primary Actions ─────────────────────────────── */}
           <PrimaryActions />
 
-          {/* ── Middle · Continue + Recents ───────────────────────── */}
-          <div className="mb-4">
-            <ContinueWorking lastInterview={lastInterview} />
-          </div>
+          {/* ── Continue Learning (Sprint 3) ─────────────────────────
+              Data-driven rail: Resume in-progress · Retry weak topic ·
+              Continue Project. Hides entirely when the endpoint returns
+              nothing so new users see PrimaryActions unopposed. The Sprint
+              1 ContinueWorking single-card is retired: its "resume" slot
+              is now the first card of this rail. */}
+          <ContinueLearning />
+
+          {/* ── Middle · Recents ──────────────────────────────────── */}
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[1fr_1fr_300px] gap-3 mb-4">
             <RecentInterviews interviews={data?.recentInterviews} />

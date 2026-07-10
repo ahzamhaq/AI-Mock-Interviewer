@@ -66,6 +66,9 @@ export const interviewAPI = {
   getRounds: () => api.get('/interviews/rounds'),
   nudge: (interviewId, data) => api.post(`/interviews/${interviewId}/nudge`, data),
   resume: (interviewId) => api.post(`/interviews/${interviewId}/resume`),
+  // Sprint 3 — create a NEW short interview seeded from one question of an old one.
+  retryQuestion: (interviewId, questionIndex) =>
+    api.post(`/interviews/${interviewId}/retry-question`, { questionIndex }),
 };
 
 // TTS (server-side ElevenLabs; falls back to browser SpeechSynthesis automatically)
@@ -97,6 +100,11 @@ export const projectsAPI = {
   createFromGithub: (owner, repo) => api.post('/projects/from-github', { owner, repo }),
   reanalyze: (id) => api.post(`/projects/${id}/reanalyze`),
   remove: (id) => api.delete(`/projects/${id}`),
+};
+
+// Recommendations (Sprint 3 — powers the Dashboard "Continue Learning" rail)
+export const recommendationsAPI = {
+  list: () => api.get('/recommendations'),
 };
 
 // Integrations (Sprint 2 — GitHub as an OPTIONAL linked account, never login)

@@ -9,6 +9,7 @@ import { userAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import Navbar from '../components/layout/Navbar';
 import GitHubConnectionCard from '../components/settings/GitHubConnectionCard';
+import ProgressTab from '../components/profile/ProgressTab';
 import toast from 'react-hot-toast';
 
 const ROLES = [
@@ -131,11 +132,12 @@ const ProfilePage = () => {
           </div>
         </motion.div>
 
-        {/* Tabs */}
-        <div className="flex gap-2 mb-6 glass rounded-2xl p-1">
-          {['profile', 'security', 'resume', 'connections', 'privacy'].map(t => (
+        {/* Tabs — horizontal scroll below `sm` so 6 tabs stay readable on
+            narrow screens instead of squashing to unreadable widths. */}
+        <div className="flex gap-2 mb-6 glass rounded-2xl p-1 overflow-x-auto no-scrollbar">
+          {['profile', 'progress', 'security', 'resume', 'connections', 'privacy'].map(t => (
             <button key={t}
-              className={`flex-1 py-2.5 rounded-xl text-sm font-medium capitalize transition-all ${tab === t ? 'bg-primary-600 text-white' : 'text-white/50 hover:text-white'}`}
+              className={`flex-1 sm:flex-1 min-w-[90px] py-2.5 rounded-xl text-sm font-medium capitalize transition-all whitespace-nowrap ${tab === t ? 'bg-primary-600 text-white' : 'text-white/50 hover:text-white'}`}
               onClick={() => setTab(t)}
             >
               {t}
@@ -282,6 +284,8 @@ const ProfilePage = () => {
               </button>
             </div>
           )}
+
+          {tab === 'progress' && <ProgressTab user={user} />}
 
           {tab === 'connections' && <GitHubConnectionCard />}
 

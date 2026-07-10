@@ -1,9 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { motion } from 'framer-motion';
 import {
   GitBranch, Github, Star, Lock, ExternalLink, Play, RefreshCw,
-  Loader2, AlertTriangle, ChevronRight, ArrowLeft,
+  Loader2, AlertTriangle, ArrowLeft,
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import Navbar from '../components/layout/Navbar';
@@ -14,6 +13,8 @@ import WorkspaceTabs from '../components/projects/WorkspaceTabs';
 import TechStackChips from '../components/projects/TechStackChips';
 import KeyFilesList from '../components/projects/KeyFilesList';
 import ArchitectureSummary from '../components/projects/ArchitectureSummary';
+import FilesTab from '../components/projects/FilesTab';
+import InterviewsTab from '../components/projects/InterviewsTab';
 import { projectsAPI, interviewAPI } from '../services/api';
 
 /**
@@ -31,13 +32,6 @@ import { projectsAPI, interviewAPI } from '../services/api';
  * "Start Project Interview" routes to the interview setup page for this
  * project — that page is built in Commit 12.
  */
-
-const SCORE_COLOR = (s) => {
-  if (!s && s !== 0) return '#6B7280';
-  if (s >= 8) return '#3FB950';
-  if (s >= 6) return '#D29922';
-  return '#F85149';
-};
 
 const WorkspacePage = () => {
   const { id } = useParams();
@@ -101,10 +95,12 @@ const WorkspacePage = () => {
     }
   };
 
-  // Sprint 2 tabs — only Overview is real. When later sprints ship Chat /
-  // Health / Diagram, they are added here (never rendered as ghost tabs).
+  // Sprint 3 tabs — Overview + Files + Interviews. Chat / Health / Diagram
+  // remain deferred until later sprints; ghost tabs are still forbidden.
   const tabs = useMemo(() => ([
-    { id: 'overview', label: 'Overview' },
+    { id: 'overview',   label: 'Overview' },
+    { id: 'files',      label: 'Files' },
+    { id: 'interviews', label: 'Interviews' },
   ]), []);
 
   const repoLabel = project ? `${project.repoOwner}/${project.repoName}` : '';
@@ -316,71 +312,38 @@ const WorkspacePage = () => {
                       </div>
                     </Panel>
 
-                    <Panel>
-                      <PanelHeader
-                        label="project interviews"
-                        action={
-                          <span className="font-mono text-2xs" style={{ color: '#6B7280' }}>
-                            {sessions.length}
-                          </span>
-                        }
-                      />
-                      {!sessionsLoaded ? (
-                        <div className="flex items-center justify-center py-6">
-                          <Loader2 size={12} className="animate-spin" style={{ color: '#6B7280' }} />
-                        </div>
-                      ) : sessions.length === 0 ? (
-                        <div className="p-3">
-                          <p className="text-xs mb-3" style={{ color: '#6B7280' }}>
-                            No interviews yet for this project.
-                          </p>
-                          <button
-                            type="button"
-                            onClick={() => navigate(`/projects/${id}/interview/setup`)}
-                            disabled={analysis?.status !== 'ready'}
-                            className="btn-accent w-full flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs"
-                          >
-                            <Play size={11} /> Start first interview
-                          </button>
-                        </div>
-                      ) : (
-                        <div>
-                          {sessions.slice(0, 8).map((s, i) => (
-                            <motion.button
-                              key={s._id}
-                              onClick={() => navigate(`/interview/${s._id}/results`)}
-                              initial={{ opacity: 0 }}
-                              animate={{ opacity: 1 }}
-                              transition={{ delay: i * 0.02 }}
-                              className="w-full flex items-start gap-2 px-3 py-2 text-left transition-colors"
-                              style={{ borderTop: '1px solid #161B22', background: 'transparent' }}
-                              onMouseEnter={(e) => (e.currentTarget.style.background = '#161B22')}
-                              onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
-                            >
-                              <span
-                                className="font-mono text-2xs flex-shrink-0 mt-0.5"
-                                style={{ color: SCORE_COLOR(s.results?.overallScore), width: 24 }}
-                              >
-                                {s.results?.overallScore?.toFixed(1) ?? '—'}
-                              </span>
-                              <div className="flex-1 min-w-0">
-                                <div className="text-xs truncate" style={{ color: '#F0F6FC' }}>
-                                  {s.config?.projectMode?.subMode?.replace('_', ' ') || 'project interview'}
-                                </div>
-                                <div className="font-mono text-2xs mt-0.5" style={{ color: '#484F58' }}>
-                                  {s.completedAt
-                                    ? formatDistanceToNow(new Date(s.completedAt), { addSuffix: true })
-                                    : '—'}
-                                </div>
-                              </div>
-                              <ChevronRight size={11} style={{ color: '#30363D', flexShrink: 0, marginTop: 2 }} />
-                            </motion.button>
-                          ))}
-                        </div>
-                      )}
-                    </Panel>
+                    {/* The past-interviews list is now the Interviews tab
+                        (Sprint 3). Overview keeps only tech stack in the
+                        right rail so it stays focused on "what is this
+                        project?" instead of duplicating tab content. */}
                   </div>
                 </div>
+              )}
+
+              {/* ── Files tab (Sprint 3) ─────────────────────────────
+                  Read-only surface for every file the analysis captured.
+                  Filterable; rows link to github.com. No in-app viewer,
+                  no syntax highlighting — see FilesTab for the reasoning. */}
+              {activeTab === 'files' && (
+                <div className="mt-4">
+                  <FilesTab
+                    files={analysis?.importantFiles || []}
+                    project={project}
+                  />
+                </div>
+              )}
+
+              {/* ── Interviews tab (Sprint 3) ───────────────────────
+                  Full-width past-project-interviews list. Promoted from
+                  Overview's right rail so it can breathe. Overview no
+                  longer shows this data — one source of truth. */}
+              {activeTab === 'interviews' && (
+                <InterviewsTab
+                  sessions={sessions}
+                  sessionsLoaded={sessionsLoaded}
+                  analysisReady={analysis?.status === 'ready'}
+                  projectId={id}
+                />
               )}
             </>
           )}

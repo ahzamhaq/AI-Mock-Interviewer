@@ -7,6 +7,9 @@ import {
 } from 'lucide-react';
 import { interviewAPI } from '../services/api';
 import Navbar from '../components/layout/Navbar';
+import ResultsHeader from '../components/results/ResultsHeader';
+import VerdictStrip from '../components/results/VerdictStrip';
+import toast from 'react-hot-toast';
 import { RadarChart, Radar, PolarGrid, PolarAngleAxis, ResponsiveContainer } from 'recharts';
 
 const GRADE_COLORS = {
@@ -45,9 +48,11 @@ const CircularScore = ({ score, max = 10, label, size = 120 }) => {
   );
 };
 
-const QuestionReview = ({ question, index }) => {
+const QuestionReview = ({ question, index, onRetry, retrying, retryingIndex }) => {
   const [expanded, setExpanded] = useState(false);
   const fb = question.aiFeedback;
+  const canRetry = !question.skipped && !!question.userAnswer;
+  const isThisRetryLoading = retrying && retryingIndex === index;
 
   return (
     <div className="glass rounded-2xl overflow-hidden">
@@ -81,7 +86,20 @@ const QuestionReview = ({ question, index }) => {
             {question.userAnswer && (
               <div>
                 <p className="text-xs font-medium text-white/40 mb-2 flex items-center gap-1"><MessageSquare size={12} /> YOUR ANSWER</p>
-                <p className="text-sm text-white/60 bg-white/3 rounded-xl p-3">{question.userAnswer}</p>
+                <p className="text-sm text-white/60 bg-white/3 rounded-xl p-3 whitespace-pre-line">{question.userAnswer}</p>
+              </div>
+            )}
+            {/* Raw voice-to-text transcript, shown only when it materially
+                differs from the cleaned userAnswer. Helps users see filler
+                words and pacing that the polished answer hides. */}
+            {question.transcript
+              && question.transcript.trim()
+              && question.transcript.trim() !== (question.userAnswer || '').trim() && (
+              <div>
+                <p className="text-xs font-medium text-white/40 mb-2">RAW TRANSCRIPT</p>
+                <p className="font-mono text-xs text-white/40 bg-white/3 rounded-xl p-3 whitespace-pre-line">
+                  {question.transcript}
+                </p>
               </div>
             )}
             {fb?.summary && <p className="text-sm text-white/70 italic">"{fb.summary}"</p>}
@@ -130,6 +148,30 @@ const QuestionReview = ({ question, index }) => {
                 )}
               </div>
             )}
+
+            {/* Per-question retry — creates a new short interview seeded from
+                this question's topic. Only offered for real attempts; a
+                skipped or empty question isn't a fair retry target. */}
+            {canRetry && onRetry && (
+              <div className="pt-2 border-t border-white/5">
+                <button
+                  type="button"
+                  onClick={() => onRetry(index)}
+                  disabled={retrying}
+                  className="btn-accent flex items-center gap-1.5 px-3 py-1.5 text-xs"
+                >
+                  {isThisRetryLoading ? (
+                    <>
+                      <RefreshCw size={11} className="animate-spin" /> Starting…
+                    </>
+                  ) : (
+                    <>
+                      <RefreshCw size={11} /> Retry this question
+                    </>
+                  )}
+                </button>
+              </div>
+            )}
           </div>
         </motion.div>
       )}
@@ -142,6 +184,8 @@ const ResultsPage = () => {
   const navigate = useNavigate();
   const [interview, setInterview] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [retrying, setRetrying] = useState(false);
+  const [retryingIndex, setRetryingIndex] = useState(null);
 
   useEffect(() => {
     interviewAPI.getById(id)
@@ -149,6 +193,38 @@ const ResultsPage = () => {
       .catch(() => navigate('/dashboard'))
       .finally(() => setLoading(false));
   }, [id]);
+
+  // Weakest ANSWERED question — the one the Verdict strip's "Retry" button
+  // targets. Skipped and unanswered questions are excluded so the retry
+  // lands on a real attempt the user can learn from.
+  const weakestAnsweredIndex = React.useMemo(() => {
+    if (!interview) return null;
+    let best = null;
+    let bestScore = Infinity;
+    interview.questions.forEach((q, i) => {
+      if (q.skipped) return;
+      if (!q.userAnswer) return;
+      const s = q.aiFeedback?.score ?? Infinity;
+      if (s < bestScore) { bestScore = s; best = i; }
+    });
+    return best;
+  }, [interview]);
+
+  const retryQuestionAt = async (questionIndex) => {
+    if (retrying || questionIndex == null) return;
+    setRetrying(true);
+    setRetryingIndex(questionIndex);
+    try {
+      const res = await interviewAPI.retryQuestion(id, questionIndex);
+      navigate(`/interview/${res.interview.id}`, {
+        state: { greeting: res.greeting || '' },
+      });
+    } catch (err) {
+      toast.error(err.message || 'Failed to start retry');
+      setRetrying(false);
+      setRetryingIndex(null);
+    }
+  };
 
   if (loading) {
     return (
@@ -188,62 +264,26 @@ const ResultsPage = () => {
       <Navbar />
       <main className="max-w-4xl mx-auto px-4 pt-24 pb-16">
 
-        {/* Hero result */}
-        <motion.div
-          className="glass rounded-3xl p-8 mb-8 text-center relative overflow-hidden"
-          initial={{ opacity: 0, scale: 0.97 }}
-          animate={{ opacity: 1, scale: 1 }}
-        >
-          <div className="absolute inset-0 bg-gradient-to-br from-primary-600/5 to-accent-600/5" />
-          <div className="relative">
-            <motion.div
-              className="text-6xl mb-4"
-              initial={{ scale: 0, rotate: -20 }}
-              animate={{ scale: 1, rotate: 0 }}
-              transition={{ type: 'spring', delay: 0.2 }}
-            >
-              {getResultEmoji()}
-            </motion.div>
-            <h1 className="text-3xl font-display font-bold mb-2">
-              {answeredCount === 0 ? 'No Answers Submitted' : 'Interview Complete!'}
-            </h1>
-            <p className="text-white/50 mb-6">{interview.title}</p>
+        {/* ── Tier 1 · Hero ─────────────────────────────────────────────
+            Extracted to ResultsHeader in Sprint 3 (Commit 7). Visual
+            unchanged; adds the "Retried from …" chip when applicable. */}
+        <ResultsHeader
+          interview={interview}
+          emoji={getResultEmoji()}
+          gradeColorClass={GRADE_COLORS[results.grade] || 'text-white'}
+        />
 
-            <div className="flex items-center justify-center gap-3 mb-6">
-              <span className={`text-6xl font-display font-bold ${GRADE_COLORS[results.grade] || 'text-white'}`}>
-                {results.grade}
-              </span>
-              <div className="text-left">
-                <p className="text-4xl font-bold">{results.overallScore}/10</p>
-                <p className="text-white/40 text-sm">{results.recommendation || 'Overall Score'}</p>
-              </div>
-            </div>
-
-            {/* Natural closing line — adaptive interviews only. Sits above the
-                analytical feedback so the conversation wraps up like an interview,
-                not a report card. */}
-            {results.closing && (
-              <p
-                className="text-white/70 text-sm italic max-w-xl mx-auto mb-4 leading-relaxed"
-                style={{ borderLeft: '2px solid rgba(88,166,255,0.4)', paddingLeft: 12 }}
-              >
-                {results.closing}
-              </p>
-            )}
-
-            {results.overallFeedback && (
-              <p className="text-white/60 text-sm max-w-xl mx-auto bg-white/3 rounded-xl p-4">
-                {results.overallFeedback}
-              </p>
-            )}
-
-            <div className="flex items-center justify-center gap-6 mt-6 text-sm text-white/40">
-              <span className="flex items-center gap-1"><Mic size={14} /> {questions.length} questions</span>
-              <span className="flex items-center gap-1"><Clock size={14} /> {Math.floor(duration / 60)}m {duration % 60}s</span>
-              <span className="flex items-center gap-1"><Star size={14} /> {results.totalFillerWords} filler words</span>
-            </div>
-          </div>
-        </motion.div>
+        {/* ── Tier 1 · Verdict strip ────────────────────────────────────
+            The fast-scan answer to "did I do well? what should I do next?"
+            Everything below the fold remains for users who want detail. */}
+        <VerdictStrip
+          strengths={results.strengths}
+          weaknesses={results.weaknesses}
+          weakestIndex={weakestAnsweredIndex}
+          onRetryWeakest={() => retryQuestionAt(weakestAnsweredIndex)}
+          onPracticeAgain={() => navigate('/interviews')}
+          busy={retrying}
+        />
 
         {/* Score breakdown */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
@@ -347,13 +387,22 @@ const ResultsPage = () => {
             <Zap size={18} className="text-primary-400" /> Question-by-Question Review
           </h3>
           <div className="space-y-3">
-            {questions.map((q, i) => <QuestionReview key={i} question={q} index={i} />)}
+            {questions.map((q, i) => (
+              <QuestionReview
+                key={i}
+                question={q}
+                index={i}
+                onRetry={retryQuestionAt}
+                retrying={retrying}
+                retryingIndex={retryingIndex}
+              />
+            ))}
           </div>
         </div>
 
         {/* Actions */}
         <div className="flex flex-col sm:flex-row gap-3">
-          <Link to="/interview/setup" className="flex-1">
+          <Link to="/interviews" className="flex-1">
             <motion.button className="btn-primary w-full flex items-center justify-center gap-2 py-4"
               whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
               <RefreshCw size={18} /> Practice Again

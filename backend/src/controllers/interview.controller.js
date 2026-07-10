@@ -224,11 +224,18 @@ const createInterview = async (req, res, next) => {
       ? `${projectMode._repoLabel} · ${projectMode.subMode.replace('_', ' ')}`
       : `${role.replace(/_/g, ' ')} - ${interviewType} Interview`;
 
+    // Retry lineage — set only when the request is an internal retry call
+    // (see retryQuestion). Never accepted from external request bodies; the
+    // field name is intentionally underscored and set by the retry handler
+    // before delegating here.
+    const retryOf = req._internalRetryOf || undefined;
+
     // Create the interview document with the blueprint + initial liveState
     const interview = await Interview.create({
       userId: req.user._id,
       title,
       mode: projectMode ? 'project' : 'general',
+      retryOf,
       config: {
         role, experienceLevel, companyType, targetCompany, interviewType,
         difficulty, totalQuestions: blueprint.totalPlanned, jobDescription, useResume,
@@ -893,8 +900,80 @@ const resumeInterview = async (req, res, next) => {
   }
 };
 
+// ── Retry a question (Sprint 3) ───────────────────────────────────────────────
+//
+// POST /api/interviews/:id/retry-question  { questionIndex }
+//
+// Creates a NEW short interview (3 questions) that mirrors the parent's
+// role/experience/company/persona but seeds the blueprint on the target
+// question's topic. Past scores are preserved — retries produce a new
+// interview so analytics, weak-topic tracking, and streak logic stay
+// consistent. The `retryOf` pointer lets the ResultsPage show "Retried
+// from …" and lets future analytics correlate parent ↔ retry outcomes.
+//
+// Implementation: build a fresh payload matching the shape createInterview
+// accepts, mutate req.body + req._internalRetryOf, and delegate to
+// createInterview so we reuse the full engine wiring (blueprint, first
+// question, greeting, memory writes) instead of duplicating 150 lines.
+const retryQuestion = async (req, res, next) => {
+  try {
+    const parentId = req.params.id;
+    const { questionIndex } = req.body || {};
+    const idx = Number(questionIndex);
+
+    if (!parentId || Number.isNaN(idx) || idx < 0) {
+      return res.status(400).json({ success: false, error: 'questionIndex is required' });
+    }
+
+    const parent = await Interview.findOne({ _id: parentId, userId: req.user._id });
+    if (!parent) return res.status(404).json({ success: false, error: 'Interview not found' });
+
+    const q = parent.questions?.[idx];
+    if (!q) return res.status(400).json({ success: false, error: 'Question not found on that interview' });
+
+    // Retry difficulty: scale down when the parent question was scored low
+    // so users get a fair second attempt, not the same wall.
+    const parentScore = q.aiFeedback?.score ?? 0;
+    const parentDifficulty = q.difficultyAtAsk || parent.config.difficulty || 'medium';
+    const difficulty = parentScore > 0 && parentScore < 5
+      ? 'easy'
+      : parentDifficulty;
+
+    // Build the createInterview payload from the parent's context.
+    const payload = {
+      role: parent.config.role,
+      experienceLevel: parent.config.experienceLevel,
+      companyType: parent.config.companyType || 'any',
+      targetCompany: parent.config.targetCompany || '',
+      interviewType: q.questionType || parent.config.interviewType || 'technical',
+      difficulty,
+      totalQuestions: 3,
+      jobDescription: parent.config.jobDescription || '',
+      useResume: false,
+      lengthIntent: 'depth',
+      personalityId: parent.personalityId || '',
+      pressure: parent.pressure || 'standard',
+      round: parent.round || 'general',
+    };
+
+    // Overwrite req.body so the shared handler sees our payload, and stash
+    // the retry pointer on `req` where createInterview will read it.
+    req.body = payload;
+    req._internalRetryOf = {
+      interviewId: parent._id,
+      questionIndex: idx,
+      topic: q.topic || '',
+    };
+
+    return createInterview(req, res, next);
+  } catch (err) {
+    next(err);
+  }
+};
+
 module.exports = {
   createInterview, submitAnswer, getNextQuestion, completeInterview,
   getInterview, getInterviewHistory, abandonInterview, generateFollowUp,
   listPersonalities, listRounds, handleNudge, resumeInterview,
+  retryQuestion,
 };

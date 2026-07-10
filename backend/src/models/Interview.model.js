@@ -122,6 +122,21 @@ const interviewSchema = new mongoose.Schema({
     default: 'general',
     index: true,
   },
+
+  // ── Retry lineage (Sprint 3) ──────────────────────────────────────────
+  // Populated when this interview was created by clicking "Retry this
+  // question" on a past ResultsPage. Snapshots the parent interview id,
+  // the question index in the parent, and the topic so the Results page
+  // can render "Retried from …" without an extra join.
+  //
+  // Kept as an optional sub-doc so legacy interviews are untouched. The
+  // interview lifecycle (creation, engine flow, scoring) is unchanged —
+  // retries look like normal short interviews with this pointer set.
+  retryOf: {
+    interviewId:   { type: mongoose.Schema.Types.ObjectId, ref: 'Interview', default: null },
+    questionIndex: { type: Number, default: null },
+    topic:         { type: String, default: '' },
+  },
   config: {
     role: {
       type: String,

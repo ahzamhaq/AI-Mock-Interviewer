@@ -82,6 +82,14 @@ function runAnalysisInBackground({ analysisId, projectId, owner, repo, defaultBr
         { $set: { latestAnalysisId: analysisId } },
       );
     } catch (err) {
+      // Full logging so we can actually see what's throwing. The frontend
+      // gets the compact message; the server console gets the stack.
+      console.error('[analysis:failed]', {
+        owner, repo,
+        message: err?.message,
+        name: err?.name,
+        stack: err?.stack?.split('\n').slice(0, 6).join('\n'),
+      });
       const message = (err && err.message) ? String(err.message).slice(0, 500) : 'Unknown analysis error';
       await RepositoryAnalysis.updateOne(
         { _id: analysisId },

@@ -15,6 +15,7 @@ const questionRoutes = require('./routes/question.routes');
 const ttsRoutes = require('./routes/tts.routes');
 const projectRoutes = require('./routes/project.routes');
 const integrationsRoutes = require('./routes/integrations.routes');
+const recommendationsRoutes = require('./routes/recommendations.routes');
 
 const errorHandler = require('./middleware/errorHandler');
 const { notFound } = require('./middleware/notFound');
@@ -88,6 +89,7 @@ app.use('/api/questions', questionRoutes);
 app.use('/api/tts', ttsRoutes);
 app.use('/api/projects', projectRoutes);
 app.use('/api/integrations', integrationsRoutes);
+app.use('/api/recommendations', recommendationsRoutes);
 
 // Error handling
 app.use(notFound);
