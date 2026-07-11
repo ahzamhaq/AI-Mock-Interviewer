@@ -1,352 +1,425 @@
-# 🎙️ InterviewAI — Voice-Based AI Mock Interviewer
+<div align="center">
 
-A **production-ready, full-stack AI mock interview platform** that simulates real technical and HR interviews with voice interaction, AI-powered feedback, and detailed analytics.
+# 🎙️ InterviewAI
 
-> Built with React, Node.js, MongoDB, Gemini/OpenAI API, and Web Speech APIs. Portfolio-grade quality.
+### AI‑Powered Interview Preparation Platform
+
+Practice real interviews. Get grounded in your own code. Watch yourself improve.
+
+[![React](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=white)](https://react.dev)
+[![Vite](https://img.shields.io/badge/Vite-5-646CFF?logo=vite&logoColor=white)](https://vitejs.dev)
+[![Node.js](https://img.shields.io/badge/Node.js-18%2B-339933?logo=node.js&logoColor=white)](https://nodejs.org)
+[![Express](https://img.shields.io/badge/Express-4-000000?logo=express&logoColor=white)](https://expressjs.com)
+[![MongoDB](https://img.shields.io/badge/MongoDB-6-47A248?logo=mongodb&logoColor=white)](https://www.mongodb.com)
+[![Tailwind](https://img.shields.io/badge/Tailwind-3-06B6D4?logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
+[![AI](https://img.shields.io/badge/AI-Gemini%20%C2%B7%20Groq%20%C2%B7%20OpenRouter-8A2BE2)](#-ai-runtime)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Status](https://img.shields.io/badge/Version-1.0.0-brightgreen)](#-roadmap)
+[![PRs](https://img.shields.io/badge/PRs-welcome-orange.svg)](#-contributing)
+
+</div>
+
+---
+
+## 📖 Overview
+
+**InterviewAI** is a full‑stack platform that turns interview prep from a solo grind into a personalized, measurable practice loop. It combines seven capabilities most tools ship separately:
+
+- 🎤 **AI Mock Interviews** — voice or text, adaptive question generation, multiple interviewer personalities
+- 📄 **Resume Intelligence** — upload a resume, get questions tailored to *your* experience
+- 🐙 **Project Intelligence** — connect a GitHub repo, get interviews grounded in *your* code
+- 🧠 **Personalized Feedback** — per‑question critique with strengths, weaknesses, and a model answer
+- 🧭 **AI Coach** — a generated roadmap of what to practice next, refreshed on demand
+- 📊 **Analytics** — skill radar, weak‑topic tracking, per‑type breakdown, streaks
+- 🏆 **Progress Tracking** — retryable questions, achievements, streaks, and interview replay
+
+### The problem it solves
+
+Interview prep is fragmented. LeetCode teaches DSA. Mock services teach behavioral. Career coaches cost money. Nothing ties your **projects**, your **weak spots**, and your **feedback** together into *"what should I practice next?"* — InterviewAI does.
+
+<div align="center">
+
+**Practice → Feedback → Coach recommends → Retry → Watch your radar move.**
+
+</div>
 
 ---
 
 ## ✨ Features
 
-### 🎤 Voice Interview System
-- AI speaks questions using **Web SpeechSynthesis API**
-- User answers by **voice (SpeechRecognition)** or typed text
-- Live real-time transcript while speaking
-- Automatic voice metrics collection
+### 🎤 AI Interviews
+- Voice-first interview experience (Web Speech + ElevenLabs TTS fallback)
+- Adaptive engine that reads your answer and decides the next question live
+- Follow‑up chains, topic pivots, difficulty ramping
+- Multiple interviewer personalities (friendly PM, rigorous FAANG engineer, hiring manager, etc.)
+- Pressure levels: relaxed / standard / intense
+- Company‑specific tuning (FAANG, product‑based, startup, service‑based)
+- 6 roles: Frontend / Backend / Full Stack / SDE / Data Analyst / HR
+- Silence handling and conversational reactions
 
-### 🤖 Advanced AI Feedback Engine
-- **Technical correctness** scoring
-- **Communication clarity** analysis
-- **Confidence level** estimation
-- **Completeness** and **grammar** scoring
-- Personalized **model answers**
-- **Follow-up questions** generation
+### 📄 Resume Intelligence
+- PDF / TXT upload with resume parsing
+- Personalized questions drawn from *your* resume content
+- Optional per‑interview toggle — use it when it helps, skip when it doesn't
 
-### 📊 Voice Analytics
-- **Filler word detection** (umm, uh, like, basically...)
-- **Speaking speed** measurement (WPM)
-- **Pace analysis** (too fast / ideal / too slow)
-- Confidence percentage
+### 🐙 Project Intelligence (GitHub)
+- Paste any public repo URL, **or** connect GitHub OAuth for private repos
+- Heuristic repo analysis (top 40 files / 150 KB, quality over completeness)
+- Auto‑detected **tech stack**, **architecture summary**, and **key files**
+- Project interviews: *Architecture*, *Debugging*, *Code Review* sub‑modes
+- Every project interview is grounded in a snapshot of your repo — reproducible scoring
 
-### 🎯 Customizable Sessions
-- Role selection: Frontend/Backend/Full Stack/SDE/Data Analyst/HR
-- Experience level: Fresher / 1–2 Years / 3+ Years
-- Company type: FAANG / Product-Based / Startup / Service-Based
-- Target company: Google, Amazon, Microsoft, etc.
-- Interview type: Technical / HR / Behavioral / System Design / Mixed
-- Difficulty: Easy / Medium / Hard
-- 3–15 questions per session
-- Job description + Resume-based questions
+### 🧠 AI Coach
+- Personalized 3–5 focus areas generated from your data
+- Each focus area carries actionable next‑steps (Practice, Retry, Review, Continue)
+- 24h server‑side cache with manual refresh
+- Preview card on the Dashboard for the top focus of the day
 
-### 📈 Analytics Dashboard
-- Score progression charts
-- Skill radar (Technical, Communication, Confidence, Grammar, Completeness)
-- Question-type performance breakdown
-- Filler word frequency analysis
-- WPM trend charts
-- Weekly practice consistency
+### 📊 Analytics & Progress
+- **Skill Radar** — Technical, Communication, Confidence, Completeness, Grammar
+- **Weak Topic Detection** — tracks per‑topic averages across all sessions
+- **Interview History** — filterable, badged (general vs project)
+- **Score Trends** — overall + per‑type averages
+- **Streaks** — current, longest, last active
 
-### 🏆 Gamification
-- Daily practice streaks
-- Points system
-- Leaderboard with medals (🥇🥈🥉)
-- Best score tracking
+### 🏆 Achievements & Retry
+- Ten seeded achievements across Getting Started / Consistency / Mastery
+- Unlock toasts on interview completion + project creation
+- "Retry this question" per past question — creates a new short interview seeded from the same topic
+- Retry lineage preserved so results replay as *"Retried from …"*
 
-### 🔐 Authentication
-- JWT-based signup/login
-- Protected routes
-- Admin panel with user management
+### 🗂️ Workspace
+- Per‑project detail view with Overview, Files, and Interviews tabs
+- Tech stack chips, architecture summary, key files list
+- Re‑analyze button for updated repos
+- Every past interview for the project one click away
+
+### 🔎 Global Command Palette
+- ⌘K / Ctrl+K opens a fuzzy‑match palette anywhere in the app
+- Searches sessions, projects, help entries, and nav
+- Quick‑start actions (Backend interview, System Design, etc.)
+- Contextually gated — only shows actions you can actually take
 
 ---
 
 ## 🛠️ Tech Stack
 
 | Layer | Technology |
-|-------|-----------|
-| Frontend | React 18, Vite, Tailwind CSS, Framer Motion |
-| Charts | Recharts |
-| Backend | Node.js, Express.js |
-| Database | MongoDB with Mongoose |
-| AI | Google Gemini 1.5 Flash / OpenAI GPT-4o-mini |
-| Voice Input | Web SpeechRecognition API |
-| Voice Output | Web SpeechSynthesis API |
-| Auth | JWT |
-| File Upload | Multer |
+|---|---|
+| **Frontend** | React 18 · Vite 5 · React Router v6 · Tailwind CSS 3 · Framer Motion · Recharts · Lucide |
+| **Backend** | Node.js 18+ · Express 4 · Mongoose 8 |
+| **Database** | MongoDB (Atlas or self‑hosted) |
+| **AI Runtime** | Gemini · Groq · OpenRouter (multi‑provider fallback) |
+| **Voice** | Web SpeechSynthesis · SpeechRecognition · ElevenLabs (optional) |
+| **Auth** | JWT · Google OAuth 2.0 · GitHub OAuth (linked account, not login) |
+| **Security** | Helmet · bcryptjs · express‑rate‑limit · AES‑256‑GCM (token encryption) |
+| **Deploy‑Ready** | Vercel · Render · any Node host |
+| **Dev Tools** | ESLint · Nodemon · Jest |
 
 ---
 
-## 🚀 Quick Start
+## 🏗️ Architecture
 
-### Prerequisites
-- Node.js 18+
-- MongoDB Atlas account (free tier works)
-- Google Gemini API key (free) OR OpenAI API key
+```
+                     ┌───────────────────────────────┐
+                     │        React SPA (Vite)       │
+                     │  Dashboard · Interviews ·     │
+                     │  Projects · Coach · ⌘K palette│
+                     └──────────────┬────────────────┘
+                                    │  JWT
+                                    ▼
+┌─────────────────┐         ┌───────────────────────┐         ┌─────────────────┐
+│   GitHub API    │◄────────┤   Express API (Node)  │────────►│  AI Providers   │
+│  OAuth + Repos  │         │  Auth · Interviews ·  │         │ Gemini · Groq · │
+└─────────────────┘         │  Projects · Coach ·   │         │ OpenRouter      │
+                            │  Achievements         │         └─────────────────┘
+                                    │
+                                    ▼
+                            ┌───────────────┐
+                            │    MongoDB    │
+                            │ Users · Runs ·│
+                            │ Projects ·    │
+                            │ WeakTopics ·  │
+                            │ Analyses      │
+                            └───────────────┘
+```
+
+### How an interview is generated
+
+1. **Blueprint** — the engine plans a topic mix from the user's role, company, and past weak topics
+2. **First question** — the AI service composes it with persona + pressure + round hints
+3. **Answer** — user replies via voice or text; voice metrics extracted (WPM, fillers, pace)
+4. **Evaluation** — LLM scores relevance, accuracy, depth, communication, and extracts concepts
+5. **Next question** — the adaptive engine reads live state (last score, weak/strong topics, pacing) and picks: follow‑up, revisit weak area, pivot topic, or memorized probe
+6. **Completion** — overall feedback + closing line + achievement evaluation + WeakTopic update
+
+### How a project analysis works
+
+1. Repo tree fetched via GitHub API (authenticated when possible for higher rate limits)
+2. Heuristic file selection — priority filenames (README, manifests, configs) + priority folders (`src/`, `app/`, `lib/`, `routes/`, `hooks/`)
+3. Hard budget: **40 files or 150 KB**, whichever hits first
+4. Single LLM call returns `{ summary, techStack, importantFiles, architectureSummary }`
+5. Persisted to a separate `RepositoryAnalysis` document so re‑analyzing doesn't clobber history
 
 ---
 
-### 1. Clone & Install
+## 📸 Screenshots
 
-```bash
-# Clone the repo
-git clone https://github.com/yourusername/ai-mock-interviewer.git
-cd ai-mock-interviewer
+<details>
+<summary><b>Click to view screenshots</b></summary>
 
-# Install backend dependencies
-cd backend
-npm install
+### Dashboard
+> Action‑oriented home. *"What would you like to do today?"* + Coach preview + Continue Learning rail + recent activity.
 
-# Install frontend dependencies
-cd ../frontend
-npm install
-```
+`![Dashboard](docs/screenshots/dashboard.png)`
 
----
+### Live Interview
+> Voice‑first, minimal chrome, real‑time transcript, personality‑driven interviewer.
 
-### 2. Configure Environment Variables
+`![Interview](docs/screenshots/interview.png)`
 
-**Backend** — Copy `.env.example` to `.env`:
-```bash
-cd backend
-cp .env.example .env
-```
+### Workspace
+> Per‑project overview with tech stack, architecture summary, and key files.
 
-Fill in:
-```env
-PORT=5000
-NODE_ENV=development
-MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/ai-mock-interviewer
-JWT_SECRET=your_super_secret_key_min_32_characters_here
-JWT_EXPIRES_IN=7d
+`![Workspace](docs/screenshots/workspace.png)`
 
-# Choose AI provider
-AI_PROVIDER=gemini
+### AI Coach
+> Generated focus areas with actionable next steps.
 
-# Gemini (recommended — free tier available)
-GEMINI_API_KEY=your_gemini_api_key_here
+`![Coach](docs/screenshots/coach.png)`
 
-# OR OpenAI
-# AI_PROVIDER=openai
-# OPENAI_API_KEY=sk-your-openai-key
+### Analytics
+> Skill radar, weak topics, per‑type averages, streaks.
 
-FRONTEND_URL=http://localhost:5173
-```
+`![Analytics](docs/screenshots/analytics.png)`
 
-**Frontend** — Copy `.env.example` to `.env`:
-```bash
-cd frontend
-cp .env.example .env
-```
+### Profile — Achievements
+> Ten seeded badges across three categories, unlock timestamps.
 
-```env
-VITE_API_URL=http://localhost:5000/api
-```
+`![Profile](docs/screenshots/profile.png)`
+
+</details>
 
 ---
 
-### 3. Get Free Gemini API Key
+## 📁 Project Structure
 
-1. Go to [Google AI Studio](https://aistudio.google.com/app/apikey)
-2. Click "Create API Key"
-3. Copy to `GEMINI_API_KEY` in backend `.env`
-
----
-
-### 4. Run Development Servers
-
-```bash
-# Terminal 1 — Backend
-cd backend
-npm run dev
-
-# Terminal 2 — Frontend
-cd frontend
-npm run dev
-```
-
-Open: [http://localhost:5173](http://localhost:5173)
-
----
-
-## 📦 Deployment
-
-### Frontend → Vercel
-1. Push to GitHub
-2. Connect repo on [vercel.com](https://vercel.com)
-3. Set Root Directory: `frontend`
-4. Add env variable: `VITE_API_URL=https://your-backend.onrender.com/api`
-5. Deploy
-
-### Backend → Render
-1. Connect repo on [render.com](https://render.com)
-2. Set Root Directory: `backend`
-3. Build Command: `npm install`
-4. Start Command: `npm start`
-5. Add all env variables from `.env`
-6. Deploy
-
----
-
-## 🗂️ Project Structure
+<details>
+<summary><b>Expand tree</b></summary>
 
 ```
-ai-mock-interviewer/
+InterviewAI/
 ├── backend/
 │   ├── src/
-│   │   ├── controllers/     # Auth, Interview, User, Analytics, Admin
-│   │   ├── models/          # User, Interview, Question (Mongoose)
-│   │   ├── routes/          # Express routers
-│   │   ├── middleware/       # Auth, error handler, upload, rate limiter
-│   │   ├── services/        # AI service (Gemini/OpenAI)
-│   │   ├── utils/           # Database connection
-│   │   ├── app.js           # Express app setup
-│   │   └── server.js        # Entry point
-│   └── package.json
+│   │   ├── controllers/     # auth, interview, project, coach, integrations, achievements
+│   │   ├── models/          # User, Interview, Project, RepositoryAnalysis, WeakTopic, QuestionHistory
+│   │   ├── routes/          # /auth /interviews /projects /coach /integrations /recommendations …
+│   │   ├── services/
+│   │   │   ├── ai.service.js
+│   │   │   ├── aiProviderManager.js       # multi-provider fallback
+│   │   │   ├── adaptiveEngine.js          # next-question decision engine
+│   │   │   ├── blueprint.service.js       # interview plan
+│   │   │   ├── conversationStyle.js
+│   │   │   ├── coach.service.js           # roadmap generation
+│   │   │   ├── coachActions.js
+│   │   │   ├── github.service.js          # thin GitHub REST wrapper
+│   │   │   ├── repoAnalysis.service.js    # heuristic repo analyzer
+│   │   │   ├── crypto.service.js          # AES-256-GCM token encryption
+│   │   │   ├── achievements/              # registry + evaluator
+│   │   │   ├── personalities.js
+│   │   │   ├── pacing.js
+│   │   │   ├── responseQuality.js
+│   │   │   └── topicGraph.js
+│   │   ├── middleware/      # auth, rate limit, error handler
+│   │   └── utils/           # db connection
+│   ├── package.json
+│   └── vercel.json
 │
-└── frontend/
-    ├── src/
-    │   ├── components/
-    │   │   ├── layout/      # Navbar
-    │   │   └── common/      # LoadingScreen
-    │   ├── context/         # AuthContext
-    │   ├── hooks/           # useVoice (SpeechSynthesis + SpeechRecognition)
-    │   ├── pages/           # All pages
-    │   ├── services/        # API client (axios)
-    │   ├── styles/          # Global CSS (Tailwind)
-    │   └── App.jsx
-    ├── vite.config.js
-    ├── tailwind.config.js
-    └── package.json
+├── frontend/
+│   ├── src/
+│   │   ├── pages/           # Dashboard, Interviews, Interview, Results, Projects, Workspace, Coach, Profile, …
+│   │   ├── components/
+│   │   │   ├── common/      # ActionCard, SectionHeader, EmptyState, Panel
+│   │   │   ├── dashboard/   # Hero, PrimaryActions, CoachPreview, ContinueLearning, RecentInterviews, RecentProjects, AnalyticsPreview
+│   │   │   ├── interview/
+│   │   │   ├── projects/    # RepoUrlForm, GitHubRepoPicker, WorkspaceTabs, FilesTab, InterviewsTab, TechStackChips, …
+│   │   │   ├── coach/       # FocusAreaCard
+│   │   │   ├── profile/     # ProgressTab, AchievementsTab
+│   │   │   ├── results/     # ResultsHeader, VerdictStrip
+│   │   │   ├── analytics/   # SkillRadar, TopicBreakdown
+│   │   │   ├── search/      # CommandPalette
+│   │   │   ├── settings/    # GitHubConnectionCard
+│   │   │   └── layout/      # Navbar
+│   │   ├── context/         # AuthContext, SearchContext
+│   │   ├── data/            # achievements registry (client-safe)
+│   │   ├── hooks/           # useHotkey, useVoice
+│   │   ├── services/        # api, coachActions, badgeUnlocks, tts
+│   │   └── styles/          # globals.css
+│   ├── package.json
+│   └── vercel.json
+│
+├── package.json
+├── setup.sh
+└── README.md
 ```
 
----
-
-## 🔑 API Endpoints
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/auth/signup` | Register user |
-| POST | `/api/auth/login` | Login |
-| GET | `/api/auth/me` | Get current user |
-| POST | `/api/interviews` | Create interview + generate AI questions |
-| POST | `/api/interviews/:id/answer/:idx` | Submit answer + get AI feedback |
-| POST | `/api/interviews/:id/complete` | Finalize interview |
-| GET | `/api/interviews/history` | Interview history |
-| GET | `/api/analytics/dashboard` | Dashboard stats |
-| GET | `/api/analytics/detailed` | Detailed analytics |
-| GET | `/api/users/leaderboard` | Top performers |
-| PUT | `/api/users/profile` | Update profile |
-| POST | `/api/users/resume` | Upload resume |
+</details>
 
 ---
 
-## 🎨 UI Highlights
+## 🚀 Installation
 
-- **Dark glassmorphism** design system
-- **Framer Motion** page transitions and micro-animations
-- **Real-time voice wave** animation during recording
-- **Circular score rings** with animated fill
-- **Responsive** on mobile, tablet, desktop
-- **Premium gradients** and glow effects
-- Inter + Sora typography
+### Prerequisites
+
+- Node.js **18+**
+- MongoDB (local or Atlas)
+- At least one AI provider key: **Gemini** (free tier) or **Groq** or **OpenRouter**
+
+### 1. Clone
+
+```bash
+git clone https://github.com/<your-username>/InterviewAI.git
+cd InterviewAI
+```
+
+### 2. Install dependencies
+
+```bash
+# Backend
+cd backend && npm install
+
+# Frontend
+cd ../frontend && npm install
+```
+
+### 3. Environment variables
+
+Create `backend/.env` and `frontend/.env` — see [Environment Variables](#-environment-variables) below.
+
+### 4. Run
+
+```bash
+# Terminal 1 — backend (http://localhost:5000)
+cd backend && npm run dev
+
+# Terminal 2 — frontend (http://localhost:5173)
+cd frontend && npm run dev
+```
+
+Open `http://localhost:5173`, sign up, and you're in.
 
 ---
 
-## 📱 Browser Support
+## 🔐 Environment Variables
 
-Voice features require:
-- Chrome 33+ (best support)
-- Edge 79+
-- Safari 14.1+ (iOS/macOS)
-- Firefox has limited SpeechRecognition support (use text fallback)
+<details>
+<summary><b>Backend — <code>backend/.env</code></b></summary>
+
+| Variable | Required | Purpose |
+|---|---|---|
+| `PORT` | ❌ | Server port (default `5000`) |
+| `NODE_ENV` | ❌ | `development` / `production` |
+| `MONGO_URI` | ✅ | MongoDB connection string |
+| `JWT_SECRET` | ✅ | Signing secret for JWTs |
+| `JWT_EXPIRES_IN` | ❌ | Token TTL (default `7d`) |
+| `FRONTEND_URL` | ✅ | For CORS + OAuth redirect (`http://localhost:5173` in dev) |
+| `AI_PROVIDER` | ❌ | Primary provider — `gemini` / `groq` / `openrouter` |
+| `GEMINI_API_KEY` | ⭐ | Google Generative AI key (recommended free tier) |
+| `GROQ_API_KEY` | ⭐ | Groq API key |
+| `OPENROUTER_API_KEY` | ⭐ | OpenRouter key |
+| `GOOGLE_CLIENT_ID` | ❌ | Google OAuth login (optional) |
+| `GITHUB_CLIENT_ID` | 🐙 | GitHub OAuth App client id (for private repos) |
+| `GITHUB_CLIENT_SECRET` | 🐙 | GitHub OAuth App secret |
+| `GITHUB_OAUTH_REDIRECT_URI` | 🐙 | e.g. `http://localhost:5000/api/integrations/github/callback` |
+| `GITHUB_TOKEN_ENCRYPTION_KEY` | 🐙 | 64‑hex‑char key — generate with `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"` |
+| `ELEVENLABS_API_KEY` | ❌ | Server‑side TTS (falls back to browser if absent) |
+
+**Legend:** ✅ required · ⭐ at least one AI provider required · 🐙 required only for GitHub integration · ❌ optional
+
+</details>
+
+<details>
+<summary><b>Frontend — <code>frontend/.env</code></b></summary>
+
+| Variable | Required | Purpose |
+|---|---|---|
+| `VITE_API_URL` | ❌ | Backend base URL (default `/api`, use full URL when deployed) |
+| `VITE_GOOGLE_CLIENT_ID` | ❌ | Google OAuth client id for the login button |
+
+</details>
 
 ---
 
-## 🏗️ Built By
+## 🗺️ Roadmap
 
-Made as a **portfolio-grade placement project** demonstrating:
-- Full-stack React + Node.js architecture
-- Real-time AI API integration (Gemini/OpenAI)
-- Web Speech APIs
-- MongoDB data modeling
-- JWT authentication
-- Production deployment patterns
+### ✅ Shipped — Version 1.0.0
+
+| Sprint | Focus | Highlights |
+|---|---|---|
+| **Sprint 1** | Foundation & IA | Action‑oriented Dashboard, sidebar‑style nav, `/interviews` entry flow, `/projects` module UI |
+| **Sprint 2** | Projects as first‑class | GitHub OAuth, public‑URL analysis, Workspace shell, Project Interview sub‑modes |
+| **Sprint 3** | The Improvement Loop | Skill Radar, Weak‑topic breakdown, Recommendations engine, Continue Learning rail, per‑question Retry, merged Feedback + Replay |
+| **Sprint 4** | Coach · Achievements · Search | AI Coach roadmap, 10 achievements, unlock toasts, global ⌘K command palette, unified CoachAction vocabulary |
+
+### 🚀 Planned
+
+| Sprint | Focus |
+|---|---|
+| **Sprint 5** | Interview Platform Refactor |
+| **Sprint 6** | Workspace Chat — AI grounded in repo, streaming responses |
+| **Sprint 7** | DSA & Aptitude module |
+| **Sprint 8** | Behavioral & System Design deep‑dive rounds |
+| **Sprint 9** | Mock Recruiter — third interview sub‑mode |
+| **Sprint 10+** | JD Analyzer · Workspace Health · README Generator · Resume Builder · Architecture Diagram · Security Audit · Public Sharing · Mobile bottom nav |
+
+Sprint 5+ ships in order of demonstrated user demand, not roadmap ambition.
+
+---
+
+## 🧪 Design Principles
+
+The codebase follows five load‑bearing rules from the design brief:
+
+1. **The Dashboard answers one question** — *"what should I do next?"*
+2. **Interviews and Projects are peers**, never nested. Both are first‑class.
+3. **One Session model, polymorphic** — `mode: 'general' | 'project'`. Unified analytics forever.
+4. **Reserve space, don't ship shells** — nav slots and workspace tabs only appear when their feature ships.
+5. **The engine is a hard boundary** — Sprints 2–4 extended the platform without touching adaptive engine, blueprint, or AI runtime.
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome — the project is young enough that small PRs still move the needle.
+
+1. **Fork** the repository
+2. Create a feature branch: `git checkout -b feature/your-thing`
+3. Follow the existing folder / naming conventions (see [Project Structure](#-project-structure))
+4. Keep commits focused — one concern per commit
+5. Open a PR describing **what** and **why**
+
+**Good first PRs:** new achievement definitions, additional interviewer personalities, topic‑graph entries for new roles, keyboard shortcuts, help entries in the command palette.
+
+**Please don't** touch the interview engine, blueprint service, or adaptive engine without opening an issue first — those are load‑bearing.
 
 ---
 
 ## 📄 License
 
-MIT — Free to use for portfolio/learning purposes.
+Released under the [MIT License](LICENSE). Free for personal and commercial use.
 
 ---
 
-## 🚀 Recent Architecture Upgrades
+## 👤 Author
 
-Incremental upgrades layered onto the existing Express + MongoDB stack. All changes are
-backward-compatible — existing interviews, users, and analytics keep working unchanged.
+Built with care by the InterviewAI team.
 
-### Phase 1 — Interview engine
-- **Multi-provider AI fallback** (`backend/src/services/aiProviderManager.js`):
-  primary Gemini → Groq (optional) → OpenRouter (optional). 429/quota/model-not-found
-  errors transparently retry the next provider.
-- **Adaptive memory + personalized greetings**: every `POST /api/interviews`
-  fetches recent interviews and `WeakTopic` records, injects them into the question
-  prompt, and returns a `greeting` string the frontend speaks first.
-- **Anti-repetition engine** (`backend/src/utils/embedding.js` + `memory.service.js`):
-  hash-based 64-dim embedding + cosine similarity against the last 100 questions per
-  user. Duplicates are replaced with weak-topic-focused alternatives.
-- **Dynamic follow-up questions**: `POST /api/interviews/:id/follow-up/:questionIndex`
-  generates a contextual follow-up based on the user's actual answer and appends it
-  to the interview.
-- **Weak-topic tracking** (new `WeakTopic` model): per-user/per-role topic averages
-  updated on interview completion. Read back into future question generation.
+<div align="center">
 
-### Phase 2 — Voice
-- **Server-side ElevenLabs TTS** (`backend/src/services/tts.service.js` + `POST /api/tts`):
-  returns an MP3 buffer when `TTS_PROVIDER=elevenlabs` and `ELEVENLABS_API_KEY` is set;
-  otherwise responds with `{ useBrowser: true }` so the client falls back to the
-  Web SpeechSynthesis API automatically.
-- **Frontend TTS client** (`frontend/src/services/tts.js`): single `speak()` entry
-  point that prefers server audio and falls back to the browser without code changes.
-- **Microphone amplitude analyzer** (`frontend/src/hooks/useAmplitudeAnalyzer.js`):
-  exposes a `[0, 1]` amplitude value driven by `AnalyserNode`, used for avatar
-  lip-sync and visualization.
+[![GitHub](https://img.shields.io/badge/GitHub-Follow-181717?logo=github&logoColor=white&style=for-the-badge)](https://github.com/)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-0A66C2?logo=linkedin&logoColor=white&style=for-the-badge)](https://linkedin.com/)
+[![Portfolio](https://img.shields.io/badge/Portfolio-Visit-000000?logo=vercel&logoColor=white&style=for-the-badge)](https://)
 
-### Phase 3 — 3D avatar
-- **Procedural Three.js avatar** (`frontend/src/components/avatar/TalkingAvatar.jsx`
-  + `AvatarScene.jsx`): no GLTF dependencies — head, eyes, pupils, brows, mouth,
-  neck, body, and a pulsing ring all built from primitive geometry. Mouth scales
-  with `amplitude`, blinking every 3-5 s, eye look-around, emotion-driven brows.
-- **State sync**: avatar's `isSpeaking` follows the unified TTS state (server audio
-  OR browser SpeechSynthesis); `isListening` follows `SpeechRecognition.listening`;
-  `amplitude` switches between AI-synthesized motion (when AI speaks) and live mic
-  amplitude (when user speaks).
-- Lazy-loaded via `Suspense`, so the page still renders if `three` /
-  `@react-three/fiber` aren't installed.
+<sub>If InterviewAI helped you, consider starring the repo ⭐ — it genuinely helps.</sub>
 
-### Phase 4 — Analytics
-- `GET /api/analytics/detailed` now also returns `topicHeatmap` (lowest-scoring
-  topics in the window), `weakTopics` (persistent `WeakTopic` records), and
-  `radar` (5-axis skill breakdown).
-
-### New environment variables
-```env
-GROQ_API_KEY=             # optional secondary AI provider
-OPENROUTER_API_KEY=       # optional tertiary AI provider
-SIMILARITY_THRESHOLD=0.78 # anti-repetition strictness
-TTS_PROVIDER=browser      # or "elevenlabs"
-ELEVENLABS_API_KEY=
-ELEVENLABS_VOICE_ID=
-```
-
-### New endpoints
-| Method | Path | Purpose |
-|---|---|---|
-| `POST` | `/api/interviews/:id/follow-up/:questionIndex` | Dynamic follow-up generation |
-| `POST` | `/api/tts` | Server-side TTS (audio/mpeg or `{useBrowser:true}`) |
-
-### Optional dependencies (installed only if you opt-in)
-- Backend: `groq-sdk`
-- Frontend: `three`, `@react-three/fiber`
-
-Avatar + Groq are wrapped in safe imports — the app runs without them.
-
+</div>
