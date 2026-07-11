@@ -6,6 +6,7 @@ const github = require('../services/github.service');
 const repoAnalysis = require('../services/repoAnalysis.service');
 const { parseRepoUrl, canonicalUrl } = require('../services/repoUrl');
 const { decrypt } = require('../services/crypto.service');
+const achievements = require('../services/achievements/evaluate');
 
 /**
  * project.controller — CRUD + analysis lifecycle for the Workspace object.
@@ -126,12 +127,36 @@ async function upsertProject({ userId, source, owner, repo, defaultBranch, metad
 }
 
 // Send the response shape used by the frontend for both creation and polling.
-function projectResponse(res, { project, analysis, statusCode = 200 }) {
+function projectResponse(res, { project, analysis, statusCode = 200, unlockedBadges }) {
   return res.status(statusCode).json({
     success: true,
     project,
     analysis,
+    ...(unlockedBadges?.length ? { unlockedBadges } : {}),
   });
+}
+
+/**
+ * Evaluate achievements for a project_created event, apply any new unlocks
+ * to the user, persist, and return the display-ready badge list. Shared by
+ * createFromUrl and createFromGithub so the logic lives in one place.
+ *
+ * The `User` doc is re-loaded fresh so we don't collide with any parallel
+ * writes the analysis pipeline may perform on the user later.
+ */
+async function evaluateProjectCreatedBadges(userId, project) {
+  const User = require('../models/User.model');
+  const user = await User.findById(userId);
+  if (!user) return [];
+  const ids = achievements.evaluate(user, {
+    kind: 'project_created',
+    payload: { project },
+  });
+  const applied = achievements.applyUnlocks(user, ids);
+  if (applied.length) {
+    await user.save({ validateBeforeSave: false });
+  }
+  return achievements.describeUnlocks(applied);
 }
 
 // ── Handlers ────────────────────────────────────────────────────────────────
@@ -174,7 +199,9 @@ const createFromUrl = async (req, res, next) => {
       status: 'processing',
     });
 
-    projectResponse(res, { project, analysis, statusCode: 201 });
+    const unlockedBadges = await evaluateProjectCreatedBadges(req.user._id, project);
+
+    projectResponse(res, { project, analysis, statusCode: 201, unlockedBadges });
 
     // Fire after response is sent.
     const token = await loadGithubToken(req.user._id);
@@ -228,7 +255,9 @@ const createFromGithub = async (req, res, next) => {
       status: 'processing',
     });
 
-    projectResponse(res, { project, analysis, statusCode: 201 });
+    const unlockedBadges = await evaluateProjectCreatedBadges(req.user._id, project);
+
+    projectResponse(res, { project, analysis, statusCode: 201, unlockedBadges });
 
     runAnalysisInBackground({
       analysisId: analysis._id,

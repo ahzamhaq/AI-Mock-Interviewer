@@ -3,7 +3,10 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { Toaster } from 'react-hot-toast';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { SearchProvider, useSearch } from './context/SearchContext';
 import LoadingScreen from './components/common/LoadingScreen';
+import CommandPalette from './components/search/CommandPalette';
+import useHotkey from './hooks/useHotkey';
 
 // Lazy load pages
 const LandingPage = lazy(() => import('./pages/LandingPage'));
@@ -24,6 +27,7 @@ const ProjectNewPage = lazy(() => import('./pages/ProjectNewPage'));
 const ProjectAnalyzingPage = lazy(() => import('./pages/ProjectAnalyzingPage'));
 const WorkspacePage = lazy(() => import('./pages/WorkspacePage'));
 const ProjectInterviewSetupPage = lazy(() => import('./pages/ProjectInterviewSetupPage'));
+const CoachPage = lazy(() => import('./pages/CoachPage'));
 
 const ProtectedRoute = ({ children, adminOnly = false }) => {
   const { user, loading } = useAuth();
@@ -57,6 +61,7 @@ const AppRoutes = () => (
       <Route path="/interview/:id" element={<ProtectedRoute><InterviewPage /></ProtectedRoute>} />
       <Route path="/interview/:id/results" element={<ProtectedRoute><ResultsPage /></ProtectedRoute>} />
       <Route path="/analytics" element={<ProtectedRoute><AnalyticsPage /></ProtectedRoute>} />
+      <Route path="/coach" element={<ProtectedRoute><CoachPage /></ProtectedRoute>} />
       <Route path="/history" element={<ProtectedRoute><HistoryPage /></ProtectedRoute>} />
       <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
       <Route path="/leaderboard" element={<ProtectedRoute><LeaderboardPage /></ProtectedRoute>} />
@@ -66,11 +71,28 @@ const AppRoutes = () => (
   </Suspense>
 );
 
+// SearchLayer — mounts the CommandPalette and binds the ⌘K / Ctrl+K
+// hotkey. Only wires the hotkey when the user is authenticated so
+// visitors on public pages don't get a palette they can't use.
+const SearchLayer = () => {
+  const { user } = useAuth();
+  const { togglePalette } = useSearch();
+  useHotkey('k', (e) => {
+    if (!user) return;
+    e.preventDefault();
+    togglePalette();
+  }, { mod: true });
+  if (!user) return null;
+  return <CommandPalette />;
+};
+
 const App = () => (
   <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID || ''}>
   <Router>
     <AuthProvider>
+      <SearchProvider>
       <AppRoutes />
+      <SearchLayer />
       <Toaster
         position="top-right"
         toastOptions={{
@@ -87,6 +109,7 @@ const App = () => (
           error: { iconTheme: { primary: '#ef4444', secondary: '#fff' } },
         }}
       />
+      </SearchProvider>
     </AuthProvider>
   </Router>
   </GoogleOAuthProvider>

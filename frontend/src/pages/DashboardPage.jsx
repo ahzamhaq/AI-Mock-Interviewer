@@ -10,6 +10,7 @@ import Navbar from '../components/layout/Navbar';
 import { Panel, PanelHeader } from '../components/common/Panel';
 import DashboardHero from '../components/dashboard/DashboardHero';
 import PrimaryActions from '../components/dashboard/PrimaryActions';
+import CoachPreview from '../components/dashboard/CoachPreview';
 import ContinueLearning from '../components/dashboard/ContinueLearning';
 import RecentInterviews from '../components/dashboard/RecentInterviews';
 import RecentProjects from '../components/dashboard/RecentProjects';
@@ -74,6 +75,13 @@ const DashboardPage = () => {
 
           {/* ── Top · Primary Actions ─────────────────────────────── */}
           <PrimaryActions />
+
+          {/* ── Coach preview (Sprint 4) ─────────────────────────────
+              Top focus area from the roadmap. Hides entirely when the
+              roadmap is empty or the fetch fails — new users see
+              PrimaryActions unopposed by empty coach chrome. Reuses the
+              same FocusAreaCard the Coach page renders (dense mode). */}
+          <CoachPreview />
 
           {/* ── Continue Learning (Sprint 3) ─────────────────────────
               Data-driven rail: Resume in-progress · Retry weak topic ·

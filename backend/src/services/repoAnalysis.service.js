@@ -151,11 +151,20 @@ async function analyzeRepo({ owner, repo, defaultBranch, token }) {
   // to the interview runtime so we keep temperature low for stable JSON.
   const raw = await aiProviderManager.generate(prompt, {
     temperature: 0.2,
-    maxTokens: 1400,
+    // 40-file analyses can produce dense JSON. 1400 was cutting off the
+    // model mid-response on some repos; 2400 gives comfortable headroom
+    // without a meaningful cost difference at this scale.
+    maxTokens: 2400,
   });
 
   const parsed = extractJsonObject(raw);
   if (!parsed) {
+    // Log the raw model output so we can see exactly what the model
+    // returned. Truncated to keep console lines readable.
+    console.error('[analysis:llm-parse-failed] raw output (first 1200 chars):');
+    console.error(String(raw || '').slice(0, 1200));
+    console.error('[analysis:llm-parse-failed] raw output (last 400 chars):');
+    console.error(String(raw || '').slice(-400));
     throw new Error('Analysis model returned no parsable JSON.');
   }
 
@@ -278,16 +287,44 @@ ${digests}
 
 // ── LLM output handling ─────────────────────────────────────────────────────
 
-// Same shape the rest of the codebase uses (see ai.service.js).
+// Extract the first JSON object from an LLM response, tolerating common
+// wrappers (markdown fences, leading prose, trailing prose). We do a
+// balanced-brace scan instead of a greedy regex so nested `{}` inside
+// string values don't break parsing.
 function extractJsonObject(text) {
   if (!text) return null;
-  const match = text.match(/\{[\s\S]*\}/);
-  if (!match) return null;
-  try {
-    return JSON.parse(match[0]);
-  } catch {
-    return null;
+
+  // Strip markdown code fences if present. Handles ```json ... ``` and ``` ... ```.
+  let s = String(text)
+    .replace(/```(?:json)?\s*/gi, '')
+    .replace(/```/g, '')
+    .trim();
+
+  // Find the first '{' and then scan forward counting brace depth,
+  // ignoring braces inside strings. This produces the outermost object
+  // even if the model wrapped it in prose on either side.
+  const start = s.indexOf('{');
+  if (start === -1) return null;
+
+  let depth = 0;
+  let inString = false;
+  let escape = false;
+  for (let i = start; i < s.length; i++) {
+    const c = s[i];
+    if (escape) { escape = false; continue; }
+    if (c === '\\') { escape = true; continue; }
+    if (c === '"') { inString = !inString; continue; }
+    if (inString) continue;
+    if (c === '{') depth++;
+    else if (c === '}') {
+      depth--;
+      if (depth === 0) {
+        const candidate = s.slice(start, i + 1);
+        try { return JSON.parse(candidate); } catch { return null; }
+      }
+    }
   }
+  return null;
 }
 
 const TECH_CATEGORIES = new Set([

@@ -3,13 +3,17 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useAuth } from '../../context/AuthContext';
 import {
-  Mic, User, LogOut, Menu, X, Shield, Play, ChevronDown, Activity, Circle
+  Mic, User, LogOut, Menu, X, Shield, Play, ChevronDown, Activity, Circle, Search,
 } from 'lucide-react';
+import { useSearch } from '../../context/SearchContext';
+
+const IS_MAC = typeof navigator !== 'undefined' && /Mac|iPhone|iPad|iPod/.test(navigator.platform || '');
 
 const Navbar = () => {
   const { user, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
+  const { openPalette } = useSearch();
   const [menuOpen, setMenuOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
 
@@ -26,8 +30,9 @@ const Navbar = () => {
     { to: '/interviews',  label: 'Interviews' },
     { to: '/projects',    label: 'Projects'   },
     { to: '/analytics',   label: 'Analytics'  },
-    { to: '/history',     label: 'History'    },
-    { to: '/leaderboard', label: 'Leaderboard', desktopClass: 'hidden lg:inline-flex' },
+    { to: '/coach',       label: 'Coach'      },
+    { to: '/history',     label: 'History',   desktopClass: 'hidden lg:inline-flex' },
+    { to: '/leaderboard', label: 'Leaderboard', desktopClass: 'hidden xl:inline-flex' },
   ] : [
     { to: '#features',     label: 'Features', isHash: true },
     { to: '#workflow',     label: 'Workflow',  isHash: true },
@@ -122,6 +127,47 @@ const Navbar = () => {
                 <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: '#3FB950' }} />
                 <span style={{ color: '#9CA3AF' }}>AI ready</span>
               </div>
+
+              {/* Global search — opens the CommandPalette. Also triggered
+                  by ⌘K / Ctrl+K globally (bound in App.jsx). */}
+              <button
+                onClick={openPalette}
+                className="flex items-center gap-1.5 px-2 py-1 rounded transition-colors"
+                style={{
+                  height: 28,
+                  background: '#161B22',
+                  border: '1px solid #30363D',
+                  color: '#9CA3AF',
+                  cursor: 'pointer',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = '#1C2128';
+                  e.currentTarget.style.borderColor = '#484F58';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = '#161B22';
+                  e.currentTarget.style.borderColor = '#30363D';
+                }}
+                aria-label="Open command palette"
+                title="Search (⌘K)"
+              >
+                <Search size={11} />
+                <span className="hidden md:inline font-mono text-2xs">
+                  Search
+                </span>
+                <kbd
+                  className="hidden lg:inline px-1 font-mono text-2xs"
+                  style={{
+                    background: '#0D1117',
+                    border: '1px solid #30363D',
+                    borderRadius: 3,
+                    color: '#6B7280',
+                    lineHeight: 1,
+                  }}
+                >
+                  {IS_MAC ? '⌘K' : 'Ctrl K'}
+                </kbd>
+              </button>
 
               <button
                 onClick={() => navigate('/interview/setup')}

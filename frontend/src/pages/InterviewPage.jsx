@@ -7,6 +7,8 @@ import {
   Activity, Wifi, WifiOff, Circle, Square, Play, TerminalSquare
 } from 'lucide-react';
 import { interviewAPI } from '../services/api';
+import { useAuth } from '../context/AuthContext';
+import { applyBadgeUnlocks } from '../services/badgeUnlocks';
 import { useSpeechSynthesis, useSpeechRecognition } from '../hooks/useVoice';
 import { useAmplitudeAnalyzer } from '../hooks/useAmplitudeAnalyzer';
 import { speak as ttsSpeak, cancelTTS } from '../services/tts';
@@ -100,6 +102,7 @@ const StatusDot = ({ active, color = '#3FB950' }) => (
 const InterviewPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user, updateUser } = useAuth();
 
   const { stop: stopBrowserSpeaking, speaking: browserSpeaking } = useSpeechSynthesis();
   const { transcript, listening, startListening, stopListening, resetTranscript, supported: srSupported } = useSpeechRecognition();
@@ -432,7 +435,15 @@ const InterviewPage = () => {
   const handleFinish = async () => {
     setPhase(PHASE.PROCESSING);
     try {
-      await interviewAPI.complete(id);
+      const res = await interviewAPI.complete(id);
+      // Sprint 4: server may include newly-unlocked badges on this response.
+      // Toast them and merge into local user.badges so the Achievements
+      // tab reflects the unlock without a page refresh.
+      applyBadgeUnlocks(res?.unlockedBadges, {
+        user,
+        updateUser,
+        onOpen: () => navigate('/profile?tab=achievements'),
+      });
       navigate(`/interview/${id}/results`);
     } catch {
       toast.error('Failed to save results');

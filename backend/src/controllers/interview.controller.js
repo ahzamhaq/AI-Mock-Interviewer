@@ -2,6 +2,7 @@ const Interview = require('../models/Interview.model');
 const User = require('../models/User.model');
 const Project = require('../models/Project.model');
 const RepositoryAnalysis = require('../models/RepositoryAnalysis.model');
+const achievements = require('../services/achievements/evaluate');
 const aiService = require('../services/ai.service');
 const memoryService = require('../services/memory.service');
 const blueprintService = require('../services/blueprint.service');
@@ -691,10 +692,31 @@ const completeInterview = async (req, res, next) => {
     user.updateStreak();
     await user.save({ validateBeforeSave: false });
 
+    // ── Achievement evaluation (Sprint 4) ────────────────────────────
+    // Runs synchronously so the response payload can include unlocks.
+    // The retry_redemption predicate needs the parent interview's score;
+    // we load it opportunistically when this interview has a retryOf link.
+    let parentInterview = null;
+    if (interview.retryOf?.interviewId) {
+      parentInterview = await Interview.findById(interview.retryOf.interviewId)
+        .select('results')
+        .lean()
+        .catch(() => null);
+    }
+    const unlockedIds = achievements.evaluate(user, {
+      kind: 'interview_completed',
+      payload: { interview, parentInterview },
+    });
+    const applied = achievements.applyUnlocks(user, unlockedIds);
+    if (applied.length) {
+      await user.save({ validateBeforeSave: false });
+    }
+    const unlockedBadges = achievements.describeUnlocks(applied);
+
     // Update persistent weak-topic averages
     memoryService.updateWeakTopicsFromInterview(req.user._id, interview).catch(() => {});
 
-    res.json({ success: true, interview });
+    res.json({ success: true, interview, unlockedBadges });
   } catch (error) {
     next(error);
   }

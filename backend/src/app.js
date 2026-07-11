@@ -16,6 +16,7 @@ const ttsRoutes = require('./routes/tts.routes');
 const projectRoutes = require('./routes/project.routes');
 const integrationsRoutes = require('./routes/integrations.routes');
 const recommendationsRoutes = require('./routes/recommendations.routes');
+const coachRoutes = require('./routes/coach.routes');
 
 const errorHandler = require('./middleware/errorHandler');
 const { notFound } = require('./middleware/notFound');
@@ -90,6 +91,7 @@ app.use('/api/tts', ttsRoutes);
 app.use('/api/projects', projectRoutes);
 app.use('/api/integrations', integrationsRoutes);
 app.use('/api/recommendations', recommendationsRoutes);
+app.use('/api/coach', coachRoutes);
 
 // Error handling
 app.use(notFound);

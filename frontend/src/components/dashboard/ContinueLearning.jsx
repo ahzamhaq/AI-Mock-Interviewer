@@ -4,9 +4,9 @@ import { motion } from 'framer-motion';
 import {
   Play, RotateCcw, GitBranch, ArrowRight, Loader2,
 } from 'lucide-react';
-import toast from 'react-hot-toast';
 import SectionHeader from '../common/SectionHeader';
-import { recommendationsAPI, interviewAPI } from '../../services/api';
+import { recommendationsAPI } from '../../services/api';
+import { resolveAction } from '../../services/coachActions';
 
 /**
  * ContinueLearning — the Dashboard's "what should I do next" rail.
@@ -54,35 +54,24 @@ const ContinueLearning = () => {
   // id (cards are derived, not stored) so we compose one from index+kind.
   const cardId = (card, i) => `${i}-${card.kind}`;
 
+  // Sprint 4 refactor: all card dispatch goes through the shared
+  // resolveAction helper. The rail's card shapes (kind: 'resume' |
+  // 'retry_weak' | 'continue_project') are aliased to the CoachAction
+  // vocabulary inside the resolver, so behavior is byte-identical to
+  // the pre-refactor implementation. One dispatcher for every surface
+  // that renders actions (rail, Coach page, ⌘K palette, notifications).
   const handleClick = async (card, i) => {
     if (startingId) return;
     const id = cardId(card, i);
-
-    // Pure navigation cards — resume + continue_project — do not need a
-    // request. Any card with a `route` and no `payload` follows this path.
-    if (card.route && !card.payload) {
-      navigate(card.route);
-      return;
+    setStartingId(id);
+    try {
+      await resolveAction(navigate, card);
+    } finally {
+      // If navigation happened we unmount before this runs; if it didn't
+      // (payload rejected, unknown kind) we release the busy state so the
+      // user can click something else.
+      setStartingId(null);
     }
-
-    // Payload cards — retry_weak — create an interview first, then navigate
-    // to the interview room the same way InterviewSetupPage does.
-    if (card.payload) {
-      setStartingId(id);
-      try {
-        const res = await interviewAPI.create(card.payload);
-        navigate(`/interview/${res.interview.id}`, {
-          state: { greeting: res.greeting || '' },
-        });
-      } catch (err) {
-        toast.error(err.message || 'Failed to start interview');
-        setStartingId(null);
-      }
-      return;
-    }
-
-    // Defensive: cards with neither route nor payload are a backend bug.
-    // Silently no-op rather than crash the rail.
   };
 
   if (loading) {

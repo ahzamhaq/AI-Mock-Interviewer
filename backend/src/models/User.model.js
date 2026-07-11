@@ -47,12 +47,38 @@ const userSchema = new mongoose.Schema({
   lastInterviewDate: { type: Date, default: null },
   totalInterviews: { type: Number, default: 0 },
   totalScore: { type: Number, default: 0 },
-  badges: [{ type: String }],
+  // Sprint 4 Commit 8: badge entries carry an unlock timestamp.
+  //
+  // The schema is Mixed so it accepts BOTH the legacy String shape and the
+  // new { id, unlockedAt } object shape without a data migration. A
+  // pre-save hook (see below) normalizes any surviving legacy strings to
+  // objects the next time the user is saved — self-healing over time.
+  //
+  // `hasBadge()` (defined on this schema) and the frontend's
+  // normalizeBadges() both handle either shape transparently.
+  badges: {
+    type: [mongoose.Schema.Types.Mixed],
+    default: [],
+  },
   points: { type: Number, default: 0 },
 
   // Stats
   averageScore: { type: Number, default: 0 },
   bestScore: { type: Number, default: 0 },
+
+  // ── AI Coach roadmap cache (Sprint 4) ─────────────────────────────────
+  // The Coach page generates a personalized set of focus areas by asking
+  // the LLM to interpret the user's WeakTopic, recent interviews, and
+  // SkillRadar. That call is expensive; we cache the result on the user
+  // for 24h and expose an explicit "refresh" endpoint.
+  //
+  // `items` is intentionally schemaless (Mixed) — the roadmap shape may
+  // evolve as we tune the prompt without a migration burden. The frontend
+  // validates the shape it renders. `generatedAt` is the cache key.
+  coachRoadmap: {
+    items:       { type: [mongoose.Schema.Types.Mixed], default: [] },
+    generatedAt: { type: Date, default: null },
+  },
 
   // ── Connected accounts ────────────────────────────────────────────────
   // GitHub is an OPTIONAL linked account, never part of login. Users who
@@ -89,6 +115,21 @@ userSchema.virtual('interviewHistory', {
   foreignField: 'userId',
 });
 
+// Sprint 4 Commit 8: self-heal legacy string entries in badges. Runs on
+// every save (cheap — array is tiny), converts anything that isn't already
+// { id, unlockedAt } shaped. `unlockedAt` for legacy entries is set to
+// `null` so the UI can tell "we don't know when" vs a real timestamp.
+userSchema.pre('save', function (next) {
+  if (Array.isArray(this.badges)) {
+    this.badges = this.badges.map((b) => {
+      if (typeof b === 'string') return { id: b, unlockedAt: null };
+      if (b && typeof b === 'object' && typeof b.id === 'string') return b;
+      return null;
+    }).filter(Boolean);
+  }
+  next();
+});
+
 userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) return next();
   this.password = await bcrypt.hash(this.password, 12);
@@ -97,6 +138,22 @@ userSchema.pre('save', async function (next) {
 
 userSchema.methods.comparePassword = async function (candidatePassword) {
   return bcrypt.compare(candidatePassword, this.password);
+};
+
+/**
+ * hasBadge — cheap membership check that tolerates BOTH shapes of the
+ * `badges` array:
+ *   • Legacy:   [String]              (pre-Sprint-4)
+ *   • Sprint 4: [{ id, unlockedAt }]  (introduced in Sprint 4 Commit 8)
+ *
+ * Every read path in the codebase should go through this helper so the
+ * migration is invisible to callers. Achievement evaluation code uses it
+ * to guarantee idempotency: if the user already has a badge, unlock is a
+ * no-op regardless of which shape stored it.
+ */
+userSchema.methods.hasBadge = function (id) {
+  if (!id || !Array.isArray(this.badges)) return false;
+  return this.badges.some((b) => (typeof b === 'string' ? b === id : b?.id === id));
 };
 
 userSchema.methods.updateStreak = function () {

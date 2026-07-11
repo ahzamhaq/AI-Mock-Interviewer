@@ -6,6 +6,8 @@ import SectionHeader from '../components/common/SectionHeader';
 import RepoUrlForm from '../components/projects/RepoUrlForm';
 import GitHubRepoPicker from '../components/projects/GitHubRepoPicker';
 import { projectsAPI, integrationsAPI } from '../services/api';
+import { useAuth } from '../context/AuthContext';
+import { applyBadgeUnlocks } from '../services/badgeUnlocks';
 
 /**
  * ProjectNewPage — the two creation surfaces:
@@ -22,6 +24,7 @@ import { projectsAPI, integrationsAPI } from '../services/api';
  */
 const ProjectNewPage = () => {
   const navigate = useNavigate();
+  const { user, updateUser } = useAuth();
   const [ghStatus, setGhStatus] = useState(null); // { connected, login? }
   const [statusLoading, setStatusLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -39,10 +42,23 @@ const ProjectNewPage = () => {
     navigate(`/projects/${projectId}/analyzing`, { replace: true });
   };
 
+  // Sprint 4: applyBadgeUnlocks reads `res.unlockedBadges` from the API
+  // response (may be undefined) and toasts + merges any newly earned
+  // badges into local user.badges. Called before navigation so the toast
+  // fires while we still have the response in scope.
+  const handleUnlocks = (res) => {
+    applyBadgeUnlocks(res?.unlockedBadges, {
+      user,
+      updateUser,
+      onOpen: () => navigate('/profile?tab=achievements'),
+    });
+  };
+
   const submitUrl = async (url) => {
     setSubmitting(true);
     try {
       const res = await projectsAPI.createFromUrl(url);
+      handleUnlocks(res);
       goToAnalyzing(res.project._id);
     } finally {
       // No need to reset — we navigate away. Only reached on caller-catch.
@@ -54,6 +70,7 @@ const ProjectNewPage = () => {
     setSubmitting(true);
     try {
       const res = await projectsAPI.createFromGithub(owner, repo);
+      handleUnlocks(res);
       goToAnalyzing(res.project._id);
     } finally {
       setSubmitting(false);

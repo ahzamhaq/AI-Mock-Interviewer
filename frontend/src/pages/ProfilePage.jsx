@@ -10,6 +10,7 @@ import { useAuth } from '../context/AuthContext';
 import Navbar from '../components/layout/Navbar';
 import GitHubConnectionCard from '../components/settings/GitHubConnectionCard';
 import ProgressTab from '../components/profile/ProgressTab';
+import AchievementsTab from '../components/profile/AchievementsTab';
 import toast from 'react-hot-toast';
 
 const ROLES = [
@@ -39,12 +40,19 @@ const ProfilePage = () => {
   const [passwords, setPasswords] = useState({ current: '', new: '' });
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
-  // Default tab jumps to "connections" when we land here from the GitHub
-  // OAuth callback so the connection card is mounted and can toast the
-  // outcome + clean the query params.
-  const initialTab = typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('github')
-    ? 'connections'
-    : 'profile';
+  // Default tab honors two query params:
+  //   • ?github=… → jump to Connections (GitHub OAuth callback lands here)
+  //   • ?tab=…    → explicit deep-link (used by badge-unlock toast to open
+  //                 the Achievements tab). Falls through to 'profile'.
+  const initialTab = (() => {
+    if (typeof window === 'undefined') return 'profile';
+    const params = new URLSearchParams(window.location.search);
+    if (params.has('github')) return 'connections';
+    const requested = params.get('tab');
+    const valid = ['profile', 'progress', 'achievements', 'security', 'resume', 'connections', 'privacy'];
+    if (requested && valid.includes(requested)) return requested;
+    return 'profile';
+  })();
   const [tab, setTab] = useState(initialTab);
 
   const onDrop = useCallback(async (files) => {
@@ -135,7 +143,7 @@ const ProfilePage = () => {
         {/* Tabs — horizontal scroll below `sm` so 6 tabs stay readable on
             narrow screens instead of squashing to unreadable widths. */}
         <div className="flex gap-2 mb-6 glass rounded-2xl p-1 overflow-x-auto no-scrollbar">
-          {['profile', 'progress', 'security', 'resume', 'connections', 'privacy'].map(t => (
+          {['profile', 'progress', 'achievements', 'security', 'resume', 'connections', 'privacy'].map(t => (
             <button key={t}
               className={`flex-1 sm:flex-1 min-w-[90px] py-2.5 rounded-xl text-sm font-medium capitalize transition-all whitespace-nowrap ${tab === t ? 'bg-primary-600 text-white' : 'text-white/50 hover:text-white'}`}
               onClick={() => setTab(t)}
@@ -286,6 +294,8 @@ const ProfilePage = () => {
           )}
 
           {tab === 'progress' && <ProgressTab user={user} />}
+
+          {tab === 'achievements' && <AchievementsTab user={user} />}
 
           {tab === 'connections' && <GitHubConnectionCard />}
 

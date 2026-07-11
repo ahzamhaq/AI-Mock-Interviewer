@@ -107,6 +107,12 @@ export const recommendationsAPI = {
   list: () => api.get('/recommendations'),
 };
 
+// Coach (Sprint 4 — personalized roadmap generated on demand, cached 24h)
+export const coachAPI = {
+  getRoadmap: () => api.get('/coach/roadmap'),
+  refresh: () => api.post('/coach/roadmap/refresh'),
+};
+
 // Integrations (Sprint 2 — GitHub as an OPTIONAL linked account, never login)
 // The `authorize` call returns { url }; the caller navigates window.location
 // there. GitHub redirects back to the backend, which finalizes and redirects
