@@ -21,7 +21,7 @@ const ACTIONS = [
     eyebrow: 'interview · general',
     title: 'Start a General Interview',
     description: 'Configure by role, experience, and company. The classic mock flow.',
-    route: () => '/interview/setup',
+    route: () => '/interviews/new',
   },
   {
     id: 'project',

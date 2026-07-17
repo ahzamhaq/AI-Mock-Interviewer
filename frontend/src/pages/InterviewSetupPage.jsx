@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useDropzone } from 'react-dropzone';
 import {
@@ -69,16 +69,24 @@ const STEPS = ['Role', 'Experience', 'Company', 'Interview Type', 'Details'];
 
 const InterviewSetupPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [step, setStep] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [config, setConfig] = useState({
-    role: '', experienceLevel: '', companyType: 'any', targetCompany: '',
-    interviewType: 'mixed', difficulty: 'medium', totalQuestions: 5,
-    jobDescription: '', useResume: false,
-    lengthIntent: 'auto',     // 'auto' | 'breadth' | 'depth'
-    pressure: 'standard',     // 'relaxed' | 'standard' | 'intense' — interview pressure level
-    personalityId: '',        // '' = auto-derive from company/role; otherwise explicit pick
-    round: 'general',         // interview round type — drives focus / type mix / persona hint
+  // Sprint 5 Commit 2: the Interview Hub passes { initialConfig } via
+  // router state to preselect fields (e.g. useResume=true for the
+  // Resume-Based card). Absent state = default behavior — zero regression
+  // for every existing call site (retry, direct nav, coach actions).
+  const [config, setConfig] = useState(() => {
+    const defaults = {
+      role: '', experienceLevel: '', companyType: 'any', targetCompany: '',
+      interviewType: 'mixed', difficulty: 'medium', totalQuestions: 5,
+      jobDescription: '', useResume: false,
+      lengthIntent: 'auto',     // 'auto' | 'breadth' | 'depth'
+      pressure: 'standard',     // 'relaxed' | 'standard' | 'intense' — interview pressure level
+      personalityId: '',        // '' = auto-derive from company/role; otherwise explicit pick
+      round: 'general',         // interview round type — drives focus / type mix / persona hint
+    };
+    return { ...defaults, ...(location.state?.initialConfig || {}) };
   });
   const [customCompany, setCustomCompany] = useState('');
   const [showCustomInput, setShowCustomInput] = useState(false);

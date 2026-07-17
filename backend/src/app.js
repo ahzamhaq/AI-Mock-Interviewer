@@ -17,6 +17,7 @@ const projectRoutes = require('./routes/project.routes');
 const integrationsRoutes = require('./routes/integrations.routes');
 const recommendationsRoutes = require('./routes/recommendations.routes');
 const coachRoutes = require('./routes/coach.routes');
+const presetsRoutes = require('./routes/presets.routes');
 
 const errorHandler = require('./middleware/errorHandler');
 const { notFound } = require('./middleware/notFound');
@@ -95,6 +96,7 @@ app.use('/api/projects', projectRoutes);
 app.use('/api/integrations', integrationsRoutes);
 app.use('/api/recommendations', recommendationsRoutes);
 app.use('/api/coach', coachRoutes);
+app.use('/api/presets', presetsRoutes);
 
 // Error handling
 app.use(notFound);

@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useAuth } from '../../context/AuthContext';
 import {
-  Mic, User, LogOut, Menu, X, Shield, Play, ChevronDown, Activity, Circle, Search,
+  Mic, User, LogOut, Menu, X, Shield, Play, ChevronDown, Activity, Circle, Search, Bookmark,
 } from 'lucide-react';
 import { useSearch } from '../../context/SearchContext';
 
@@ -170,7 +170,7 @@ const Navbar = () => {
               </button>
 
               <button
-                onClick={() => navigate('/interview/setup')}
+                onClick={() => navigate('/interviews/new')}
                 className="btn-accent flex items-center gap-1.5 px-2.5 py-1 text-xs"
                 style={{ height: 28 }}
               >
@@ -223,6 +223,7 @@ const Navbar = () => {
                       <div className="p-1">
                         {[
                           { to: '/profile', label: 'Profile', icon: User },
+                          { to: '/presets', label: 'Presets', icon: Bookmark },
                           ...(user.role === 'admin' ? [{ to: '/admin', label: 'Admin', icon: Shield }] : []),
                         ].map(item => (
                           <Link

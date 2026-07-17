@@ -22,6 +22,11 @@ const LeaderboardPage = lazy(() => import('./pages/LeaderboardPage'));
 const AdminPage = lazy(() => import('./pages/AdminPage'));
 const HistoryPage = lazy(() => import('./pages/HistoryPage'));
 const InterviewsPage = lazy(() => import('./pages/InterviewsPage'));
+const InterviewHubPage = lazy(() => import('./pages/InterviewHubPage'));
+const SetupMethodPage = lazy(() => import('./pages/SetupMethodPage'));
+const QuickInterviewPage = lazy(() => import('./pages/QuickInterviewPage'));
+const InterviewReviewPage = lazy(() => import('./pages/InterviewReviewPage'));
+const PresetsPage = lazy(() => import('./pages/PresetsPage'));
 const ProjectsPage = lazy(() => import('./pages/ProjectsPage'));
 const ProjectNewPage = lazy(() => import('./pages/ProjectNewPage'));
 const ProjectAnalyzingPage = lazy(() => import('./pages/ProjectAnalyzingPage'));
@@ -52,6 +57,11 @@ const AppRoutes = () => (
       <Route path="/signup" element={<PublicRoute><SignupPage /></PublicRoute>} />
       <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
       <Route path="/interviews" element={<ProtectedRoute><InterviewsPage /></ProtectedRoute>} />
+      <Route path="/interviews/new" element={<ProtectedRoute><InterviewHubPage /></ProtectedRoute>} />
+      <Route path="/interviews/new/setup" element={<ProtectedRoute><SetupMethodPage /></ProtectedRoute>} />
+      <Route path="/interviews/quick" element={<ProtectedRoute><QuickInterviewPage /></ProtectedRoute>} />
+      <Route path="/interviews/review" element={<ProtectedRoute><InterviewReviewPage /></ProtectedRoute>} />
+      <Route path="/presets" element={<ProtectedRoute><PresetsPage /></ProtectedRoute>} />
       <Route path="/projects" element={<ProtectedRoute><ProjectsPage /></ProtectedRoute>} />
       <Route path="/projects/new" element={<ProtectedRoute><ProjectNewPage /></ProtectedRoute>} />
       <Route path="/projects/:id/analyzing" element={<ProtectedRoute><ProjectAnalyzingPage /></ProtectedRoute>} />

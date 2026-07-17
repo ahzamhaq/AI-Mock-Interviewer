@@ -93,7 +93,7 @@ const LeaderboardPage = () => {
                 Complete interviews to appear here
               </p>
               <button
-                onClick={() => navigate('/interview/setup')}
+                onClick={() => navigate('/interviews/new')}
                 className="btn-accent text-xs px-4 py-2"
               >
                 Start first session

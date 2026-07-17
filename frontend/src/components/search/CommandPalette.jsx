@@ -60,7 +60,7 @@ function score(text, query) {
 
 const NAV_ITEMS = [
   { label: 'Dashboard',   route: '/dashboard',   icon: LayoutDashboard },
-  { label: 'Interviews',  route: '/interviews',  icon: Mic },
+  { label: 'Interviews',  route: '/interviews/new',  icon: Mic },
   { label: 'Projects',    route: '/projects',    icon: GitBranch },
   { label: 'Analytics',   route: '/analytics',   icon: BarChart3 },
   { label: 'Coach',       route: '/coach',       icon: Compass },

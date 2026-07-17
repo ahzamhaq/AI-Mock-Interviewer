@@ -1,8 +1,7 @@
 const Interview = require('../models/Interview.model');
 const User = require('../models/User.model');
-const Project = require('../models/Project.model');
-const RepositoryAnalysis = require('../models/RepositoryAnalysis.model');
 const achievements = require('../services/achievements/evaluate');
+const interviewBlueprint = require('../services/interviewBlueprint');
 const aiService = require('../services/ai.service');
 const memoryService = require('../services/memory.service');
 const blueprintService = require('../services/blueprint.service');
@@ -136,134 +135,72 @@ function serializeQuestion(q, index) {
 
 // ── Create interview (adaptive) ───────────────────────────────────────────────
 
-// Map project sub-mode → engine `round`. Reuses existing round profiles so
-// no new round type is introduced; the engine already knows how to steer
-// these. If the sub-mode is unknown or absent, falls back to the caller-
-// provided `round` (or the engine default).
-function roundForSubMode(subMode) {
-  switch (subMode) {
-    case 'architecture':  return 'system_design';
-    case 'debugging':     return 'technical';
-    case 'code_review':   return 'technical';
-    default:              return null;
-  }
-}
-
-// Resolve a projectMode snapshot from a projectId. Returns null when the
-// interview is not project-scoped. Throws with a user-safe message when the
-// caller passed a projectId but the project cannot be used (missing,
-// unauthorized, or analysis not ready). Callers translate to HTTP 400.
-async function resolveProjectMode(userId, projectId, subMode) {
-  if (!projectId) return null;
-  const project = await Project.findOne({ _id: projectId, userId });
-  if (!project) throw new Error('Project not found.');
-  const analysis = project.latestAnalysisId
-    ? await RepositoryAnalysis.findById(project.latestAnalysisId).lean()
-    : null;
-  if (!analysis || analysis.status !== 'ready') {
-    throw new Error('This project is still being analyzed. Try again once analysis completes.');
-  }
-  const validSubMode = ['architecture', 'debugging', 'code_review'].includes(subMode)
-    ? subMode
-    : 'architecture';
-  return {
-    projectId: project._id,
-    subMode: validSubMode,
-    analysisSummary: analysis.summary || '',
-    techStack: (analysis.techStack || []).map((t) => t.name).filter(Boolean),
-    importantFiles: (analysis.importantFiles || []).map((f) => f.path).filter(Boolean),
-    architectureSummary: analysis.architectureSummary || '',
-    _repoLabel: `${project.repoOwner}/${project.repoName}`,
-  };
-}
-
 const createInterview = async (req, res, next) => {
   try {
-    const {
-      role, experienceLevel, companyType, targetCompany, interviewType,
-      difficulty, totalQuestions, jobDescription, useResume, lengthIntent,
-      // Optional explicit overrides
-      personalityId,
-      pressure,
-      round, // 'technical' | 'behavioral' | 'system_design' | 'hiring_manager' | etc.
-      // Sprint 2: project-mode fields. Both optional. Presence of projectId
-      // switches this interview into project mode.
-      projectId,
-      subMode,
-    } = req.body;
+    // Sprint 5 Commit 1: the InterviewBlueprint is the ONE object that
+    // represents "an interview to create." Every downstream service
+    // (Interview.create, blueprintService.build, buildGenContext,
+    // memoryService, aiService.generatePersonalizedGreeting) reads from
+    // this blueprint rather than from ad-hoc plucked fields.
+    //
+    // The frontend request body is unchanged. fromRequest() reads it and
+    // produces the canonical shape; .resolve() loads project/resume
+    // context from the DB; .validate() catches user-fixable mistakes.
+    let bp = interviewBlueprint.fromRequest(req);
 
-    // Resolve project mode BEFORE the user/memory lookup so a bad projectId
-    // fails fast without creating any state.
-    let projectMode = null;
+    const user = await User.findById(req.user._id);
+
     try {
-      projectMode = await resolveProjectMode(req.user._id, projectId, subMode);
+      bp = await interviewBlueprint.resolve(bp, user);
+      interviewBlueprint.validate(bp);
     } catch (err) {
       return res.status(400).json({ success: false, error: err.message });
     }
 
-    const user = await User.findById(req.user._id);
-    const resumeText = useResume ? user.resumeText : '';
-
-    // Project mode overrides the round to something the engine already
-    // understands, unless the caller explicitly passed a round.
-    const effectiveRound = round || (projectMode ? roundForSubMode(projectMode.subMode) : null);
+    const resumeText = interviewBlueprint.toResumeText(bp);
 
     // Memory context — known weak topics, recent interviews
-    const memory = await memoryService.getUserMemory(req.user._id, role);
+    const memory = await memoryService.getUserMemory(req.user._id, bp.role);
     const memoryContext = memoryService.buildMemoryContext(memory);
 
-    // Plan the interview
-    const blueprint = blueprintService.build(
-      { role, experienceLevel, companyType, targetCompany, interviewType, difficulty, totalQuestions, jobDescription, lengthIntent },
+    // Plan the interview via the existing planner. Blueprint provides the
+    // shapes the planner already expects — no planner change.
+    const plan = blueprintService.build(
+      interviewBlueprint.toPlannerConfig(bp),
       memory,
-      { personalityId, pressure, round: effectiveRound }
+      interviewBlueprint.toPlannerOptions(bp),
     );
 
-    // Title reflects the source: project interviews show the repo name so
-    // the History and Recent Sessions surfaces are self-describing.
-    const title = projectMode
-      ? `${projectMode._repoLabel} · ${projectMode.subMode.replace('_', ' ')}`
-      : `${role.replace(/_/g, ' ')} - ${interviewType} Interview`;
+    // Create the interview document. `config` matches the pre-Sprint-5
+    // schema exactly (blueprint.toInterviewConfig maps to it 1:1).
+    const configForDoc = interviewBlueprint.toInterviewConfig(bp);
+    configForDoc.totalQuestions = plan.totalPlanned;
 
-    // Retry lineage — set only when the request is an internal retry call
-    // (see retryQuestion). Never accepted from external request bodies; the
-    // field name is intentionally underscored and set by the retry handler
-    // before delegating here.
-    const retryOf = req._internalRetryOf || undefined;
-
-    // Create the interview document with the blueprint + initial liveState
     const interview = await Interview.create({
       userId: req.user._id,
-      title,
-      mode: projectMode ? 'project' : 'general',
-      retryOf,
-      config: {
-        role, experienceLevel, companyType, targetCompany, interviewType,
-        difficulty, totalQuestions: blueprint.totalPlanned, jobDescription, useResume,
-        // Snapshot the analysis so scoring and (future) replay are reproducible
-        // even if the underlying analysis is re-run later.
-        projectMode: projectMode ? {
-          projectId: projectMode.projectId,
-          subMode: projectMode.subMode,
-          analysisSummary: projectMode.analysisSummary,
-          techStack: projectMode.techStack,
-          importantFiles: projectMode.importantFiles,
-          architectureSummary: projectMode.architectureSummary,
-        } : undefined,
-      },
+      title:  interviewBlueprint.toTitle(bp),
+      mode:   bp.mode,
+      retryOf: bp.retryOf || undefined,
+      // Sprint 5 Commit 6 — origin metadata. Every interview permanently
+      // remembers how it was created so History, Results, Coach, and
+      // Analytics can answer "where did this come from?" without needing
+      // to reconstruct provenance.
+      creationSource: bp.creationSource || 'guided',
+      sourceMetadata: bp.sourceMetadata || {},
+      config: configForDoc,
       adaptive: true,
-      persona: blueprint.persona,
-      personalityId: blueprint.personalityId,
-      pressure: blueprint.pressure,
-      round: blueprint.round || 'general',
+      persona: plan.persona,
+      personalityId: plan.personalityId,
+      pressure: plan.pressure,
+      round: plan.round || 'general',
       blueprint: {
-        totalPlanned: blueprint.totalPlanned,
-        mode: blueprint.mode,
-        plannedTopics: blueprint.plannedTopics,
-        typeMix: blueprint.typeMix,
+        totalPlanned: plan.totalPlanned,
+        mode: plan.mode,
+        plannedTopics: plan.plannedTopics,
+        typeMix: plan.typeMix,
       },
       liveState: {
-        currentDifficulty: difficulty || 'medium',
+        currentDifficulty: bp.difficulty,
         coveredTopics: [],
         weakTopicsThisSession: [],
         strongTopicsThisSession: [],
@@ -287,8 +224,8 @@ const createInterview = async (req, res, next) => {
     const firstDecision = {
       action: 'pivot',
       topic: pickSeedTopic(interview),
-      questionType: Object.keys(blueprint.typeMix)[0] || interviewType || 'technical',
-      difficulty: difficulty || 'medium',
+      questionType: Object.keys(plan.typeMix)[0] || bp.interviewType || 'technical',
+      difficulty: bp.difficulty,
     };
     firstDecision.intent = conversation.pickIntent(firstDecision, interview.liveState, firstDecision.questionType);
     const genContext = await buildGenContext(interview, firstDecision, resumeText);
@@ -309,11 +246,53 @@ const createInterview = async (req, res, next) => {
     // Personalized greeting (best-effort)
     let greeting = '';
     try {
-      greeting = await aiService.generatePersonalizedGreeting(memoryContext, { role, targetCompany, companyType });
+      greeting = await aiService.generatePersonalizedGreeting(memoryContext, {
+        role: bp.role,
+        targetCompany: bp.targetCompany,
+        companyType: bp.company,
+      });
     } catch { /* greeting is optional */ }
 
     // Fire-and-forget memory write
-    memoryService.saveQuestionsToHistory(req.user._id, role, interview._id, interview.questions).catch(() => {});
+    memoryService.saveQuestionsToHistory(req.user._id, bp.role, interview._id, interview.questions).catch(() => {});
+
+    // Sprint 5 Commit 5: capture this interview's config on the user's
+    // Recent Configurations ring buffer (max 5, newest first). Non-
+    // blocking — a write failure must never break interview creation.
+    // Retry payloads (identifiable by req._internalRetryOf) are skipped
+    // so they don't crowd out user-driven configs.
+    if (!req._internalRetryOf) {
+      const recentPayload = {
+        role: bp.role,
+        experienceLevel: bp.experience,
+        companyType: bp.company,
+        targetCompany: bp.targetCompany,
+        interviewType: bp.interviewType,
+        difficulty: bp.difficulty,
+        totalQuestions: bp.questionCount,
+        jobDescription: bp.jobDescription,
+        useResume: bp.useResume,
+        lengthIntent: bp.lengthIntent,
+        pressure: bp.pressure,
+        personalityId: bp.personality,
+        round: bp.round || 'general',
+      };
+      const recentLabel = bp.mode === 'project'
+        ? interview.title
+        : `${(bp.role || '').replace(/_/g, ' ')} · ${bp.interviewType}`;
+      User.updateOne(
+        { _id: req.user._id },
+        {
+          $push: {
+            recentConfigs: {
+              $each: [{ payload: recentPayload, label: recentLabel, createdAt: new Date() }],
+              $position: 0,
+              $slice: 5,
+            },
+          },
+        },
+      ).catch(() => { /* best-effort */ });
+    }
 
     res.status(201).json({
       success: true,
@@ -783,7 +762,7 @@ const getInterviewHistory = async (req, res, next) => {
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
-        .select('title mode config results duration completedAt createdAt'),
+        .select('title mode creationSource sourceMetadata config results duration completedAt createdAt'),
       Interview.countDocuments({ userId: req.user._id, status: 'completed' }),
     ]);
 

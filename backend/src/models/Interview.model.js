@@ -113,14 +113,53 @@ const interviewSchema = new mongoose.Schema({
   },
 
   // ── Interview mode ────────────────────────────────────────────────────
-  // Distinguishes the two Sprint-2 first-class flows. Defaults to 'general'
-  // so every pre-existing interview keeps behaving exactly as before; the
-  // analytics pipeline treats missing/legacy values as 'general'.
+  // Sprint 5 Commit 1: the mode enum is widened to reserve slots for the
+  // upcoming interview types. Only 'general' and 'project' actually flow
+  // through the pipeline today; the others are architectural placeholders
+  // so we can ship each mode as a discrete future commit without a schema
+  // migration.
+  //
+  // Defaults to 'general' so every pre-existing interview keeps behaving
+  // exactly as before; the analytics pipeline treats missing/legacy
+  // values as 'general'.
   mode: {
     type: String,
-    enum: ['general', 'project'],
+    enum: [
+      'general',
+      'project',
+      'resume',         // Sprint 5+ — grounded in the candidate's uploaded resume
+      'dsa',            // Sprint 7  — data structures & algorithms
+      'aptitude',       // Sprint 7  — quantitative / logical reasoning
+      'behavioral',     // Sprint 8  — STAR-style behavioral deep dives
+      'system_design',  // Sprint 8  — architecture / scale questions
+      'custom',         // Sprint 5+ — freeform prompt-driven interviews
+    ],
     default: 'general',
     index: true,
+  },
+
+  // ── Creation origin (Sprint 5 Commit 6) ──────────────────────────────
+  // Every interview permanently remembers HOW it was created and WHY it
+  // was configured that way. Together these make interviews reproducible
+  // (Recreate button on Review page reuses the metadata) and analyzable
+  // (counts by source, e.g. "how many interviews came from Quick AI?").
+  //
+  // Defaults to 'guided' so pre-Sprint-5-Commit-6 documents read as if
+  // they came from the classic wizard flow. New writes always pass an
+  // explicit source; controllers fall back to 'guided' only for missing
+  // request bodies (e.g. programmatic tests).
+  creationSource: {
+    type: String,
+    enum: ['guided', 'quick_ai', 'template', 'preset', 'recent', 'retry', 'coach'],
+    default: 'guided',
+    index: true,
+  },
+  // Shape varies by source — see interviewBlueprint.fromRequest for the
+  // per-source payloads. Kept as Mixed so future sources can add fields
+  // without a schema migration.
+  sourceMetadata: {
+    type: mongoose.Schema.Types.Mixed,
+    default: {},
   },
 
   // ── Retry lineage (Sprint 3) ──────────────────────────────────────────

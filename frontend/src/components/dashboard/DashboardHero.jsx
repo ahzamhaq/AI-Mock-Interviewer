@@ -27,7 +27,7 @@ const DashboardHero = ({ userName, totalSessions, streak, points }) => {
       </div>
       <div className="flex items-center gap-2">
         <button
-          onClick={() => navigate('/interviews')}
+          onClick={() => navigate('/interviews/new')}
           className="btn-accent flex items-center gap-1.5 px-3 py-1.5 text-xs"
         >
           <Play size={11} /> New session

@@ -66,6 +66,48 @@ const userSchema = new mongoose.Schema({
   averageScore: { type: Number, default: 0 },
   bestScore: { type: Number, default: 0 },
 
+  // ── Saved interview presets (Sprint 5 Commit 5) ───────────────────────
+  // User-owned named interview configurations. The `payload` sub-doc is
+  // the exact shape POST /api/interviews accepts — same as what the
+  // wizard and the Review page produce. One shape, three sources
+  // (templates, presets, recent configs); there is no separate
+  // "preset config" model.
+  //
+  // Stored as an embedded array rather than a separate collection
+  // because presets are user-scoped, small in count, and always read
+  // alongside the user record (via getMe). Matches the pattern of
+  // coachRoadmap and githubIntegration.
+  //
+  // `payload` is Mixed so the shape can evolve as future interview
+  // modes ship without a migration burden. The frontend validates
+  // what it renders.
+  savedPresets: {
+    type: [{
+      id:        { type: String, required: true },
+      name:      { type: String, required: true, trim: true, maxlength: 60 },
+      payload:   { type: mongoose.Schema.Types.Mixed, required: true },
+      createdAt: { type: Date, default: Date.now },
+      updatedAt: { type: Date, default: Date.now },
+    }],
+    default: [],
+  },
+
+  // ── Recent interview configurations (Sprint 5 Commit 5) ───────────────
+  // Ring buffer of the last 5 interview payloads a user submitted. Written
+  // automatically by createInterview so users can "Reuse" a past config
+  // without saving it explicitly. Rotates out on its own — no user action.
+  //
+  // Payload shape matches savedPresets.payload for the exact same reason:
+  // one shape, three sources.
+  recentConfigs: {
+    type: [{
+      payload:   { type: mongoose.Schema.Types.Mixed, required: true },
+      label:     { type: String, default: '' }, // convenience display string
+      createdAt: { type: Date, default: Date.now },
+    }],
+    default: [],
+  },
+
   // ── AI Coach roadmap cache (Sprint 4) ─────────────────────────────────
   // The Coach page generates a personalized set of focus areas by asking
   // the LLM to interpret the user's WeakTopic, recent interviews, and

@@ -69,7 +69,7 @@ const RecentInterviews = ({ interviews }) => {
           <div className="p-6 text-center">
             <Mic size={20} style={{ color: '#30363D' }} className="mx-auto mb-3" />
             <p className="text-xs mb-3" style={{ color: '#6B7280' }}>No sessions yet</p>
-            <button onClick={() => navigate('/interviews')} className="btn-accent text-xs px-3 py-1.5">
+            <button onClick={() => navigate('/interviews/new')} className="btn-accent text-xs px-3 py-1.5">
               Start first session
             </button>
           </div>

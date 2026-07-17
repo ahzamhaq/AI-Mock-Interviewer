@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { Mic, Clock, ChevronRight, Calendar, GitCommit } from 'lucide-react';
 import { interviewAPI } from '../services/api';
 import Navbar from '../components/layout/Navbar';
+import InterviewOriginCard from '../components/interview/InterviewOriginCard';
 import { format, formatDistanceToNow } from 'date-fns';
 
 const SCORE_COLOR = (s) => {
@@ -53,7 +54,7 @@ const HistoryPage = () => {
             )}
           </div>
           <button
-            onClick={() => navigate('/interview/setup')}
+            onClick={() => navigate('/interviews/new')}
             className="btn-accent flex items-center gap-1.5 px-3 py-1.5 text-xs"
           >
             <Mic size={11} /> New session
@@ -81,7 +82,7 @@ const HistoryPage = () => {
                 Complete your first interview to see history here
               </p>
               <button
-                onClick={() => navigate('/interview/setup')}
+                onClick={() => navigate('/interviews/new')}
                 className="btn-accent text-xs px-4 py-2"
               >
                 Start first session
@@ -169,6 +170,16 @@ const HistoryPage = () => {
                           >
                             {iv.config.projectMode.subMode.replace('_', ' ')}
                           </span>
+                        )}
+                        {/* Sprint 5 Commit 6 — origin chip. Skipped for
+                            the default 'guided' source to avoid visual
+                            noise on the classic wizard path. */}
+                        {iv.creationSource && iv.creationSource !== 'guided' && (
+                          <InterviewOriginCard
+                            dense
+                            creationSource={iv.creationSource}
+                            sourceMetadata={iv.sourceMetadata || {}}
+                          />
                         )}
                         {iv.config?.role && (
                           <span className="font-mono text-2xs" style={{ color: '#6B7280' }}>

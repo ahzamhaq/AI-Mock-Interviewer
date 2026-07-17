@@ -6,6 +6,7 @@ const {
   listPersonalities, listRounds, handleNudge, resumeInterview,
   retryQuestion,
 } = require('../controllers/interview.controller');
+const { parse: parseInterviewPrompt } = require('../controllers/interviewParser.controller');
 
 const router = express.Router();
 
@@ -14,6 +15,7 @@ router.use(protect);
 router.get('/personalities', listPersonalities); // static registry of interviewer personalities
 router.get('/rounds', listRounds);               // static registry of interview round types
 router.post('/', createInterview);
+router.post('/parse', parseInterviewPrompt); // Sprint 5 Commit 4 — NL prompt → Interview Draft
 router.get('/history', getInterviewHistory);
 router.get('/:id', getInterview);
 router.post('/:interviewId/answer/:questionIndex', submitAnswer);

@@ -69,6 +69,10 @@ export const interviewAPI = {
   // Sprint 3 — create a NEW short interview seeded from one question of an old one.
   retryQuestion: (interviewId, questionIndex) =>
     api.post(`/interviews/${interviewId}/retry-question`, { questionIndex }),
+  // Sprint 5 Commit 4 — natural-language prompt → structured Interview Draft.
+  // NOTE: this does NOT create an interview. The Review page maps the
+  // returned draft to the wizard payload, then POSTs to create() as usual.
+  parse: (payload) => api.post('/interviews/parse', payload),
 };
 
 // TTS (server-side ElevenLabs; falls back to browser SpeechSynthesis automatically)
@@ -105,6 +109,16 @@ export const projectsAPI = {
 // Recommendations (Sprint 3 — powers the Dashboard "Continue Learning" rail)
 export const recommendationsAPI = {
   list: () => api.get('/recommendations'),
+};
+
+// Presets (Sprint 5 Commit 5 — user-owned saved interview configurations)
+// Presets store the exact POST /interviews payload — same shape as
+// templates and recent configs. One shape, three sources.
+export const presetsAPI = {
+  list:   () => api.get('/presets'),
+  create: (name, payload) => api.post('/presets', { name, payload }),
+  rename: (id, name) => api.patch(`/presets/${id}`, { name }),
+  remove: (id) => api.delete(`/presets/${id}`),
 };
 
 // Coach (Sprint 4 — personalized roadmap generated on demand, cached 24h)

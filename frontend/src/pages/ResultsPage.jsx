@@ -9,6 +9,7 @@ import { interviewAPI } from '../services/api';
 import Navbar from '../components/layout/Navbar';
 import ResultsHeader from '../components/results/ResultsHeader';
 import VerdictStrip from '../components/results/VerdictStrip';
+import InterviewOriginCard from '../components/interview/InterviewOriginCard';
 import toast from 'react-hot-toast';
 import { RadarChart, Radar, PolarGrid, PolarAngleAxis, ResponsiveContainer } from 'recharts';
 
@@ -273,6 +274,19 @@ const ResultsPage = () => {
           gradeColorClass={GRADE_COLORS[results.grade] || 'text-white'}
         />
 
+        {/* Sprint 5 Commit 6 — origin trace. Skipped for the default
+            'guided' source to keep the classic wizard results view
+            visually unchanged for existing users. */}
+        {interview.creationSource && interview.creationSource !== 'guided' && (
+          <div className="mb-6 flex justify-center">
+            <InterviewOriginCard
+              dense
+              creationSource={interview.creationSource}
+              sourceMetadata={interview.sourceMetadata || {}}
+            />
+          </div>
+        )}
+
         {/* ── Tier 1 · Verdict strip ────────────────────────────────────
             The fast-scan answer to "did I do well? what should I do next?"
             Everything below the fold remains for users who want detail. */}
@@ -281,7 +295,7 @@ const ResultsPage = () => {
           weaknesses={results.weaknesses}
           weakestIndex={weakestAnsweredIndex}
           onRetryWeakest={() => retryQuestionAt(weakestAnsweredIndex)}
-          onPracticeAgain={() => navigate('/interviews')}
+          onPracticeAgain={() => navigate('/interviews/new')}
           busy={retrying}
         />
 
@@ -402,7 +416,7 @@ const ResultsPage = () => {
 
         {/* Actions */}
         <div className="flex flex-col sm:flex-row gap-3">
-          <Link to="/interviews" className="flex-1">
+          <Link to="/interviews/new" className="flex-1">
             <motion.button className="btn-primary w-full flex items-center justify-center gap-2 py-4"
               whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
               <RefreshCw size={18} /> Practice Again
