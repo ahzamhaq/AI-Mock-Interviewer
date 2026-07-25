@@ -545,8 +545,11 @@ const InterviewReviewPage = () => {
             <button
               type="button"
               onClick={() => setSavePresetOpen(true)}
+              disabled={!!user?.isDemo}
               className="btn-secondary flex items-center gap-1.5 px-3 py-1.5 text-xs"
-              title="Save this configuration for reuse"
+              title={user?.isDemo
+                ? 'Disabled on the shared demo account'
+                : 'Save this configuration for reuse'}
             >
               <Bookmark size={11} /> Save preset
             </button>

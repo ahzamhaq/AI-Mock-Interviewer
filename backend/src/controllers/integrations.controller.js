@@ -113,6 +113,12 @@ const callback = async (req, res, next) => {
     const decoded = verifyState(state);
     if (!decoded?.userId) return bail('invalid_state');
 
+    // Belt-and-braces demo guard: /authorize is already blocked upstream
+    // by middleware, but if a state JWT is somehow replayed from a demo
+    // user context, refuse to store the token on the shared account.
+    const targetUser = await User.findById(decoded.userId).select('isDemo');
+    if (targetUser?.isDemo) return bail('demo_account_restricted');
+
     const redirectUri = requireEnv('GITHUB_OAUTH_REDIRECT_URI');
 
     let token;

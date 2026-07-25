@@ -145,6 +145,14 @@ const userSchema = new mongoose.Schema({
   showOnLeaderboard: { type: Boolean, default: true },
   emailVerified: { type: Boolean, default: false },
   lastLogin: { type: Date, default: null },
+
+  // ── Demo-account flag ─────────────────────────────────────────────────
+  // Set true on the shared demo credential. Anyone signing in with this
+  // user shares the same underlying record, so certain write actions
+  // (GitHub connect, private-repo access, preset save) are refused server
+  // side to prevent one demo user from exposing another's data.
+  // See middleware/demoGuard.js and integrations.controller.js.
+  isDemo: { type: Boolean, default: false, index: true },
 }, {
   timestamps: true,
   toJSON: { virtuals: true },

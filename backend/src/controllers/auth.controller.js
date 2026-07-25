@@ -36,6 +36,7 @@ const signup = async (req, res, next) => {
         totalInterviews: user.totalInterviews,
         points: user.points,
         averageScore: user.averageScore,
+        isDemo: !!user.isDemo,
       },
     });
   } catch (error) {
@@ -81,6 +82,7 @@ const login = async (req, res, next) => {
         points: user.points,
         averageScore: user.averageScore,
         resumeUrl: user.resumeUrl,
+        isDemo: !!user.isDemo,
       },
     });
   } catch (error) {
@@ -164,6 +166,7 @@ const googleAuth = async (req, res, next) => {
         totalInterviews: user.totalInterviews,
         points: user.points,
         averageScore: user.averageScore,
+        isDemo: !!user.isDemo,
       },
     });
   } catch (error) {
