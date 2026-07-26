@@ -24,7 +24,7 @@ const ProjectAnalyzingPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [project, setProject] = useState(null);
-  const [analysis, setAnalysis] = useState(null);
+  const [, setAnalysis] = useState(null);
   const [error, setError] = useState(null);
   const [retrying, setRetrying] = useState(false);
   const attemptsRef = useRef(0);

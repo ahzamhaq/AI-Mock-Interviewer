@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Trophy, Flame, TrendingUp, Hash, EyeOff } from 'lucide-react';
+import { Trophy, Flame, EyeOff } from 'lucide-react';
 import { userAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import Navbar from '../components/layout/Navbar';
@@ -33,7 +33,6 @@ const LeaderboardPage = () => {
   }, []);
 
   const topThree = leaders.slice(0, 3);
-  const rest = leaders.slice(3);
 
   return (
     <div className="min-h-screen flex flex-col" style={{ background: '#0D1117' }}>

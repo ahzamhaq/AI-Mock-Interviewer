@@ -6,7 +6,6 @@ import {
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import Navbar from '../components/layout/Navbar';
-import SectionHeader from '../components/common/SectionHeader';
 import EmptyState from '../components/common/EmptyState';
 import { Panel, PanelHeader } from '../components/common/Panel';
 import WorkspaceTabs from '../components/projects/WorkspaceTabs';
@@ -95,13 +94,17 @@ const WorkspacePage = () => {
     }
   };
 
-  // Sprint 3 tabs — Overview + Files + Interviews. Chat / Health / Diagram
-  // remain deferred until later sprints; ghost tabs are still forbidden.
+  // Sprint 3 tabs — Overview + Files + Interviews.
+  // Sprint 6 Commit 1 adds Chat as a nav-style tab: its `href` sends the
+  // user to /projects/:id/chat rather than switching an in-page panel,
+  // because Chat needs the full canvas. Health / Diagram remain
+  // deferred; ghost tabs still forbidden.
   const tabs = useMemo(() => ([
     { id: 'overview',   label: 'Overview' },
     { id: 'files',      label: 'Files' },
     { id: 'interviews', label: 'Interviews' },
-  ]), []);
+    { id: 'chat',       label: 'Chat', href: `/projects/${id}/chat` },
+  ]), [id]);
 
   const repoLabel = project ? `${project.repoOwner}/${project.repoName}` : '';
 

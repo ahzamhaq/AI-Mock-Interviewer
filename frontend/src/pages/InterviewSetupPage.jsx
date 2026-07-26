@@ -1,10 +1,9 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useDropzone } from 'react-dropzone';
 import {
-  Mic, ChevronRight, ChevronLeft, Upload, FileText, Building2,
-  Code, Users, Layers, Database, Briefcase, Cpu, Play
+  ChevronRight, ChevronLeft,
+  Code, Users, Layers, Database, Briefcase, Cpu, Play,
 } from 'lucide-react';
 import { interviewAPI } from '../services/api';
 import Navbar from '../components/layout/Navbar';

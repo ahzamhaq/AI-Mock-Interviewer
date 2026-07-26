@@ -2,8 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
-  Trophy, Mic, BarChart3, CheckCircle, XCircle, ChevronDown, ChevronUp,
-  RefreshCw, Home, Star, Zap, MessageSquare, Volume2, TrendingUp, Clock
+  BarChart3, CheckCircle, XCircle, ChevronDown, ChevronUp,
+  RefreshCw, Home, Zap, MessageSquare, Volume2, TrendingUp,
 } from 'lucide-react';
 import { interviewAPI } from '../services/api';
 import Navbar from '../components/layout/Navbar';
@@ -193,6 +193,7 @@ const ResultsPage = () => {
       .then(res => setInterview(res.interview))
       .catch(() => navigate('/dashboard'))
       .finally(() => setLoading(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   // Weakest ANSWERED question — the one the Verdict strip's "Retry" button
@@ -238,7 +239,7 @@ const ResultsPage = () => {
   }
 
   if (!interview) return null;
-  const { results, config, questions, duration } = interview;
+  const { results, questions } = interview;
 
   const answeredCount = questions.filter(q => !q.skipped && q.userAnswer).length;
   const getResultEmoji = () => {
