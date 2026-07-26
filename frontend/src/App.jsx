@@ -31,6 +31,7 @@ const ProjectsPage = lazy(() => import('./pages/ProjectsPage'));
 const ProjectNewPage = lazy(() => import('./pages/ProjectNewPage'));
 const ProjectAnalyzingPage = lazy(() => import('./pages/ProjectAnalyzingPage'));
 const WorkspacePage = lazy(() => import('./pages/WorkspacePage'));
+const WorkspaceChatPage = lazy(() => import('./pages/WorkspaceChatPage'));
 const ProjectInterviewSetupPage = lazy(() => import('./pages/ProjectInterviewSetupPage'));
 const CoachPage = lazy(() => import('./pages/CoachPage'));
 
@@ -66,6 +67,7 @@ const AppRoutes = () => (
       <Route path="/projects/new" element={<ProtectedRoute><ProjectNewPage /></ProtectedRoute>} />
       <Route path="/projects/:id/analyzing" element={<ProtectedRoute><ProjectAnalyzingPage /></ProtectedRoute>} />
       <Route path="/projects/:id" element={<ProtectedRoute><WorkspacePage /></ProtectedRoute>} />
+      <Route path="/projects/:id/chat" element={<ProtectedRoute><WorkspaceChatPage /></ProtectedRoute>} />
       <Route path="/projects/:id/interview/setup" element={<ProtectedRoute><ProjectInterviewSetupPage /></ProtectedRoute>} />
       <Route path="/interview/setup" element={<ProtectedRoute><InterviewSetupPage /></ProtectedRoute>} />
       <Route path="/interview/:id" element={<ProtectedRoute><InterviewPage /></ProtectedRoute>} />

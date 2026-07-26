@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { CheckCircle, GitBranch, Upload, Sparkles, Play } from 'lucide-react';
+import { CheckCircle, GitBranch, Upload, Play } from 'lucide-react';
 import Navbar from '../components/layout/Navbar';
 import SectionHeader from '../components/common/SectionHeader';
 import InterviewHubCard from '../components/interview/InterviewHubCard';

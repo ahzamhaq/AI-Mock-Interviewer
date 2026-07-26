@@ -1,16 +1,14 @@
 // TTS client wrapper. Tries server-side TTS first (ElevenLabs via /api/tts);
 // when the server signals `useBrowser: true` it falls back to the Web SpeechSynthesis API.
 
-import api from './api';
-
 let currentAudio = null;
-let currentUtterance = null;
+let _currentUtterance = null;
 
 export const cancelTTS = () => {
   try { currentAudio?.pause(); } catch {}
   currentAudio = null;
   try { window.speechSynthesis?.cancel(); } catch {}
-  currentUtterance = null;
+  _currentUtterance = null;
 };
 
 const speakBrowser = (text, { onStart, onEnd } = {}) => {
@@ -30,9 +28,9 @@ const speakBrowser = (text, { onStart, onEnd } = {}) => {
     voices.find(v => v.lang.startsWith('en'));
   if (preferred) utterance.voice = preferred;
   utterance.onstart = () => onStart?.();
-  utterance.onend = () => { currentUtterance = null; onEnd?.(); };
-  utterance.onerror = () => { currentUtterance = null; onEnd?.(); };
-  currentUtterance = utterance;
+  utterance.onend = () => { _currentUtterance = null; onEnd?.(); };
+  utterance.onerror = () => { _currentUtterance = null; onEnd?.(); };
+  _currentUtterance = utterance;
   window.speechSynthesis.speak(utterance);
 };
 

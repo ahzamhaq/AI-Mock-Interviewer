@@ -2,8 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
-  Mic, ArrowRight, ChevronRight, Activity, Cpu, Zap,
-  TerminalSquare, BarChart3, Brain, GitCommit
+  Mic, ArrowRight, ChevronRight,
+  TerminalSquare,
 } from 'lucide-react';
 import Navbar from '../components/layout/Navbar';
 import { useAuth } from '../context/AuthContext';

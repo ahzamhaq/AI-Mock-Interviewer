@@ -2,7 +2,7 @@ import React, { useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { useDropzone } from 'react-dropzone';
 import {
-  User, Mail, Briefcase, Upload, Save, Lock, CheckCircle, Star,
+  User, Briefcase, Upload, Save, Lock, CheckCircle, Star,
   Flame, Trophy, Target, Eye, EyeOff
 } from 'lucide-react';
 import { userAPI } from '../services/api';
@@ -28,7 +28,7 @@ const EXPERIENCE = [
 ];
 
 const ProfilePage = () => {
-  const { user, updateUser, loadUser } = useAuth();
+  const { user, updateUser } = useAuth();
   const [form, setForm] = useState({
     name: user?.name || '',
     targetRole: user?.targetRole || 'sde',
@@ -70,6 +70,7 @@ const ProfilePage = () => {
     } finally {
       setUploading(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({

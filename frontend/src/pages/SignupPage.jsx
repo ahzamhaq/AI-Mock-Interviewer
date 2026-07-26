@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Eye, EyeOff, Mic, Mail, Lock, User, ArrowRight, Briefcase } from 'lucide-react';
+import { Eye, EyeOff, Mic, Mail, Lock, User, ArrowRight } from 'lucide-react';
 import { GoogleLogin } from '@react-oauth/google';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';

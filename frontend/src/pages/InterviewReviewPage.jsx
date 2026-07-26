@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft, Play, Loader2, AlertTriangle, Sparkles, Bookmark } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -195,7 +195,6 @@ const InterviewReviewPage = () => {
       return `${draft.company} · ${String(draft.role).replace(/_/g, ' ')}`;
     }
     return '';
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.state, draft?.company, draft?.role]);
 
   // Once the user edits an unknown field, drop it from the "unknown" set
