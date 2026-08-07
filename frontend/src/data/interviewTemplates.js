@@ -125,6 +125,37 @@ export const INTERVIEW_TEMPLATES = [
     },
   },
   {
+    id: 'dsa-graphs-medium',
+    name: 'DSA · Graphs (Medium)',
+    description: 'Focused DSA session on graph algorithms at medium difficulty.',
+    icon: 'Code2',
+    topics: ['Graphs'],
+    payload: {
+      role: 'sde',
+      experienceLevel: '1-2_years',
+      companyType: 'any',
+      targetCompany: '',
+      interviewType: 'technical',
+      difficulty: 'medium',
+      totalQuestions: 5,
+      jobDescription: '',
+      useResume: false,
+      lengthIntent: 'depth',
+      pressure: 'standard',
+      personalityId: '',
+      round: 'technical',
+      mode: 'dsa',
+      dsa: {
+        topic: 'Graphs',
+        difficulty: 'medium',
+        language: 'cpp',
+        questionCount: 5,
+        allowHints: true,
+        focusAreas: ['time complexity', 'edge cases'],
+      },
+    },
+  },
+  {
     id: 'startup-backend',
     name: 'Startup Backend',
     description: 'Fast-paced startup interview — full-stack awareness, tradeoffs.',
@@ -157,6 +188,7 @@ export const INTERVIEW_TEMPLATES = [
  */
 export function templateToDraft(template) {
   const p = template.payload;
+  const isDsa = p.mode === 'dsa';
   return {
     draft: {
       company:       p.targetCompany || null,
@@ -164,8 +196,8 @@ export function templateToDraft(template) {
       interviewType: p.interviewType,
       experience:    p.experienceLevel,
       difficulty:    p.difficulty,
-      duration:      Math.round(p.totalQuestions * 5),
-      questionCount: p.totalQuestions,
+      duration:      Math.round((isDsa ? (p.dsa?.questionCount || 5) : p.totalQuestions) * 5),
+      questionCount: isDsa ? (p.dsa?.questionCount || 5) : p.totalQuestions,
       personality:   null,
       pressure:      p.pressure,
       round:         p.round,
@@ -175,6 +207,10 @@ export function templateToDraft(template) {
       followUps:     false,
       feedbackMode:  null,
       companyType:   p.companyType,
+      // Sprint 7 Commit 1 — DSA templates carry a nested dsa sub-config.
+      // Non-DSA templates leave these undefined.
+      mode:          isDsa ? 'dsa' : undefined,
+      dsa:           isDsa ? { ...p.dsa } : undefined,
     },
     confidence: {
       company:       p.targetCompany ? 1 : 0,

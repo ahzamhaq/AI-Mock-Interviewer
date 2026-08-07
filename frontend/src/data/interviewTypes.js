@@ -53,9 +53,9 @@ export const INTERVIEW_TYPES = [
     title: 'DSA Interview',
     description: 'Coding interview focused on data structures and algorithms.',
     icon: 'Code2',
-    category: 'reserved',
-    enabled: false,
-    actionLabel: 'Coming Soon',
+    category: 'primary',
+    enabled: true,
+    actionLabel: 'Configure',
   },
   {
     id: 'aptitude',

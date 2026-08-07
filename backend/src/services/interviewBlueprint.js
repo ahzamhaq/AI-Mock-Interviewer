@@ -1,5 +1,12 @@
 const Project = require('../models/Project.model');
 const RepositoryAnalysis = require('../models/RepositoryAnalysis.model');
+const {
+  DSA_QUESTION_COUNT,
+  isValidTopic,
+  canonicalTopic,
+  isValidDifficulty: isValidDsaDifficulty,
+  isValidLanguage: isValidDsaLanguage,
+} = require('../constants/dsa');
 
 /**
  * interviewBlueprint — the single source of truth for "an interview to
@@ -92,6 +99,12 @@ function fromRequest(req) {
     // Mode-specific inputs (raw). Resolution happens in .resolve().
     projectId: body.projectId || null,
     subMode:   body.subMode  || null,
+
+    // DSA mode payload (Sprint 7 Commit 1). Extracted here so callers can
+    // pass either a nested `dsa: { ... }` object OR flat top-level fields
+    // (e.g. dsaTopic) — the wizard uses the nested form, the parser can
+    // emit either. Normalization + validation happens in validate().
+    dsa: mode === 'dsa' ? normalizeDsa(body.dsa) : null,
 
     // Retry lineage — internal handoff from the retryQuestion controller.
     // Never accepted from external request bodies; the underscore prefix
@@ -214,6 +227,21 @@ function validate(blueprint) {
   if (blueprint.mode === 'custom' && !blueprint.customPrompt.trim()) {
     throw new Error('Custom interviews require a customPrompt.');
   }
+
+  // DSA mode has its own required-field triad — topic, difficulty,
+  // language. Everything else has a sensible default.
+  if (blueprint.mode === 'dsa') {
+    const d = blueprint.dsa || {};
+    if (!d.topic) {
+      throw new Error('DSA interviews require a topic.');
+    }
+    if (!d.difficulty) {
+      throw new Error('DSA interviews require a difficulty.');
+    }
+    if (!d.language) {
+      throw new Error('DSA interviews require a programming language.');
+    }
+  }
 }
 
 // ── Derivations for downstream services ─────────────────────────────────────
@@ -241,6 +269,11 @@ function toInterviewConfig(blueprint) {
   };
   if (blueprint.generatedConfig.projectMode) {
     cfg.projectMode = blueprint.generatedConfig.projectMode;
+  }
+  // Sprint 7 Commit 1 — persist DSA sub-doc on the Interview when mode='dsa'.
+  // Other modes leave this untouched so the persisted document is unchanged.
+  if (blueprint.mode === 'dsa' && blueprint.dsa) {
+    cfg.dsa = blueprint.dsa;
   }
   return cfg;
 }
@@ -323,6 +356,42 @@ function clampInt(v, lo, hi, fallback) {
   const n = Number(v);
   if (!Number.isFinite(n)) return fallback;
   return Math.max(lo, Math.min(hi, Math.round(n)));
+}
+
+/**
+ * Normalize the DSA payload from a request body. Accepts either a nested
+ * `{ dsa: { ... } }` shape or `null`/`undefined`. Enforces enums via the
+ * shared constants; invalid values become empty strings so validate()
+ * throws a user-safe error. Question count clamps to [1, 20].
+ */
+function normalizeDsa(input) {
+  const src = (input && typeof input === 'object' && !Array.isArray(input)) ? input : {};
+  // Topic can be either one of the predefined DSA_TOPICS (canonicalized to
+  // its canonical casing) OR a freeform user-typed topic. Freeform topics
+  // are trimmed and length-capped; empty strings mean "not provided".
+  let topic = '';
+  if (typeof src.topic === 'string') {
+    const canon = canonicalTopic(src.topic);
+    if (canon) topic = canon;
+    else if (isValidTopic(src.topic)) topic = src.topic;
+    else topic = src.topic.trim().slice(0, 80);
+  }
+  const difficulty = isValidDsaDifficulty(src.difficulty) ? String(src.difficulty).toLowerCase() : '';
+  const language = isValidDsaLanguage(src.language) ? String(src.language).toLowerCase() : '';
+  const questionCount = clampInt(
+    src.questionCount,
+    DSA_QUESTION_COUNT.MIN,
+    DSA_QUESTION_COUNT.MAX,
+    DSA_QUESTION_COUNT.DEFAULT,
+  );
+  const allowHints = typeof src.allowHints === 'boolean' ? src.allowHints : true;
+  const focusAreas = Array.isArray(src.focusAreas)
+    ? src.focusAreas
+        .map((f) => (typeof f === 'string' ? f.trim() : ''))
+        .filter(Boolean)
+        .slice(0, 10)
+    : [];
+  return { topic, difficulty, language, questionCount, allowHints, focusAreas };
 }
 
 // Whitelist known metadata fields per source. The frontend is trusted-ish

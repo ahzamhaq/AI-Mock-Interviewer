@@ -9,6 +9,10 @@ import { interviewAPI } from '../services/api';
 import Navbar from '../components/layout/Navbar';
 import ResultsHeader from '../components/results/ResultsHeader';
 import VerdictStrip from '../components/results/VerdictStrip';
+// Sprint 7 Commit 5 — DSA-only Code Evaluation panel. Rendered
+// conditionally so the classic Results view is unchanged for every
+// other interview mode.
+import DsaEvaluationPanel from '../components/results/DsaEvaluationPanel';
 import InterviewOriginCard from '../components/interview/InterviewOriginCard';
 import toast from 'react-hot-toast';
 import { RadarChart, Radar, PolarGrid, PolarAngleAxis, ResponsiveContainer } from 'recharts';
@@ -274,6 +278,23 @@ const ResultsPage = () => {
           emoji={getResultEmoji()}
           gradeColorClass={GRADE_COLORS[results.grade] || 'text-white'}
         />
+
+        {/* ── DSA Code Evaluation (Sprint 7 Commit 5) ──────────────────
+            Renders the structured evaluation produced by the backend
+            Code Evaluation Engine at completion. Only shown for DSA
+            interviews — other modes fall through to the classic
+            results layout. */}
+        {interview.mode === 'dsa' && interview.evaluation?.status && (
+          <div className="mt-4">
+            <DsaEvaluationPanel
+              evaluation={interview.evaluation}
+              execution={interview.lastExecution}
+              interviewId={interview._id || interview.id}
+              onEvaluationChange={(next) => setInterview((prev) => ({ ...prev, evaluation: next }))}
+              title={interview.config?.dsa?.topic || interview.title}
+            />
+          </div>
+        )}
 
         {/* Sprint 5 Commit 6 — origin trace. Skipped for the default
             'guided' source to keep the classic wizard results view

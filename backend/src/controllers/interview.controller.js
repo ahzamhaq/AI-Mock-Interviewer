@@ -14,6 +14,10 @@ const interviewEngine = require('../services/interviewEngine');
 const silenceHandler = require('../services/silenceHandler');
 const responseQuality = require('../services/responseQuality');
 const roundProfiles = require('../services/roundProfiles');
+const { getStrategy } = require('../services/interviewStrategies');
+const judge0 = require('../services/judge0.service');
+const { isSupported: isJudge0LangSupported } = require('../constants/judge0Languages');
+const codeEvaluation = require('../services/codeEvaluation.service');
 
 // ── Internal helpers ──────────────────────────────────────────────────────────
 
@@ -37,11 +41,28 @@ function persona(interview) {
 
 // Push a generated question onto the interview document.
 function appendQuestion(interview, q, meta = {}) {
+  // Sprint 7 Commit 4 — attach hidden test cases from the mode strategy.
+  // DSA seeds a small static mock suite; other modes get an empty array.
+  // Primary questions get tests; follow-ups reuse the parent's suite so
+  // /submit keeps producing consistent results within a thread.
+  const strategy = getStrategy(interview.mode);
+  let hiddenTests = [];
+  if (!meta.isFollowUp && typeof strategy.seedHiddenTests === 'function') {
+    try {
+      const seeded = strategy.seedHiddenTests(interview, q);
+      if (Array.isArray(seeded)) hiddenTests = seeded;
+    } catch { /* fall through with empty tests */ }
+  } else if (meta.isFollowUp && meta.parentIndex != null) {
+    const parent = interview.questions[meta.parentIndex];
+    if (parent && Array.isArray(parent.hiddenTests)) hiddenTests = parent.hiddenTests;
+  }
+
   interview.questions.push({
     questionText: q.text,
     questionType: q.type || meta.questionType || 'technical',
     topic: q.topic || meta.topic || '',
     hints: q.hints || [],
+    hiddenTests,
     isFollowUp: !!meta.isFollowUp,
     parentQuestionIndex: meta.parentIndex ?? null,
     difficultyAtAsk: meta.difficulty || interview.liveState?.currentDifficulty || 'medium',
@@ -110,6 +131,20 @@ async function buildGenContext(interview, decision, resumeText) {
       architectureSummary: cfg.projectMode.architectureSummary,
     } : null,
   };
+}
+
+// Sprint 7 Commit 2 — strategy layer for mode-specific gen context.
+// Wraps buildGenContext() so DSA (and future strategies) can inject
+// mode-aware fields + a prompt block without duplicating the base
+// context assembly. Non-strategy modes fall through unchanged.
+async function buildStrategyAwareGenContext(interview, decision, resumeText) {
+  const base = await buildGenContext(interview, decision, resumeText);
+  const strategy = getStrategy(interview.mode);
+  const augment = strategy.augmentGenContext(interview, decision) || {};
+  const merged = { ...base, ...augment };
+  const promptInsert = strategy.buildPromptInsert(merged);
+  if (promptInsert) merged.strategyPromptInsert = promptInsert;
+  return merged;
 }
 
 // Project a single question for the frontend response.
@@ -221,14 +256,17 @@ const createInterview = async (req, res, next) => {
 
     // Generate the very first question (a pivot, since nothing has been asked).
     // The first question has no reaction/transition — the greeting handles the lead-in.
-    const firstDecision = {
+    let firstDecision = {
       action: 'pivot',
       topic: pickSeedTopic(interview),
       questionType: Object.keys(plan.typeMix)[0] || bp.interviewType || 'technical',
       difficulty: bp.difficulty,
     };
+    // Sprint 7 Commit 2 — DSA strategy overrides the seed to target
+    // config.dsa.topic / focusAreas at the correct starting difficulty.
+    firstDecision = getStrategy(interview.mode).seedDecision(interview, firstDecision);
     firstDecision.intent = conversation.pickIntent(firstDecision, interview.liveState, firstDecision.questionType);
-    const genContext = await buildGenContext(interview, firstDecision, resumeText);
+    const genContext = await buildStrategyAwareGenContext(interview, firstDecision, resumeText);
     const firstQ = await aiService.generateAdaptiveQuestion(genContext);
 
     appendQuestion(interview, firstQ, {
@@ -517,7 +555,9 @@ const getNextQuestion = async (req, res, next) => {
     // Generate the actual question text
     const user = await User.findById(req.user._id);
     const resumeText = interview.config.useResume ? user.resumeText : '';
-    const genContext = await buildGenContext(interview, decision, resumeText);
+    // Sprint 7 Commit 2 — strategy-aware context so DSA questions get
+    // the DSA prompt block + difficulty escalation for 'mixed' mode.
+    const genContext = await buildStrategyAwareGenContext(interview, decision, resumeText);
     const generated = await aiService.generateAdaptiveQuestion(genContext);
 
     // Semantic dedup — try a few times if we get something duplicate
@@ -655,6 +695,29 @@ const completeInterview = async (req, res, next) => {
       try {
         interview.results.closing = await aiService.generateClosingLine(interview);
       } catch { /* closing is optional */ }
+    }
+
+    // ── Code Evaluation (Sprint 7 Commit 5) ─────────────────────────
+    // Only run for DSA interviews — other modes' evaluation flows are
+    // covered by the existing overall-feedback path above. The engine
+    // NEVER throws; on failure it returns { status: 'failed', … } and
+    // we persist the marker so the frontend can offer a Retry button.
+    // Interview completion must succeed even if the LLM is unavailable.
+    if (interview.mode === 'dsa') {
+      const sourceCode = typeof req.body?.sourceCode === 'string' ? req.body.sourceCode : '';
+      try {
+        const result = await codeEvaluation.evaluate(interview, { sourceCode });
+        interview.evaluation = result;
+        interview.markModified('evaluation');
+      } catch (evalErr) {
+        // codeEvaluation.evaluate should not throw, but belt-and-braces:
+        // any unexpected exception still lets completion proceed.
+        console.error('[completeInterview] evaluation crashed:', evalErr?.message || evalErr);
+        interview.evaluation = codeEvaluation.pending();
+        interview.evaluation.status = 'failed';
+        interview.evaluation.error  = 'Evaluation failed unexpectedly.';
+        interview.markModified('evaluation');
+      }
     }
 
     await interview.save();
@@ -972,9 +1035,308 @@ const retryQuestion = async (req, res, next) => {
   }
 };
 
+// ── DSA hint — progressive nudges for the current DSA question ─────────────
+// Sprint 7 Commit 2. POST /interviews/:interviewId/hint
+//
+// Reads the current question, asks the DSA strategy to build a prompt for
+// hint #(N+1), calls the LLM, appends the returned hint to
+// question.hints, saves, and returns { hint, hintsGiven }.
+//
+// Guardrails:
+//   • Only supported when the mode's strategy exposes buildHintPrompt
+//     (today: DSA only).
+//   • Blocked when config.dsa.allowHints === false.
+//   • Capped at 3 hints per question so a candidate can't strip the
+//     entire problem via repeated clicks.
+//
+// The hint is NOT scored against the answer — it's a coaching aid. Any
+// follow-up scoring (if we add "penalize hint usage" later) reads
+// question.hints.length.
+
+const MAX_HINTS_PER_QUESTION = 3;
+
+const requestHint = async (req, res, next) => {
+  try {
+    const { interviewId } = req.params;
+    const interview = await Interview.findOne({ _id: interviewId, userId: req.user._id });
+    if (!interview) return res.status(404).json({ success: false, error: 'Interview not found' });
+
+    const strategy = getStrategy(interview.mode);
+    if (!strategy.hintAvailable || !strategy.hintAvailable(interview) || typeof strategy.buildHintPrompt !== 'function') {
+      return res.status(400).json({
+        success: false,
+        error: 'Hints are not enabled for this interview.',
+      });
+    }
+
+    const idx = interview.currentQuestionIndex;
+    const question = interview.questions[idx] || interview.questions[interview.questions.length - 1];
+    if (!question) {
+      return res.status(400).json({ success: false, error: 'No active question to hint.' });
+    }
+
+    const existing = Array.isArray(question.hints) ? question.hints : [];
+    if (existing.length >= MAX_HINTS_PER_QUESTION) {
+      return res.status(400).json({
+        success: false,
+        error: `Maximum ${MAX_HINTS_PER_QUESTION} hints per question.`,
+      });
+    }
+
+    const prompt = strategy.buildHintPrompt(interview, question, existing.length);
+    let hintText = '';
+    try {
+      const raw = await aiService.generateText(prompt, { temperature: 0.6, maxTokens: 120 });
+      hintText = (raw || '').trim().replace(/^["'\s]+|["'\s]+$/g, '');
+    } catch (err) {
+      return res.status(503).json({
+        success: false,
+        error: 'The hint service is temporarily unavailable. Please try again.',
+      });
+    }
+
+    if (!hintText) {
+      return res.status(502).json({ success: false, error: 'Could not generate a hint.' });
+    }
+
+    question.hints = [...existing, hintText];
+    interview.markModified('questions');
+    await interview.save();
+
+    return res.json({
+      success: true,
+      hint: hintText,
+      hintsGiven: question.hints.length,
+      maxHints: MAX_HINTS_PER_QUESTION,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// ── Code execution (Sprint 7 Commit 4) ─────────────────────────────────────
+// POST /interviews/:interviewId/run
+// POST /interviews/:interviewId/submit
+//
+// Both routes accept { language, sourceCode, sampleTests?[] } and
+// return a normalized execution result the frontend can render into
+// the OutputPanel without further reshaping. `run` executes against
+// the sample tests supplied in the request body; `submit` executes
+// against the current question's stored hidden tests. Neither route
+// performs AI code review or scoring — those belong to Commit 5.
+//
+// Cooldown enforcement is per-user, per-interview, per-endpoint, held
+// in an in-process Map. This is intentionally lightweight — a single
+// process across a small user base is the current deployment. If we
+// scale horizontally later we'd move this to Redis; the API contract
+// stays the same.
+
+const RUN_COOLDOWN_MS    = 2_000;
+const SUBMIT_COOLDOWN_MS = 5_000;
+const cooldowns = new Map();
+
+function cooldownKey(userId, interviewId, kind) {
+  return `${userId}:${interviewId}:${kind}`;
+}
+function checkCooldown(userId, interviewId, kind, ms) {
+  const key = cooldownKey(userId, interviewId, kind);
+  const now = Date.now();
+  const last = cooldowns.get(key) || 0;
+  const remaining = last + ms - now;
+  if (remaining > 0) return remaining;
+  cooldowns.set(key, now);
+  return 0;
+}
+
+async function loadInterviewForExecution(req) {
+  const { interviewId } = req.params;
+  return Interview.findOne({ _id: interviewId, userId: req.user._id });
+}
+
+function persistLastExecution(interview, patch) {
+  interview.lastExecution = {
+    kind:           patch.kind || '',
+    language:       patch.language || '',
+    status:         patch.status || '',
+    stdout:         patch.stdout || '',
+    stderr:         patch.stderr || '',
+    compileOutput:  patch.compileOutput || '',
+    executionTime:  patch.executionTime ?? null,
+    memory:         patch.memory ?? null,
+    exitCode:       patch.exitCode ?? null,
+    passed:         patch.passed ?? null,
+    total:          patch.total ?? null,
+    executedAt:     new Date(),
+  };
+  interview.markModified('lastExecution');
+}
+
+const runCode = async (req, res, next) => {
+  try {
+    const { language, sourceCode, stdin } = req.body || {};
+
+    if (!isJudge0LangSupported(language)) {
+      return res.status(400).json({ success: false, error: `Language "${language}" is not supported for execution.` });
+    }
+    if (typeof sourceCode !== 'string' || !sourceCode.trim()) {
+      return res.status(400).json({ success: false, error: 'Please write some code before running.' });
+    }
+
+    const interview = await loadInterviewForExecution(req);
+    if (!interview) {
+      return res.status(404).json({ success: false, error: 'Interview not found.' });
+    }
+
+    const wait = checkCooldown(String(req.user._id), String(interview._id), 'run', RUN_COOLDOWN_MS);
+    if (wait > 0) {
+      return res.status(429).json({
+        success: false,
+        error: `Please wait ${Math.ceil(wait / 1000)}s before running again.`,
+        retryAfterMs: wait,
+      });
+    }
+
+    console.log(`[judge0] run started interview=${interview._id} lang=${language}`);
+    const result = await judge0.executeOnce({
+      language,
+      sourceCode,
+      stdin: typeof stdin === 'string' ? stdin : '',
+    });
+    console.log(`[judge0] run finished interview=${interview._id} status=${result.status} time=${result.executionTime}s`);
+
+    persistLastExecution(interview, {
+      kind: 'run',
+      language,
+      status:         result.status,
+      stdout:         result.stdout,
+      stderr:         result.stderr,
+      compileOutput:  result.compileOutput,
+      executionTime:  result.executionTime,
+      memory:         result.memory,
+      exitCode:       result.exitCode,
+    });
+    await interview.save();
+
+    return res.json({ success: true, result });
+  } catch (err) {
+    next(err);
+  }
+};
+
+const submitCode = async (req, res, next) => {
+  try {
+    const { language, sourceCode } = req.body || {};
+
+    if (!isJudge0LangSupported(language)) {
+      return res.status(400).json({ success: false, error: `Language "${language}" is not supported for execution.` });
+    }
+    if (typeof sourceCode !== 'string' || !sourceCode.trim()) {
+      return res.status(400).json({ success: false, error: 'Please write some code before submitting.' });
+    }
+
+    const interview = await loadInterviewForExecution(req);
+    if (!interview) {
+      return res.status(404).json({ success: false, error: 'Interview not found.' });
+    }
+
+    const wait = checkCooldown(String(req.user._id), String(interview._id), 'submit', SUBMIT_COOLDOWN_MS);
+    if (wait > 0) {
+      return res.status(429).json({
+        success: false,
+        error: `Please wait ${Math.ceil(wait / 1000)}s before submitting again.`,
+        retryAfterMs: wait,
+      });
+    }
+
+    // Pull hidden tests off the CURRENT question. Follow-ups inherit
+    // the parent's suite (assigned in appendQuestion).
+    const idx = interview.currentQuestionIndex;
+    const q = interview.questions[idx] || interview.questions[interview.questions.length - 1];
+    const hiddenTests = (q && Array.isArray(q.hiddenTests)) ? q.hiddenTests : [];
+
+    if (hiddenTests.length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'This question has no hidden tests attached.',
+      });
+    }
+
+    console.log(`[judge0] submit started interview=${interview._id} lang=${language} tests=${hiddenTests.length}`);
+    const suite = await judge0.executeSuite({
+      language,
+      sourceCode,
+      tests: hiddenTests,
+    });
+    console.log(`[judge0] submit finished interview=${interview._id} passed=${suite.summary.passed}/${suite.summary.total} status=${suite.summary.status}`);
+
+    // The "primary" result surfaced on the top-line status is the
+    // aggregate; the per-test breakdown flows back untouched so the
+    // frontend can render the pass/fail table.
+    persistLastExecution(interview, {
+      kind: 'submit',
+      language,
+      status:         suite.summary.status,
+      stdout:         '',
+      stderr:         '',
+      compileOutput:  suite.results.find((r) => r.compileOutput)?.compileOutput || '',
+      executionTime:  suite.results.reduce((sum, r) => sum + (r.executionTime || 0), 0) || null,
+      memory:         Math.max(0, ...suite.results.map((r) => r.memory || 0)) || null,
+      exitCode:       null,
+      passed:         suite.summary.passed,
+      total:          suite.summary.total,
+    });
+    await interview.save();
+
+    return res.json({ success: true, summary: suite.summary, results: suite.results });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// ── Retry evaluation (Sprint 7 Commit 5) ───────────────────────────────────
+// POST /interviews/:interviewId/evaluate
+//
+// Re-runs the Code Evaluation Engine for a DSA interview whose earlier
+// evaluation failed (or was skipped). Reuses the code + execution
+// already stored on the interview; the caller may optionally supply
+// the latest source buffer via req.body.sourceCode. Judge0 is NEVER
+// re-invoked — this is a pure LLM call.
+const RETRY_EVAL_COOLDOWN_MS = 10_000;
+
+const retryEvaluation = async (req, res, next) => {
+  try {
+    const { interviewId } = req.params;
+    const interview = await Interview.findOne({ _id: interviewId, userId: req.user._id });
+    if (!interview) return res.status(404).json({ success: false, error: 'Interview not found.' });
+    if (interview.mode !== 'dsa') {
+      return res.status(400).json({ success: false, error: 'Evaluation is only available for DSA interviews.' });
+    }
+
+    const wait = checkCooldown(String(req.user._id), String(interview._id), 'evaluate', RETRY_EVAL_COOLDOWN_MS);
+    if (wait > 0) {
+      return res.status(429).json({
+        success: false,
+        error: `Please wait ${Math.ceil(wait / 1000)}s before retrying.`,
+        retryAfterMs: wait,
+      });
+    }
+
+    const sourceCode = typeof req.body?.sourceCode === 'string' ? req.body.sourceCode : '';
+    const result = await codeEvaluation.evaluate(interview, { sourceCode });
+    interview.evaluation = result;
+    interview.markModified('evaluation');
+    await interview.save();
+
+    return res.json({ success: true, evaluation: result });
+  } catch (err) {
+    next(err);
+  }
+};
+
 module.exports = {
   createInterview, submitAnswer, getNextQuestion, completeInterview,
   getInterview, getInterviewHistory, abandonInterview, generateFollowUp,
   listPersonalities, listRounds, handleNudge, resumeInterview,
-  retryQuestion,
+  retryQuestion, requestHint,
+  runCode, submitCode, retryEvaluation,
 };

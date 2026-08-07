@@ -1,7 +1,9 @@
 import React from 'react';
 import {
   Briefcase, Building2, Gauge, FileText, GitBranch, Timer, Hash, User, Zap, ListChecks,
+  Code2, Terminal, Lightbulb,
 } from 'lucide-react';
+import { dsaDifficultyLabel, dsaLanguageLabel } from '../../data/dsaConstants';
 
 /**
  * InterviewSummaryCard — reusable presentation of an interview's
@@ -67,12 +69,28 @@ const InterviewSummaryCard = ({ config = {}, dense = false }) => {
 
 function buildRows(c) {
   const rows = [];
+  // DSA rows lead when present — they are the defining config for the interview.
+  if (c.mode === 'dsa' || c.dsa) {
+    const d = c.dsa || {};
+    rows.push({ icon: Code2, label: 'Interview Type', value: 'DSA' });
+    if (d.topic) rows.push({ icon: ListChecks, label: 'Topic', value: d.topic });
+    if (d.difficulty) rows.push({ icon: Gauge, label: 'Difficulty', value: dsaDifficultyLabel(d.difficulty) });
+    if (d.language) rows.push({ icon: Terminal, label: 'Language', value: dsaLanguageLabel(d.language) });
+    if (typeof d.questionCount === 'number') {
+      rows.push({ icon: Hash, label: 'Questions', value: d.questionCount });
+    }
+    rows.push({ icon: Lightbulb, label: 'Hints', value: d.allowHints ? 'Enabled' : 'Disabled' });
+    if (Array.isArray(d.focusAreas) && d.focusAreas.length) {
+      rows.push({ icon: ListChecks, label: 'Focus Areas', value: d.focusAreas.slice(0, 4).join(', ') });
+    }
+  }
+  const isDsa = c.mode === 'dsa' || !!c.dsa;
   if (c.role) rows.push({ icon: Briefcase, label: 'Role', value: String(c.role).replace(/_/g, ' ') });
   if (c.targetCompany || c.company) rows.push({ icon: Building2, label: 'Company', value: c.targetCompany || c.company });
   if (c.experienceLevel || c.experience) rows.push({ icon: User, label: 'Experience', value: labelExperience(c.experienceLevel || c.experience) });
-  if (c.interviewType) rows.push({ icon: ListChecks, label: 'Interview Type', value: String(c.interviewType).replace(/_/g, ' ') });
-  if (c.difficulty) rows.push({ icon: Gauge, label: 'Difficulty', value: c.difficulty });
-  if (typeof c.totalQuestions === 'number') rows.push({ icon: Hash, label: 'Questions', value: c.totalQuestions });
+  if (!isDsa && c.interviewType) rows.push({ icon: ListChecks, label: 'Interview Type', value: String(c.interviewType).replace(/_/g, ' ') });
+  if (!isDsa && c.difficulty) rows.push({ icon: Gauge, label: 'Difficulty', value: c.difficulty });
+  if (!isDsa && typeof c.totalQuestions === 'number') rows.push({ icon: Hash, label: 'Questions', value: c.totalQuestions });
   if (typeof c.duration === 'number') rows.push({ icon: Timer, label: 'Duration', value: `${c.duration} min` });
   if (c.pressure) rows.push({ icon: Zap, label: 'Pressure', value: c.pressure });
   if (c.personalityId || c.personality) rows.push({ icon: User, label: 'Personality', value: c.personalityId || c.personality });

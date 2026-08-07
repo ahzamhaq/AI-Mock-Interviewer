@@ -1,4 +1,12 @@
 const aiProviderManager = require('./aiProviderManager');
+const {
+  DSA_TOPICS,
+  DSA_LANGUAGES,
+  DSA_QUESTION_COUNT,
+  canonicalTopic,
+  isValidDifficulty: isValidDsaDifficulty,
+  isValidLanguage: isValidDsaLanguage,
+} = require('../constants/dsa');
 
 /**
  * interviewParser — natural-language → structured Interview Draft.
@@ -41,6 +49,14 @@ const DIFFICULTY_ENUM = ['easy', 'medium', 'hard'];
 const PRESSURE_ENUM = ['relaxed', 'standard', 'intense'];
 const FEEDBACK_MODE_ENUM = ['live', 'end_only'];
 
+// Modes the parser recognizes. Mirrors interviewBlueprint.VALID_MODES.
+// The parser leaves mode='general' when the prompt doesn't clearly imply
+// a specialized mode; the Review page presents mode-specific fields when
+// applicable.
+const MODE_ENUM = [
+  'general', 'project', 'resume', 'dsa', 'aptitude', 'behavioral', 'system_design', 'custom',
+];
+
 // Fields the Review page renders. The order here is stable across the
 // draft, confidence, and unknown structures.
 const FIELDS = [
@@ -48,6 +64,8 @@ const FIELDS = [
   'duration', 'questionCount', 'personality', 'pressure', 'round',
   'topics', 'useResume', 'useProjects', 'followUps', 'feedbackMode',
   'companyType',
+  // Sprint 7 Commit 1 — DSA-only fields. Empty/null for non-DSA modes.
+  'mode', 'dsaTopic', 'dsaDifficulty', 'dsaLanguage', 'dsaQuestionCount',
 ];
 
 // ── Public API ──────────────────────────────────────────────────────────────
@@ -92,7 +110,12 @@ async function parsePrompt({ prompt, useResume = false, useProjects = false }) {
 // ── Prompt construction ─────────────────────────────────────────────────────
 
 function buildPrompt({ prompt, useResume, useProjects }) {
+  const dsaTopicList = DSA_TOPICS.join(', ');
+  const dsaLangList = DSA_LANGUAGES.join(', ');
   return `You are an interview-configuration parser for an AI interview prep platform. Extract structured fields from a user's freeform description.
+
+Supported DSA topics: ${dsaTopicList}.
+Supported DSA languages: ${dsaLangList}.
 
 The user's freeform request:
 """
@@ -122,7 +145,12 @@ Return a SINGLE JSON object — no prose, no markdown fences. Shape:
     "useProjects":   "same",
     "followUps":     "same",
     "feedbackMode":  "same",
-    "companyType":   "same"
+    "companyType":   "same",
+    "mode":              "same",
+    "dsaTopic":          "same",
+    "dsaDifficulty":     "same",
+    "dsaLanguage":       "same",
+    "dsaQuestionCount":  "same"
   },
   "draft": {
     "company":       "string|null",              // e.g. "Amazon" or null
@@ -140,7 +168,12 @@ Return a SINGLE JSON object — no prose, no markdown fences. Shape:
     "useProjects":   "boolean",
     "followUps":     "boolean",                  // true if user mentions follow-ups / drilling
     "feedbackMode":  "live|end_only|null",
-    "companyType":   "faang|startup|service_based|product_based|any|null"
+    "companyType":   "faang|startup|service_based|product_based|any|null",
+    "mode":              "general|project|resume|dsa|aptitude|behavioral|system_design|custom|null",
+    "dsaTopic":          "one of the supported topics|null",
+    "dsaDifficulty":     "easy|medium|hard|mixed|null",
+    "dsaLanguage":       "cpp|java|python|javascript|typescript|go|rust|csharp|kotlin|null",
+    "dsaQuestionCount":  "integer 1-20|null"
   },
   "confidence": {
     "company": 0.0-1.0, "role": 0.0-1.0, "interviewType": 0.0-1.0,
@@ -148,7 +181,9 @@ Return a SINGLE JSON object — no prose, no markdown fences. Shape:
     "questionCount": 0.0-1.0, "personality": 0.0-1.0, "pressure": 0.0-1.0,
     "round": 0.0-1.0, "topics": 0.0-1.0, "useResume": 0.0-1.0,
     "useProjects": 0.0-1.0, "followUps": 0.0-1.0, "feedbackMode": 0.0-1.0,
-    "companyType": 0.0-1.0
+    "companyType": 0.0-1.0,
+    "mode": 0.0-1.0, "dsaTopic": 0.0-1.0, "dsaDifficulty": 0.0-1.0,
+    "dsaLanguage": 0.0-1.0, "dsaQuestionCount": 0.0-1.0
   },
   "unknown": ["field", "..."]
 }
@@ -165,6 +200,16 @@ RULES:
 - "Ask follow-up questions" → followUps=true.
 - Duration → questionCount mapping: ~5 minutes per question. 30min → 6 questions, 15min → 3. Clamp questionCount to [3, 15].
 - Company type inference: FAANG names → "faang"; TCS/Infosys/Wipro → "service_based"; Razorpay/Zomato → "product_based"; anything explicitly small → "startup".
+- DSA detection: if the user mentions coding topics ("DP", "graphs", "arrays", "leetcode-style", "algorithms", "data structures", "DSA") OR names a language for practice ("in C++", "in Python"), set mode="dsa".
+- For DSA mode ONLY:
+  * dsaTopic — the SINGLE most-specific topic from the supported list. "DP" → "Dynamic Programming". "graph problems" → "Graphs". "linked lists" → "Linked List". Leave null if none is clearly stated.
+  * dsaDifficulty — "easy"|"medium"|"hard"|"mixed". "mix of levels" → "mixed".
+  * dsaLanguage — normalized to the supported codes: "C++" → "cpp", "JS" → "javascript", "TS" → "typescript", "C#" → "csharp".
+  * dsaQuestionCount — "five hard DP questions" → 5. Clamp to [1, 20].
+- If mode is NOT "dsa", set all dsa* fields to null.
+- Examples:
+  * "I want a medium graph interview in C++" → mode="dsa", dsaTopic="Graphs", dsaDifficulty="medium", dsaLanguage="cpp".
+  * "Five hard DP questions" → mode="dsa", dsaTopic="Dynamic Programming", dsaDifficulty="hard", dsaQuestionCount=5, dsaLanguage=null.
 - Output ONLY the JSON object.
 `;
 }
@@ -252,6 +297,55 @@ function normalize(raw, { useResume, useProjects }) {
   setBool('followUps', inDraft.followUps, false);
   setEnum('feedbackMode', inDraft.feedbackMode, FEEDBACK_MODE_ENUM);
   setEnum('companyType', inDraft.companyType, COMPANY_TYPE_ENUM);
+
+  // ── DSA fields (Sprint 7 Commit 1) ──────────────────────────────────
+  setEnum('mode', inDraft.mode, MODE_ENUM);
+
+  // Topic — validate against constants and normalize to canonical casing.
+  const rawTopic = inDraft.dsaTopic;
+  const canon = canonicalTopic(rawTopic);
+  if (canon) {
+    draft.dsaTopic = canon;
+  } else if (rawTopic == null || rawTopic === '') {
+    draft.dsaTopic = null;
+  } else {
+    draft.dsaTopic = null;
+    inUnknown.add('dsaTopic');
+  }
+
+  setEnum('dsaDifficulty', inDraft.dsaDifficulty, ['easy', 'medium', 'hard', 'mixed']);
+  // Language — accept the LLM's normalized code OR common human spellings.
+  const langRaw = typeof inDraft.dsaLanguage === 'string' ? inDraft.dsaLanguage.toLowerCase().trim() : '';
+  const langAlias = {
+    'c++': 'cpp',
+    'js': 'javascript',
+    'ts': 'typescript',
+    'c#': 'csharp',
+  };
+  const langNorm = langAlias[langRaw] || langRaw;
+  if (!langRaw) {
+    draft.dsaLanguage = null;
+  } else if (isValidDsaLanguage(langNorm)) {
+    draft.dsaLanguage = langNorm;
+  } else {
+    draft.dsaLanguage = null;
+    inUnknown.add('dsaLanguage');
+  }
+
+  setInt('dsaQuestionCount', inDraft.dsaQuestionCount, DSA_QUESTION_COUNT.MIN, DSA_QUESTION_COUNT.MAX);
+
+  // If mode wasn't set but any dsa* field was extracted, upgrade to 'dsa'.
+  if (draft.mode == null && (draft.dsaTopic || draft.dsaDifficulty || draft.dsaLanguage)) {
+    draft.mode = 'dsa';
+  }
+  // Conversely, if mode isn't 'dsa', wipe the dsa fields so downstream
+  // callers don't see stray values.
+  if (draft.mode !== 'dsa') {
+    draft.dsaTopic = null;
+    draft.dsaDifficulty = null;
+    draft.dsaLanguage = null;
+    draft.dsaQuestionCount = null;
+  }
 
   // If questionCount is null but duration is known, derive it (~5 min/question).
   if (draft.questionCount == null && typeof draft.duration === 'number') {

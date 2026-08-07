@@ -38,6 +38,21 @@ const answerSchema = new mongoose.Schema({
     }],
     default: [],
   },
+  // ── DSA hidden tests (Sprint 7 Commit 4) ──────────────────────────
+  // Attached only to DSA questions. Each entry: { stdin, expectedOutput,
+  // label }. Populated when the question is generated (see DSA strategy
+  // seedHiddenTests) so /submit has something to run against. Static /
+  // deterministic for Commit 4; Commit 5+ can replace with AI-generated
+  // tests without changing the shape.
+  hiddenTests: {
+    type: [{
+      stdin:          { type: String, default: '' },
+      expectedOutput: { type: String, default: '' },
+      label:          { type: String, default: '' },
+    }],
+    default: [],
+  },
+
   userAnswer: { type: String, default: '' },
   transcript: { type: String, default: '' },
   aiFeedback: {
@@ -207,6 +222,22 @@ const interviewSchema = new mongoose.Schema({
     jobDescription: { type: String, default: '' },
     useResume: { type: Boolean, default: false },
 
+    // ── DSA-mode enrichment (Sprint 7 Commit 1) ─────────────────────────
+    // Present only when this interview was created with mode='dsa'. All
+    // fields are metadata for Commit 1 — no code editor, no execution, no
+    // Judge0. Later commits attach runtime behavior; the shape stays the
+    // same. Enums intentionally omitted here — validation lives in
+    // interviewBlueprint.validate() so the constants file remains the
+    // single source of truth for topics/languages.
+    dsa: {
+      topic:         { type: String, default: '' },
+      difficulty:    { type: String, default: '' }, // easy|medium|hard|mixed
+      questionCount: { type: Number, default: 5, min: 1, max: 20 },
+      language:      { type: String, default: '' },
+      allowHints:    { type: Boolean, default: true },
+      focusAreas:    { type: [String], default: [] },
+    },
+
     // ── Project-mode enrichment (Sprint 2) ──────────────────────────────
     // Present only when this interview was created from a Workspace. All
     // fields are SNAPSHOTS taken at creation time: analyses can be re-run
@@ -257,6 +288,68 @@ const interviewSchema = new mongoose.Schema({
   // prompts. 'general' preserves existing behavior; specific rounds (technical,
   // system_design, behavioral, hiring_manager, etc.) shift focus.
   round: { type: String, default: 'general' },
+
+  // ── Code Evaluation (Sprint 7 Commit 5) ─────────────────────────────
+  // Structured technical evaluation produced by the Code Evaluation
+  // Engine when a DSA interview completes. Populated once at completion
+  // with status='ready' (or 'failed' on LLM error, or 'pending' if the
+  // engine was skipped intentionally). Users can retry a failed
+  // evaluation via POST /interviews/:id/evaluate without re-running
+  // Judge0 — the source code + execution result are preserved on the
+  // interview.
+  //
+  // Never touched for non-DSA interviews.
+  evaluation: {
+    status:      { type: String, enum: ['ready', 'pending', 'failed', ''], default: '' },
+    overallScore: { type: Number, default: null }, // 0–100
+    scores: {
+      correctness:      { type: Number, default: null },
+      algorithm:        { type: Number, default: null },
+      timeComplexity:   { type: Number, default: null },
+      spaceComplexity:  { type: Number, default: null },
+      codeQuality:      { type: Number, default: null },
+      communication:    { type: Number, default: null },
+      edgeCases:        { type: Number, default: null },
+    },
+    complexity: {
+      time:       { type: String, default: '' },
+      space:      { type: String, default: '' },
+      confidence: { type: String, enum: ['confirmed', 'estimated', ''], default: 'estimated' },
+    },
+    strengths:  { type: [String], default: [] },
+    weaknesses: { type: [String], default: [] },
+    recommendations: {
+      topics:   { type: [String], default: [] },
+      problems: { type: [String], default: [] },
+      concepts: { type: [String], default: [] },
+    },
+    communicationFeedback: { type: String, default: '' },
+    summary:               { type: String, default: '' },
+    evaluatedAt:           { type: Date,   default: null },
+    error:                 { type: String, default: '' },
+  },
+
+  // ── Last code execution (Sprint 7 Commit 4) ─────────────────────────
+  // Snapshot of the most recent Judge0 run for this interview. Used by
+  // the frontend to restore the output panel after refresh and (later
+  // commits) by feedback / analytics to reference what the candidate
+  // was executing. Only ever holds ONE result — the newest overwrites
+  // the previous. Both /run and /submit write here.
+  lastExecution: {
+    kind:           { type: String, enum: ['run', 'submit', ''], default: '' },
+    language:       { type: String, default: '' },
+    status:         { type: String, default: '' },
+    stdout:         { type: String, default: '' },
+    stderr:         { type: String, default: '' },
+    compileOutput:  { type: String, default: '' },
+    executionTime:  { type: Number, default: null },
+    memory:         { type: Number, default: null },
+    exitCode:       { type: Number, default: null },
+    // For /submit: aggregate against hidden tests.
+    passed:         { type: Number, default: null },
+    total:          { type: Number, default: null },
+    executedAt:     { type: Date,   default: null },
+  },
 
   // Strategy log — visible record of why the engine made each decision.
   // Capped to last 30 entries by the engine. Useful for analytics + UI replay.

@@ -103,10 +103,20 @@ const InterviewHubPage = () => {
     navigate('/interviews/new/setup?type=custom');
   };
 
+  // Sprint 7 Commit 1 — DSA routes through the shared SetupMethod page
+  // just like every other type. The wizard reads `mode` from router state
+  // to show the DSA configuration step.
+  const handleDsa = () => {
+    navigate('/interviews/new/setup?type=dsa', {
+      state: { initialConfig: { mode: 'dsa' } },
+    });
+  };
+
   const clickHandlers = {
     resume: handleResume,
     project: handleProject,
     custom: handleCustom,
+    dsa: handleDsa,
   };
 
   // ── Card info blocks ─────────────────────────────────────────────────
@@ -140,6 +150,21 @@ const InterviewHubPage = () => {
               latest: <span style={{ color: '#9CA3AF' }}>{latestProject.repoOwner}/{latestProject.repoName}</span>
             </>
           )}
+        </div>
+      );
+    }
+    if (id === 'dsa') {
+      return (
+        <div
+          className="px-2 py-1.5 font-mono text-2xs"
+          style={{
+            background: '#161B22',
+            border: '1px dashed #30363D',
+            borderRadius: 4,
+            color: '#6B7280',
+          }}
+        >
+          30 topics · 9 languages · 1&ndash;20 questions
         </div>
       );
     }
