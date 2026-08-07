@@ -44,6 +44,7 @@ const silenceHandler     = require('./silenceHandler');
 const responseQuality    = require('./responseQuality');
 const projectDeepDive    = require('./projectDeepDive');
 const roundProfiles      = require('./roundProfiles');
+const { getStrategy }    = require('./interviewStrategies');
 
 // ── Plan an interview (blueprint) ─────────────────────────────────────────
 function plan(config, memory, options = {}) {
@@ -53,12 +54,16 @@ function plan(config, memory, options = {}) {
 // ── Compose the first question (called once after creation) ──────────────
 async function firstQuestion(interview, resumeText) {
   const blueprint = interview.blueprint;
-  const decision = {
+  let decision = {
     action: 'pivot',
     topic: pickSeedTopic(interview),
     questionType: Object.keys(blueprint.typeMix || {})[0] || interview.config.interviewType || 'technical',
     difficulty: interview.config.difficulty || 'medium',
   };
+  // Sprint 7 Commit 2 — mode strategy shapes the seed decision. DSA
+  // overrides topic (uses config.dsa.topic / focusAreas) and difficulty
+  // (starts easy in 'mixed' mode). Other modes pass through unchanged.
+  decision = getStrategy(interview.mode).seedDecision(interview, decision);
   decision.intent = conversation.pickIntent(decision, interview.liveState, decision.questionType);
 
   const generated = await aiService.generateAdaptiveQuestion(
@@ -233,7 +238,7 @@ function buildGenContext(interview, decision, resumeText) {
   const pace = pacing.compute(ls, interview.personalityId, interview.pressure);
   const round = roundProfiles.get(interview.round || 'general');
 
-  return {
+  const base = {
     action: decision.action,
     topic: decision.topic,
     questionType: decision.questionType,
@@ -263,6 +268,15 @@ function buildGenContext(interview, decision, resumeText) {
     answerLength: ls.lastAnswerLength,
     consecutiveLowScores: ls.consecutiveLowScores,
   };
+
+  // Sprint 7 Commit 2 — strategy layer. DSA appends { dsaConfig, difficulty }
+  // and a promptInsert; other modes are no-ops.
+  const strategy = getStrategy(interview.mode);
+  const augment = strategy.augmentGenContext(interview, decision) || {};
+  const merged = { ...base, ...augment };
+  const promptInsert = strategy.buildPromptInsert(merged);
+  if (promptInsert) merged.strategyPromptInsert = promptInsert;
+  return merged;
 }
 
 // Append a small strategy note to the interview document. Kept short — these

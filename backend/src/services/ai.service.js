@@ -153,6 +153,10 @@ Return ONLY the follow-up question text. No quotes, no JSON, no commentary.`;
       projectAxis, round, config,
       parentQuestion, parentAnswer, askedQuestions = [], resumeText, jobDescription, graphHint,
       callback, answerLength, consecutiveLowScores,
+      // Sprint 7 Commit 2 — mode-specific prompt block from the strategy
+      // layer (e.g. DSA appends topic/difficulty/language + hint schema).
+      // Absent for default-strategy modes.
+      strategyPromptInsert,
     } = context;
 
     const askedDigest = askedQuestions.slice(-6).map((q, i) => `  ${i + 1}. ${q.text}`).join('\n');
@@ -259,6 +263,8 @@ Role: ${config.role} | Experience: ${config.experienceLevel} | Interview type: $
 ${intentLine}
 ${qualityHintLine}
 ${pacingLine}
+
+${strategyPromptInsert || ''}
 
 ${actionInstruction}
 ${lengthLine}

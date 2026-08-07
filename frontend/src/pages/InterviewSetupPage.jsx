@@ -8,6 +8,8 @@ import {
 import { interviewAPI } from '../services/api';
 import Navbar from '../components/layout/Navbar';
 import toast from 'react-hot-toast';
+import DSAConfigurationCard from '../components/interview/DSAConfigurationCard';
+import { DSA_QUESTION_COUNT } from '../data/dsaConstants';
 
 const ROLES = [
   { value: 'frontend_developer', label: 'Frontend Dev', icon: Code, color: 'from-blue-500 to-cyan-500' },
@@ -64,7 +66,8 @@ const OptionCard = ({ selected, onClick, children, className = '' }) => (
   </motion.button>
 );
 
-const STEPS = ['Role', 'Experience', 'Company', 'Interview Type', 'Details'];
+const STEPS_DEFAULT = ['Role', 'Experience', 'Company', 'Interview Type', 'Details'];
+const STEPS_DSA     = ['Role', 'Experience', 'Company', 'DSA Config'];
 
 const InterviewSetupPage = () => {
   const navigate = useNavigate();
@@ -84,9 +87,23 @@ const InterviewSetupPage = () => {
       pressure: 'standard',     // 'relaxed' | 'standard' | 'intense' — interview pressure level
       personalityId: '',        // '' = auto-derive from company/role; otherwise explicit pick
       round: 'general',         // interview round type — drives focus / type mix / persona hint
+      // Sprint 7 Commit 1 — DSA mode & sub-config. Only populated when
+      // the wizard is entered with mode='dsa' via initialConfig.
+      mode: 'general',
+      dsa: {
+        topic: '',
+        difficulty: 'medium',
+        language: '',
+        questionCount: DSA_QUESTION_COUNT.DEFAULT,
+        allowHints: true,
+        focusAreas: [],
+      },
     };
     return { ...defaults, ...(location.state?.initialConfig || {}) };
   });
+
+  const isDsa = config.mode === 'dsa';
+  const STEPS = isDsa ? STEPS_DSA : STEPS_DEFAULT;
   const [customCompany, setCustomCompany] = useState('');
   const [showCustomInput, setShowCustomInput] = useState(false);
 
@@ -108,6 +125,11 @@ const InterviewSetupPage = () => {
     if (step === 0) return !!config.role;
     if (step === 1) return !!config.experienceLevel;
     if (step === 2) return true;
+    if (isDsa) {
+      // DSA step 3 — topic, difficulty, and language are all required.
+      const d = config.dsa || {};
+      return !!(d.topic && d.difficulty && d.language);
+    }
     if (step === 3) return !!config.interviewType;
     return true;
   };
@@ -115,7 +137,17 @@ const InterviewSetupPage = () => {
   const handleStart = async () => {
     setLoading(true);
     try {
-      const res = await interviewAPI.create(config);
+      // DSA mode overrides a few upstream defaults: interviewType is
+      // implicitly 'technical', totalQuestions comes from the DSA config,
+      // and difficulty falls back to the DSA difficulty when it's not
+      // 'mixed' (the engine only understands easy/medium/hard).
+      const payload = { ...config };
+      if (isDsa) {
+        payload.interviewType = 'technical';
+        payload.totalQuestions = config.dsa.questionCount;
+        payload.difficulty = config.dsa.difficulty === 'mixed' ? 'medium' : config.dsa.difficulty;
+      }
+      const res = await interviewAPI.create(payload);
       // Forward the personalized greeting via router state so InterviewPage can speak it
       navigate(`/interview/${res.interview.id}`, { state: { greeting: res.greeting || '' } });
     } catch (err) {
@@ -124,6 +156,8 @@ const InterviewSetupPage = () => {
       setLoading(false);
     }
   };
+
+  const updateDsa = (nextDsa) => setConfig((p) => ({ ...p, dsa: nextDsa }));
 
   const stepContent = [
     // Step 0: Role
@@ -221,6 +255,18 @@ const InterviewSetupPage = () => {
       </div>
     </div>,
 
+    // Step 3 (DSA mode): DSA Config — replaces Interview Type + Details.
+    // Rendered only when mode === 'dsa'; otherwise the Interview Type
+    // step below is shown at index 3 and Details at index 4.
+    isDsa ? (
+      <div key="dsa">
+        <h2 className="text-xl font-semibold mb-2">DSA configuration</h2>
+        <p className="text-white/50 text-sm mb-6">
+          Pick a topic, difficulty, and language. This shapes the coding interview.
+        </p>
+        <DSAConfigurationCard config={config.dsa} onChange={updateDsa} />
+      </div>
+    ) : (
     // Step 3: Interview Type
     <div key={3}>
       <h2 className="text-xl font-semibold mb-2">Interview type</h2>
@@ -242,7 +288,8 @@ const InterviewSetupPage = () => {
           </OptionCard>
         ))}
       </div>
-    </div>,
+    </div>
+    ),
 
     // Step 4: Details
     <div key={4}>
@@ -505,10 +552,22 @@ const InterviewSetupPage = () => {
             <div className="flex flex-wrap gap-2">
               {config.role && <span className="badge bg-primary-500/20 text-primary-400">{config.role.replace(/_/g, ' ')}</span>}
               {config.experienceLevel && <span className="badge bg-accent-600/20 text-accent-400">{config.experienceLevel.replace(/_/g, ' ')}</span>}
-              {config.interviewType && <span className="badge bg-green-500/20 text-green-400">{config.interviewType}</span>}
-              {config.difficulty && <span className="badge bg-yellow-500/20 text-yellow-400">{config.difficulty}</span>}
-              {config.targetCompany && <span className="badge bg-pink-500/20 text-pink-400">{config.targetCompany}</span>}
-              <span className="badge bg-white/10 text-white/50">{config.totalQuestions} questions</span>
+              {isDsa ? (
+                <>
+                  <span className="badge bg-green-500/20 text-green-400">DSA</span>
+                  {config.dsa?.topic && <span className="badge bg-blue-500/20 text-blue-400">{config.dsa.topic}</span>}
+                  {config.dsa?.difficulty && <span className="badge bg-yellow-500/20 text-yellow-400">{config.dsa.difficulty}</span>}
+                  {config.dsa?.language && <span className="badge bg-purple-500/20 text-purple-400">{config.dsa.language}</span>}
+                  <span className="badge bg-white/10 text-white/50">{config.dsa?.questionCount} questions</span>
+                </>
+              ) : (
+                <>
+                  {config.interviewType && <span className="badge bg-green-500/20 text-green-400">{config.interviewType}</span>}
+                  {config.difficulty && <span className="badge bg-yellow-500/20 text-yellow-400">{config.difficulty}</span>}
+                  {config.targetCompany && <span className="badge bg-pink-500/20 text-pink-400">{config.targetCompany}</span>}
+                  <span className="badge bg-white/10 text-white/50">{config.totalQuestions} questions</span>
+                </>
+              )}
             </div>
           </motion.div>
         )}

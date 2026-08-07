@@ -4,7 +4,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Mic, MicOff, Volume2, VolumeX, SkipForward, CheckCircle,
   AlertCircle, Clock, ChevronRight, Zap, Brain, MessageSquare,
-  Activity, Wifi, WifiOff, Circle, Square, Play, TerminalSquare
+  Activity, Wifi, WifiOff, Circle, Square, Play, TerminalSquare,
+  Lightbulb,
 } from 'lucide-react';
 import { interviewAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
@@ -13,6 +14,21 @@ import { useSpeechSynthesis, useSpeechRecognition } from '../hooks/useVoice';
 import { useAmplitudeAnalyzer } from '../hooks/useAmplitudeAnalyzer';
 import { speak as ttsSpeak, cancelTTS } from '../services/tts';
 import toast from 'react-hot-toast';
+// Sprint 7 Commit 3 — Live Coding Workspace helpers. The workspace +
+// split components are lazy-loaded further below so Monaco only enters
+// memory during DSA interviews. Storage helpers stay static because
+// they don't touch Monaco.
+import { splitStorageKeyFor, storageKeyFor, clearCodingWorkspace } from '../components/interview/coding/storage';
+
+// Lazy chunk — Monaco lives inside CodingWorkspace, so only DSA
+// interviews pay the bundle cost. Non-DSA interviews never fetch it.
+const CodingWorkspace = lazy(() => import('../components/interview/coding/CodingWorkspace'));
+
+// Layout constants for the DSA coding column (desktop only).
+const DSA_COL_MIN_PCT = 25;
+const DSA_COL_MAX_PCT = 60;
+const DSA_COL_DEFAULT_PCT = 40; // spec: 60% conversation / 40% editor
+const DSA_DESKTOP_MIN_PX = 1024;
 
 const TalkingAvatar = lazy(() => import('../components/avatar/TalkingAvatar'));
 
@@ -125,6 +141,22 @@ const InterviewPage = () => {
   const [latency, setLatency] = useState(null);
   const timerRef = useRef(null);
   const logIdRef = useRef(0);
+
+  // Sprint 7 Commit 2 — DSA hint state. `revealedHints` is a per-question
+  // list of the hints the user has requested for the current question;
+  // clears when we advance. `requestingHint` guards double-clicks.
+  const [revealedHints, setRevealedHints] = useState([]);
+  const [requestingHint, setRequestingHint] = useState(false);
+
+  // Sprint 7 Commit 3 — coding-column width (desktop only). Percentage
+  // of the outer row taken by the coding workspace. Loaded from
+  // localStorage keyed by interview id so a refresh restores the layout.
+  const [codingPct, setCodingPct] = useState(DSA_COL_DEFAULT_PCT);
+  const [isDesktopWide, setIsDesktopWide] = useState(
+    typeof window !== 'undefined' ? window.innerWidth >= DSA_DESKTOP_MIN_PX : true,
+  );
+  const codingDragRef = useRef(false);
+  const codingRowRef  = useRef(null);
 
   // ── Silence / thinking tracker ─────────────────────────────────────────
   // We track the user's idle time since the AI finished speaking. If a
@@ -398,6 +430,7 @@ const InterviewPage = () => {
         resetTranscript();
         setTextAnswer('');
         setPendingMetrics(null);
+        setRevealedHints([]);
         if (res.decision?.rationale) {
           const tag = res.decision.action === 'follow_up' ? 'FOLLOW-UP'
             : res.decision.action === 'revisit_weak' ? 'REVISIT'
@@ -429,13 +462,117 @@ const InterviewPage = () => {
     resetTranscript();
     setTextAnswer('');
     setPendingMetrics(null);
+    setRevealedHints([]);
     setPhase(PHASE.AI_SPEAKING);
+  };
+
+  // ── Sprint 7 Commit 3 — coding-column width lifecycle ──────────────
+  // Load persisted width whenever the interview id becomes known; save
+  // on change. Also track desktop vs stacked viewport for layout.
+  useEffect(() => {
+    if (!id) return;
+    try {
+      const raw = localStorage.getItem(splitStorageKeyFor(id));
+      const n = raw ? Number(raw) : NaN;
+      if (Number.isFinite(n) && n >= DSA_COL_MIN_PCT && n <= DSA_COL_MAX_PCT) {
+        setCodingPct(n);
+      }
+    } catch { /* ignore */ }
+  }, [id]);
+
+  useEffect(() => {
+    if (!id) return;
+    try { localStorage.setItem(splitStorageKeyFor(id), String(codingPct)); } catch { /* ignore */ }
+  }, [id, codingPct]);
+
+  useEffect(() => {
+    const onResize = () => setIsDesktopWide(window.innerWidth >= DSA_DESKTOP_MIN_PX);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+
+  // Coding-column divider drag handlers.
+  const onCodingPointerMove = useCallback((e) => {
+    if (!codingDragRef.current || !codingRowRef.current) return;
+    const rect = codingRowRef.current.getBoundingClientRect();
+    // codingPct is measured from the RIGHT edge — dragging left grows it.
+    const raw = ((rect.right - e.clientX) / rect.width) * 100;
+    const clamped = Math.min(DSA_COL_MAX_PCT, Math.max(DSA_COL_MIN_PCT, raw));
+    setCodingPct(clamped);
+  }, []);
+  const onCodingPointerUp = useCallback(() => {
+    if (!codingDragRef.current) return;
+    codingDragRef.current = false;
+    document.body.style.cursor = '';
+    document.body.style.userSelect = '';
+    window.removeEventListener('pointermove', onCodingPointerMove);
+    window.removeEventListener('pointerup', onCodingPointerUp);
+  }, [onCodingPointerMove]);
+  const startCodingDrag = (e) => {
+    if (!isDesktopWide) return;
+    e.preventDefault();
+    codingDragRef.current = true;
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+    window.addEventListener('pointermove', onCodingPointerMove);
+    window.addEventListener('pointerup', onCodingPointerUp);
+  };
+  const onCodingDividerKey = (e) => {
+    if (!isDesktopWide) return;
+    const step = e.shiftKey ? 5 : 2;
+    if (e.key === 'ArrowLeft') { e.preventDefault(); setCodingPct((p) => Math.min(DSA_COL_MAX_PCT, p + step)); }
+    else if (e.key === 'ArrowRight') { e.preventDefault(); setCodingPct((p) => Math.max(DSA_COL_MIN_PCT, p - step)); }
+    else if (e.key === 'Home') { e.preventDefault(); setCodingPct(DSA_COL_MAX_PCT); }
+    else if (e.key === 'End')  { e.preventDefault(); setCodingPct(DSA_COL_MIN_PCT); }
+  };
+
+  // Sprint 7 Commit 2 — request a progressive DSA hint for the current
+  // question. Only meaningful when interview.mode === 'dsa' and
+  // config.dsa.allowHints is on; the button is gated on both. The
+  // returned hint is shown inline; up to 3 hints per question.
+  const MAX_HINTS_UI = 3;
+  const requestHint = async () => {
+    if (requestingHint) return;
+    if (revealedHints.length >= MAX_HINTS_UI) return;
+    setRequestingHint(true);
+    try {
+      const res = await interviewAPI.requestHint(id);
+      if (res?.hint) {
+        setRevealedHints((prev) => [...prev, res.hint]);
+        pushLog('HINT', `Hint #${res.hintsGiven || (revealedHints.length + 1)}: ${res.hint}`, '#D29922');
+      }
+    } catch (err) {
+      toast.error(err?.message || 'Could not fetch a hint.');
+    } finally {
+      setRequestingHint(false);
+    }
   };
 
   const handleFinish = async () => {
     setPhase(PHASE.PROCESSING);
+    // Sprint 7 Commit 5 — for DSA interviews, hand the final code
+    // buffer to the backend so the Code Evaluation Engine can grade
+    // exactly what the candidate ended with (not just what /submit last
+    // saw). Read from localStorage BEFORE we clear it below.
+    let sourceCode = '';
+    if (interview?.mode === 'dsa') {
+      try {
+        const raw = localStorage.getItem(storageKeyFor(id));
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed && typeof parsed.sourceCode === 'string') {
+            sourceCode = parsed.sourceCode;
+          }
+        }
+      } catch { /* ignore */ }
+    }
+    // Sprint 7 Commit 3 — clear the DSA coding workspace's localStorage
+    // when the interview completes so a fresh interview on the same
+    // machine starts with a clean editor. Safe to call for non-DSA
+    // interviews (no-op when there's nothing under the key).
+    clearCodingWorkspace(id);
     try {
-      const res = await interviewAPI.complete(id);
+      const res = await interviewAPI.complete(id, sourceCode ? { sourceCode } : {});
       // Sprint 4: server may include newly-unlocked badges on this response.
       // Toast them and merge into local user.badges so the Achievements
       // tab reflects the unlock without a page refresh.
@@ -596,6 +733,39 @@ const InterviewPage = () => {
               </span>
             </>
           )}
+          {/* Sprint 7 Commit 2 — DSA header chips. Rendered only when
+              interview.mode === 'dsa'. Shows the interview's root topic,
+              language, and configured difficulty intent (easy/medium/hard/mixed). */}
+          {interview.mode === 'dsa' && interview.config?.dsa && (
+            <>
+              <span className="text-xs" style={{ color: '#30363D' }}>·</span>
+              <span
+                className="text-2xs px-1.5 py-0.5 rounded font-mono uppercase"
+                style={{ background: 'rgba(88,166,255,0.1)', color: '#58A6FF', border: '1px solid rgba(88,166,255,0.3)' }}
+                title="DSA interview"
+              >
+                DSA
+              </span>
+              {interview.config.dsa.topic && (
+                <span
+                  className="text-2xs px-1.5 py-0.5 rounded font-mono"
+                  style={{ background: 'rgba(88,166,255,0.06)', color: '#58A6FF', border: '1px solid rgba(88,166,255,0.2)' }}
+                  title="Topic"
+                >
+                  {interview.config.dsa.topic}
+                </span>
+              )}
+              {interview.config.dsa.language && (
+                <span
+                  className="text-2xs px-1.5 py-0.5 rounded font-mono uppercase"
+                  style={{ background: 'rgba(139,92,246,0.08)', color: '#A78BFA', border: '1px solid rgba(139,92,246,0.25)' }}
+                  title="Preferred language for discussion"
+                >
+                  {interview.config.dsa.language}
+                </span>
+              )}
+            </>
+          )}
         </div>
 
         {/* Center: progress */}
@@ -657,7 +827,7 @@ const InterviewPage = () => {
       </div>
 
       {/* ── Three-Panel Workspace ─────────────────────────────────────────── */}
-      <div className="flex flex-1 overflow-hidden">
+      <div ref={codingRowRef} className="flex flex-1 overflow-hidden">
 
         {/* LEFT: AI Interviewer Zone */}
         <div
@@ -908,13 +1078,36 @@ const InterviewPage = () => {
                 <p className="text-base font-medium leading-relaxed" style={{ color: '#F0F6FC', lineHeight: 1.65 }}>
                   {question?.questionText}
                 </p>
-                {question?.hints?.length > 0 && (
+                {/* Pre-generated hints from the LLM appear only for
+                    non-DSA modes. DSA hints are always progressive and
+                    surfaced only when the candidate clicks Request Hint. */}
+                {interview.mode !== 'dsa' && question?.hints?.length > 0 && (
                   <div className="flex flex-wrap gap-1.5 mt-3">
                     {question.hints.map((h, i) => (
                       <span key={i} className="text-2xs px-2 py-0.5 rounded"
                         style={{ background: '#161B22', color: '#6B7280', border: '1px solid #30363D' }}>
                         {h}
                       </span>
+                    ))}
+                  </div>
+                )}
+                {/* DSA progressive hints — only what the user has
+                    revealed for this question. Cleared on next question. */}
+                {interview.mode === 'dsa' && revealedHints.length > 0 && (
+                  <div className="flex flex-col gap-1.5 mt-3">
+                    {revealedHints.map((h, i) => (
+                      <div
+                        key={i}
+                        className="flex items-start gap-2 px-2.5 py-1.5 rounded"
+                        style={{ background: 'rgba(210,153,34,0.08)', border: '1px solid rgba(210,153,34,0.25)' }}
+                      >
+                        <span className="font-mono text-2xs mt-0.5" style={{ color: '#D29922' }}>
+                          hint #{i + 1}
+                        </span>
+                        <span className="text-xs" style={{ color: '#F0F6FC', lineHeight: 1.5 }}>
+                          {h}
+                        </span>
+                      </div>
                     ))}
                   </div>
                 )}
@@ -974,6 +1167,50 @@ const InterviewPage = () => {
                       <SkipForward size={13} className="inline mr-1" />
                       Skip
                     </button>
+                    {/* Sprint 7 Commit 2 — DSA-only Request Hint button.
+                        Hidden for non-DSA modes; disabled when hints are
+                        turned off in config or the per-question cap is
+                        reached. Progressive: hint 1 nudges direction,
+                        hint 2 names the approach, hint 3 the trick. */}
+                    {interview.mode === 'dsa' && (
+                      <button
+                        onClick={requestHint}
+                        disabled={
+                          !interview.config?.dsa?.allowHints
+                          || requestingHint
+                          || revealedHints.length >= MAX_HINTS_UI
+                        }
+                        className="text-xs px-3 py-2.5 rounded transition-colors flex items-center gap-1.5"
+                        style={{
+                          color: interview.config?.dsa?.allowHints ? '#D29922' : '#484F58',
+                          border: '1px solid transparent',
+                          background: 'transparent',
+                          cursor: interview.config?.dsa?.allowHints ? 'pointer' : 'not-allowed',
+                          opacity: revealedHints.length >= MAX_HINTS_UI ? 0.5 : 1,
+                        }}
+                        title={
+                          !interview.config?.dsa?.allowHints
+                            ? 'Hints are disabled for this interview.'
+                            : revealedHints.length >= MAX_HINTS_UI
+                              ? `Max ${MAX_HINTS_UI} hints per question.`
+                              : `Request the next progressive hint (${revealedHints.length}/${MAX_HINTS_UI})`
+                        }
+                        aria-label="Request hint"
+                        onMouseEnter={e => {
+                          if (interview.config?.dsa?.allowHints && revealedHints.length < MAX_HINTS_UI) {
+                            e.currentTarget.style.background = 'rgba(210,153,34,0.08)';
+                          }
+                        }}
+                        onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                      >
+                        <Lightbulb size={13} />
+                        {requestingHint
+                          ? 'Thinking…'
+                          : revealedHints.length > 0
+                            ? `Hint (${revealedHints.length}/${MAX_HINTS_UI})`
+                            : 'Request Hint'}
+                      </button>
+                    )}
                   </div>
                 </motion.div>
               )}
@@ -1177,6 +1414,68 @@ const InterviewPage = () => {
             </AnimatePresence>
           </div>
         </div>
+
+        {/* ── DSA Coding Workspace column (Sprint 7 Commit 3) ────────
+            Only rendered when the interview is a DSA interview. On
+            desktop we place it BETWEEN the CENTER conversation and the
+            RIGHT analytics panel with a draggable divider. On tablet/
+            mobile the outer flex row wraps and this column stacks under
+            CENTER at intrinsic height (the analytics panel is hidden by
+            the layout below on narrow screens via existing CSS). */}
+        {interview.mode === 'dsa' && (
+          <>
+            {isDesktopWide && (
+              <div
+                role="separator"
+                aria-orientation="vertical"
+                aria-valuenow={Math.round(codingPct)}
+                aria-valuemin={DSA_COL_MIN_PCT}
+                aria-valuemax={DSA_COL_MAX_PCT}
+                aria-label="Resize conversation and coding panels"
+                tabIndex={0}
+                onPointerDown={startCodingDrag}
+                onKeyDown={onCodingDividerKey}
+                className="flex items-center justify-center flex-shrink-0"
+                style={{
+                  width: 6,
+                  cursor: 'col-resize',
+                  background: '#161B22',
+                  borderLeft: '1px solid #30363D',
+                  borderRight: '1px solid #30363D',
+                  outline: 'none',
+                }}
+                title="Drag to resize"
+              />
+            )}
+            <div
+              className="flex-shrink-0 min-h-0"
+              style={{
+                flexBasis: isDesktopWide ? `${codingPct}%` : '100%',
+                width: isDesktopWide ? undefined : '100%',
+                minWidth: 0,
+              }}
+              aria-label="Coding workspace column"
+            >
+              <Suspense
+                fallback={
+                  <div
+                    className="flex items-center justify-center h-full w-full"
+                    style={{ background: '#1E1E1E', color: '#6B7280' }}
+                  >
+                    <span className="font-mono text-2xs">loading editor…</span>
+                  </div>
+                }
+              >
+                <CodingWorkspace
+                  interviewId={id}
+                  initialLanguage={interview.config?.dsa?.language || 'cpp'}
+                  topic={interview.config?.dsa?.topic || ''}
+                  theme="vs-dark"
+                />
+              </Suspense>
+            </div>
+          </>
+        )}
 
         {/* RIGHT: Live Analytics Panel */}
         <div

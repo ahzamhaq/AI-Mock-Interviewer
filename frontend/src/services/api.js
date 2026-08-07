@@ -57,13 +57,24 @@ export const interviewAPI = {
     api.post(`/interviews/${interviewId}/next-question`),
   generateFollowUp: (interviewId, questionIndex) =>
     api.post(`/interviews/${interviewId}/follow-up/${questionIndex}`),
-  complete: (interviewId) => api.post(`/interviews/${interviewId}/complete`),
+  // Sprint 7 Commit 5 — completion may carry the final source-code buffer
+  // so the Code Evaluation Engine can evaluate exactly what the candidate
+  // ended with (not just what was last submitted to Judge0). Extra field
+  // is ignored for non-DSA interviews.
+  complete: (interviewId, data = {}) => api.post(`/interviews/${interviewId}/complete`, data),
+  // Sprint 7 Commit 5 — retry Code Evaluation for a DSA interview whose
+  // earlier evaluation failed or was skipped. Does NOT re-run Judge0.
+  retryEvaluation: (interviewId, data = {}) =>
+    api.post(`/interviews/${interviewId}/evaluate`, data),
   getById: (id) => api.get(`/interviews/${id}`),
   getHistory: (params) => api.get('/interviews/history', { params }),
   abandon: (id) => api.patch(`/interviews/${id}/abandon`),
   getPersonalities: () => api.get('/interviews/personalities'),
   getRounds: () => api.get('/interviews/rounds'),
   nudge: (interviewId, data) => api.post(`/interviews/${interviewId}/nudge`, data),
+  // Sprint 7 Commit 2 — progressive DSA hint. Returns the next hint
+  // string + count. Only supported for DSA interviews with allowHints on.
+  requestHint: (interviewId) => api.post(`/interviews/${interviewId}/hint`),
   resume: (interviewId) => api.post(`/interviews/${interviewId}/resume`),
   // Sprint 3 — create a NEW short interview seeded from one question of an old one.
   retryQuestion: (interviewId, questionIndex) =>

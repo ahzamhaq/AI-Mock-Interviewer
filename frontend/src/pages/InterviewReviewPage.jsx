@@ -12,6 +12,8 @@ import SavePresetModal from '../components/interview/SavePresetModal';
 import { interviewAPI, presetsAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { applyBadgeUnlocks } from '../services/badgeUnlocks';
+import DSAConfigurationCard from '../components/interview/DSAConfigurationCard';
+import { DSA_QUESTION_COUNT } from '../data/dsaConstants';
 
 /**
  * InterviewReviewPage — the human-in-the-loop review screen.
@@ -86,14 +88,28 @@ const COMPANY_TYPE_OPTS = [
  * backend can persist origin on the Interview document.
  */
 function toWizardPayload(draft, origin = {}) {
-  return {
+  const isDsa = draft.mode === 'dsa';
+  // DSA mode overrides a few upstream defaults so the persisted interview
+  // is coherent: interviewType is forced 'technical', totalQuestions
+  // comes from the DSA question count (1–20 range, not 3–15).
+  const dsaQuestionCount = clampInt(
+    draft.dsa?.questionCount ?? draft.dsaQuestionCount,
+    DSA_QUESTION_COUNT.MIN,
+    DSA_QUESTION_COUNT.MAX,
+    DSA_QUESTION_COUNT.DEFAULT,
+  );
+  const payload = {
     role:            draft.role || 'sde',
     experienceLevel: draft.experience || 'fresher',
     companyType:     draft.companyType || 'any',
     targetCompany:   draft.company || '',
-    interviewType:   draft.interviewType || 'mixed',
-    difficulty:      draft.difficulty || 'medium',
-    totalQuestions:  clampInt(draft.questionCount, 3, 15, 5),
+    interviewType:   isDsa ? 'technical' : (draft.interviewType || 'mixed'),
+    difficulty:      isDsa
+      ? (draft.dsa?.difficulty === 'mixed' ? 'medium' : (draft.dsa?.difficulty || 'medium'))
+      : (draft.difficulty || 'medium'),
+    totalQuestions:  isDsa
+      ? dsaQuestionCount
+      : clampInt(draft.questionCount, 3, 15, 5),
     jobDescription:  '',
     useResume:       !!draft.useResume,
     lengthIntent:    'auto',
@@ -104,6 +120,18 @@ function toWizardPayload(draft, origin = {}) {
     source:          origin.source || 'guided',
     sourceMetadata:  origin.sourceMetadata || {},
   };
+  if (isDsa) {
+    payload.mode = 'dsa';
+    payload.dsa = {
+      topic:         draft.dsa?.topic || '',
+      difficulty:    draft.dsa?.difficulty || 'medium',
+      language:      draft.dsa?.language || '',
+      questionCount: dsaQuestionCount,
+      allowHints:    draft.dsa?.allowHints !== false,
+      focusAreas:    Array.isArray(draft.dsa?.focusAreas) ? draft.dsa.focusAreas : [],
+    };
+  }
+  return payload;
 }
 
 /**
@@ -171,7 +199,37 @@ const InterviewReviewPage = () => {
 
   const initial = location.state?.draft || null;
 
-  const [draft, setDraft] = useState(initial);
+  // Sprint 7 Commit 1 — the parser emits DSA fields flat on the draft
+  // (dsaTopic, dsaDifficulty, dsaLanguage, dsaQuestionCount) alongside a
+  // top-level `mode`. Fold them into a nested `dsa` object so the
+  // DSAConfigurationCard (which is fully controlled) can consume them
+  // without every field being propped separately.
+  const initialWithDsa = useMemo(() => {
+    if (!initial) return null;
+    // If a nested dsa already exists (e.g. from templates/presets that add
+    // one later), leave it. Otherwise synthesize one from flat fields.
+    if (initial.dsa) return initial;
+    if (initial.mode !== 'dsa'
+        && !initial.dsaTopic
+        && !initial.dsaDifficulty
+        && !initial.dsaLanguage) {
+      return initial;
+    }
+    return {
+      ...initial,
+      mode: 'dsa',
+      dsa: {
+        topic:         initial.dsaTopic || '',
+        difficulty:    initial.dsaDifficulty || 'medium',
+        language:      initial.dsaLanguage || '',
+        questionCount: initial.dsaQuestionCount || DSA_QUESTION_COUNT.DEFAULT,
+        allowHints:    true,
+        focusAreas:    Array.isArray(initial.topics) ? initial.topics : [],
+      },
+    };
+  }, [initial]);
+
+  const [draft, setDraft] = useState(initialWithDsa);
   const [confidence] = useState(location.state?.confidence || {});
   const [reasons] = useState(location.state?.reasons || {});
   const [unknown, setUnknown] = useState(new Set(location.state?.unknown || []));
@@ -218,6 +276,11 @@ const InterviewReviewPage = () => {
     const errors = [];
     if (!draft.role) errors.push('Role');
     if (!draft.experience) errors.push('Experience');
+    if (draft.mode === 'dsa') {
+      if (!draft.dsa?.topic) errors.push('DSA topic');
+      if (!draft.dsa?.difficulty) errors.push('DSA difficulty');
+      if (!draft.dsa?.language) errors.push('DSA language');
+    }
     return errors;
   }, [draft]);
 
@@ -348,6 +411,29 @@ const InterviewReviewPage = () => {
                 <span style={{ color: '#D29922', fontWeight: 500 }}>{lowConfidenceCount}</span>
                 {` field${lowConfidenceCount === 1 ? '' : 's'} may need your attention. Edit anything that looks off before starting.`}
               </div>
+            </div>
+          )}
+
+          {/* ── DSA Configuration (Sprint 7 Commit 1) ────────────────
+              Rendered only when the draft is a DSA interview. Fully
+              controlled by the DSAConfigurationCard — every keystroke
+              updates the draft in place. Standard fields (role,
+              company, experience) still render below for common config. */}
+          {draft.mode === 'dsa' && draft.dsa && (
+            <div
+              className="p-4 mb-4"
+              style={{ background: '#161B22', border: '1px solid #30363D', borderRadius: 6 }}
+            >
+              <div
+                className="font-mono text-2xs uppercase tracking-wide mb-3"
+                style={{ color: '#6B7280' }}
+              >
+                DSA Configuration
+              </div>
+              <DSAConfigurationCard
+                config={draft.dsa}
+                onChange={(nextDsa) => setDraft((p) => ({ ...p, dsa: nextDsa }))}
+              />
             </div>
           )}
 
@@ -535,6 +621,10 @@ const InterviewReviewPage = () => {
                 useResume:       draft.useResume,
                 useProject:      draft.useProjects,
                 topics:          draft.topics,
+                // Sprint 7 Commit 1 — DSA passthrough so the summary card
+                // renders topic/language/difficulty/hints when applicable.
+                mode:            draft.mode,
+                dsa:             draft.dsa,
               }}
             />
           </div>

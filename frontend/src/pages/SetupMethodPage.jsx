@@ -92,7 +92,11 @@ const SetupMethodPage = () => {
               icon={Zap}
               title="Quick with AI"
               description="Describe the interview you want using natural language."
-              bullets={[
+              bullets={typeId === 'dsa' ? [
+                '"Medium graph interview in C++."',
+                '"Five hard DP questions."',
+                '"Mixed arrays and strings in Python."',
+              ] : [
                 '"I have an Amazon Backend interview."',
                 '"Focus on DSA."',
                 '"Ask strict follow-up questions."',
