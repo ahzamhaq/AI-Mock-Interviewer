@@ -7,7 +7,7 @@ const getDashboardStats = async (req, res, next) => {
     const userId = req.user._id;
     const user = await User.findById(userId);
 
-    const [recentInterviews, scoreHistory, roleBreakdown] = await Promise.all([
+    const [recentInterviews, scoreHistory, roleBreakdown, weakTopics] = await Promise.all([
       Interview.find({ userId, status: 'completed' })
         .sort({ completedAt: -1 })
         .limit(5)
@@ -22,6 +22,12 @@ const getDashboardStats = async (req, res, next) => {
         { $match: { userId, status: 'completed' } },
         { $group: { _id: '$config.role', count: { $sum: 1 }, avgScore: { $avg: '$results.overallScore' } } },
       ]),
+
+      WeakTopic.find({ userId })
+        .sort({ avgScore: 1 })
+        .limit(5)
+        .select('topic role avgScore attempts lastAsked')
+        .lean(),
     ]);
 
     const scoreData = scoreHistory.map(i => ({
@@ -46,6 +52,7 @@ const getDashboardStats = async (req, res, next) => {
       recentInterviews,
       scoreHistory: scoreData,
       roleBreakdown,
+      weakTopics,
     });
   } catch (error) {
     next(error);

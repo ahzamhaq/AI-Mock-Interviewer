@@ -52,7 +52,7 @@ const SignupPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-dark-900 flex items-center justify-center p-4">
+    <div className="min-h-screen flex items-center justify-center p-4" style={{ background: '#0D1117' }}>
       <motion.div
         className="w-full max-w-lg"
         initial={{ opacity: 0, y: 30 }}
@@ -60,15 +60,15 @@ const SignupPage = () => {
         transition={{ duration: 0.5 }}
       >
         <Link to="/" className="flex items-center gap-2 mb-8 justify-center">
-          <div className="w-9 h-9 bg-primary-600 rounded-xl flex items-center justify-center shadow-glow-sm">
-            <Mic size={18} />
+          <div className="w-9 h-9 rounded-md flex items-center justify-center" style={{ background: '#238636' }}>
+            <Mic size={18} style={{ color: '#fff' }} />
           </div>
-          <span className="font-display font-bold text-xl">Interview<span className="text-primary-400">AI</span></span>
+          <span className="text-xl font-semibold" style={{ color: '#F0F6FC' }}>InterviewAI</span>
         </Link>
 
-        <div className="glass rounded-3xl p-8">
-          <h1 className="text-2xl font-display font-bold mb-1">Create your account</h1>
-          <p className="text-white/50 text-sm mb-6">Start practicing interviews with AI — free forever</p>
+        <div className="surface p-8">
+          <h1 className="text-xl font-semibold mb-1" style={{ color: '#F0F6FC' }}>Create your account</h1>
+          <p className="text-sm mb-6" style={{ color: '#6B7280' }}>Start practicing interviews with AI — free forever</p>
 
           {/* Google Signup */}
           <div className="mb-5 flex justify-center">
@@ -84,55 +84,57 @@ const SignupPage = () => {
           </div>
 
           <div className="flex items-center gap-3 mb-5">
-            <div className="flex-1 h-px bg-white/10" />
-            <span className="text-white/30 text-xs font-medium">or sign up with email</span>
-            <div className="flex-1 h-px bg-white/10" />
+            <div className="flex-1 h-px" style={{ background: '#30363D' }} />
+            <span className="text-xs" style={{ color: '#484F58' }}>or sign up with email</span>
+            <div className="flex-1 h-px" style={{ background: '#30363D' }} />
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="grid grid-cols-1 gap-5">
               <div>
-                <label className="block text-sm font-medium text-white/70 mb-2">Full Name</label>
+                <label className="block text-xs font-medium mb-1.5" style={{ color: '#9CA3AF' }}>Full Name</label>
                 <div className="relative">
-                  <User size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30" />
-                  <input type="text" placeholder="Aarav Sharma" className="input-field pl-10"
+                  <User size={14} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: '#484F58' }} />
+                  <input type="text" placeholder="Aarav Sharma" className="input-field" style={{ paddingLeft: 36 }}
                     value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} required />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-white/70 mb-2">Email</label>
+                <label className="block text-xs font-medium mb-1.5" style={{ color: '#9CA3AF' }}>Email</label>
                 <div className="relative">
-                  <Mail size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30" />
-                  <input type="email" placeholder="you@example.com" className="input-field pl-10"
+                  <Mail size={14} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: '#484F58' }} />
+                  <input type="email" placeholder="you@example.com" className="input-field" style={{ paddingLeft: 36 }}
                     value={form.email} onChange={e => setForm(p => ({ ...p, email: e.target.value }))} required />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-white/70 mb-2">Password</label>
+                <label className="block text-xs font-medium mb-1.5" style={{ color: '#9CA3AF' }}>Password</label>
                 <div className="relative">
-                  <Lock size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30" />
+                  <Lock size={14} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: '#484F58' }} />
                   <input type={showPassword ? 'text' : 'password'} placeholder="Min. 6 characters"
-                    className="input-field pl-10 pr-12"
+                    className="input-field" style={{ paddingLeft: 36, paddingRight: 40 }}
                     value={form.password} onChange={e => setForm(p => ({ ...p, password: e.target.value }))} required />
                   <button type="button" onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60 transition-colors">
-                    {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 transition-colors"
+                    style={{ color: '#484F58', background: 'none', border: 'none', cursor: 'pointer' }}
+                    onMouseEnter={e => e.currentTarget.style.color = '#9CA3AF'}
+                    onMouseLeave={e => e.currentTarget.style.color = '#484F58'}>
+                    {showPassword ? <EyeOff size={14} /> : <Eye size={14} />}
                   </button>
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-white/70 mb-2">Target Role</label>
+                <label className="block text-xs font-medium mb-1.5" style={{ color: '#9CA3AF' }}>Target Role</label>
                 <div className="grid grid-cols-3 gap-2">
                   {ROLES.map(r => (
                     <button key={r.value} type="button"
-                      className={`px-3 py-2 rounded-xl text-xs font-medium border transition-all ${
-                        form.targetRole === r.value
-                          ? 'bg-primary-600 border-primary-500 text-white shadow-glow-sm'
-                          : 'bg-white/5 border-white/10 text-white/60 hover:border-white/20'
-                      }`}
+                      className="px-3 py-2 rounded-md text-xs font-medium border transition-all"
+                      style={form.targetRole === r.value
+                        ? { background: '#1F6FEB', borderColor: '#1F6FEB', color: '#fff' }
+                        : { background: '#0D1117', borderColor: '#30363D', color: '#9CA3AF' }}
                       onClick={() => setForm(p => ({ ...p, targetRole: r.value }))}
                     >
                       {r.label}
@@ -142,15 +144,14 @@ const SignupPage = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-white/70 mb-2">Experience Level</label>
+                <label className="block text-xs font-medium mb-1.5" style={{ color: '#9CA3AF' }}>Experience Level</label>
                 <div className="grid grid-cols-3 gap-2">
                   {EXPERIENCE.map(e => (
                     <button key={e.value} type="button"
-                      className={`px-3 py-2 rounded-xl text-xs font-medium border transition-all ${
-                        form.experience === e.value
-                          ? 'bg-accent-600 border-accent-500 text-white'
-                          : 'bg-white/5 border-white/10 text-white/60 hover:border-white/20'
-                      }`}
+                      className="px-3 py-2 rounded-md text-xs font-medium border transition-all"
+                      style={form.experience === e.value
+                        ? { background: '#238636', borderColor: '#238636', color: '#fff' }
+                        : { background: '#0D1117', borderColor: '#30363D', color: '#9CA3AF' }}
                       onClick={() => setForm(p => ({ ...p, experience: e.value }))}
                     >
                       {e.label}
@@ -174,9 +175,17 @@ const SignupPage = () => {
             </motion.button>
           </form>
 
-          <p className="text-center text-white/40 text-sm mt-6">
+          <p className="text-center text-xs mt-5" style={{ color: '#6B7280' }}>
             Already have an account?{' '}
-            <Link to="/login" className="text-primary-400 hover:text-primary-300 font-medium">Sign in</Link>
+            <Link
+              to="/login"
+              className="transition-colors"
+              style={{ color: '#58A6FF' }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = '#7CBDFF')}
+              onMouseLeave={(e) => (e.currentTarget.style.color = '#58A6FF')}
+            >
+              Sign in
+            </Link>
           </p>
         </div>
       </motion.div>

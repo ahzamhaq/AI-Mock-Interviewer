@@ -50,7 +50,7 @@ const VerdictStrip = ({
     >
       {/* Strength */}
       <div
-        className="rounded-2xl p-4"
+        className="rounded-md p-4"
         style={{
           background: 'rgba(63,185,80,0.06)',
           border: '1px solid rgba(63,185,80,0.25)',
@@ -72,7 +72,7 @@ const VerdictStrip = ({
 
       {/* Improvement */}
       <div
-        className="rounded-2xl p-4"
+        className="rounded-md p-4"
         style={{
           background: 'rgba(248,81,73,0.06)',
           border: '1px solid rgba(248,81,73,0.25)',
@@ -94,7 +94,7 @@ const VerdictStrip = ({
 
       {/* Primary CTA */}
       <div
-        className="rounded-2xl p-4 flex flex-col"
+        className="rounded-md p-4 flex flex-col"
         style={{
           background: 'rgba(88,166,255,0.06)',
           border: '1px solid rgba(88,166,255,0.25)',

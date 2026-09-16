@@ -24,11 +24,11 @@ const ResultsHeader = ({ interview, emoji, gradeColorClass }) => {
 
   return (
     <motion.div
-      className="glass rounded-3xl p-8 mb-4 text-center relative overflow-hidden"
+      className="surface p-8 mb-4 text-center relative overflow-hidden"
       initial={{ opacity: 0, scale: 0.97 }}
       animate={{ opacity: 1, scale: 1 }}
     >
-      <div className="absolute inset-0 bg-gradient-to-br from-primary-600/5 to-accent-600/5" />
+      <div className="absolute inset-0" style={{ background: 'linear-gradient(135deg, rgba(88,166,255,0.05), transparent)' }} />
       <div className="relative">
 
         {/* Retry lineage — appears only when this interview was a retry. */}
@@ -58,18 +58,18 @@ const ResultsHeader = ({ interview, emoji, gradeColorClass }) => {
         >
           {emoji}
         </motion.div>
-        <h1 className="text-3xl font-display font-bold mb-2">
+        <h1 className="text-3xl font-bold mb-2" style={{ color: '#F0F6FC' }}>
           {answeredCount === 0 ? 'No Answers Submitted' : 'Interview Complete!'}
         </h1>
-        <p className="text-white/50 mb-6">{interview.title}</p>
+        <p className="mb-6" style={{ color: '#9CA3AF' }}>{interview.title}</p>
 
         <div className="flex items-center justify-center gap-3 mb-6">
-          <span className={`text-6xl font-display font-bold ${gradeColorClass}`}>
+          <span className={`text-6xl font-bold ${gradeColorClass}`}>
             {results.grade}
           </span>
           <div className="text-left">
-            <p className="text-4xl font-bold">{results.overallScore}/10</p>
-            <p className="text-white/40 text-sm">{results.recommendation || 'Overall Score'}</p>
+            <p className="text-4xl font-bold" style={{ color: '#F0F6FC' }}>{results.overallScore}/10</p>
+            <p className="text-sm" style={{ color: '#6B7280' }}>{results.recommendation || 'Overall Score'}</p>
           </div>
         </div>
 
@@ -78,20 +78,20 @@ const ResultsHeader = ({ interview, emoji, gradeColorClass }) => {
             not a report card. */}
         {results.closing && (
           <p
-            className="text-white/70 text-sm italic max-w-xl mx-auto mb-4 leading-relaxed"
-            style={{ borderLeft: '2px solid rgba(88,166,255,0.4)', paddingLeft: 12 }}
+            className="text-sm italic max-w-xl mx-auto mb-4 leading-relaxed"
+            style={{ color: '#F0F6FC', borderLeft: '2px solid rgba(88,166,255,0.4)', paddingLeft: 12 }}
           >
             {results.closing}
           </p>
         )}
 
         {results.overallFeedback && (
-          <p className="text-white/60 text-sm max-w-xl mx-auto bg-white/3 rounded-xl p-4">
+          <p className="text-sm max-w-xl mx-auto rounded-md p-4" style={{ color: '#9CA3AF', background: '#161B22' }}>
             {results.overallFeedback}
           </p>
         )}
 
-        <div className="flex items-center justify-center gap-6 mt-6 text-sm text-white/40">
+        <div className="flex items-center justify-center gap-6 mt-6 text-sm" style={{ color: '#6B7280' }}>
           <span className="flex items-center gap-1"><Mic size={14} /> {questions.length} questions</span>
           <span className="flex items-center gap-1"><Clock size={14} /> {Math.floor(duration / 60)}m {duration % 60}s</span>
           <span className="flex items-center gap-1"><Star size={14} /> {results.totalFillerWords} filler words</span>
