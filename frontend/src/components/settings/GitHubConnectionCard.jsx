@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Github, Loader2, CheckCircle, Unlink, ExternalLink } from 'lucide-react';
+import { Github, Loader2, CheckCircle, Unlink, ExternalLink, AlertTriangle } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { formatDistanceToNow } from 'date-fns';
 import { integrationsAPI } from '../../services/api';
+import { useAuth } from '../../context/AuthContext';
 
 /**
  * GitHubConnectionCard — Connected Accounts card for the Profile page.
@@ -20,6 +21,8 @@ import { integrationsAPI } from '../../services/api';
  * tab layout without pulling GitHub state into the parent page.
  */
 const GitHubConnectionCard = () => {
+  const { user } = useAuth();
+  const isDemo = !!user?.isDemo;
   const [status, setStatus] = useState(null); // { connected, login, avatarUrl, connectedAt, scopes }
   const [loading, setLoading] = useState(true);
   const [connecting, setConnecting] = useState(false);
@@ -90,6 +93,29 @@ const GitHubConnectionCard = () => {
           </p>
         </div>
       </div>
+
+      {/* Demo-account warning. The demo credential is shared across
+          visitors, so we refuse to attach a GitHub token to it — a next
+          visitor would inherit access to your private repos. */}
+      {isDemo && (
+        <div
+          className="flex items-start gap-2 mb-4 p-3 rounded-xl"
+          style={{
+            background: 'rgba(210,153,34,0.08)',
+            border: '1px solid rgba(210,153,34,0.35)',
+          }}
+        >
+          <AlertTriangle size={13} style={{ color: '#D29922', flexShrink: 0, marginTop: 2 }} />
+          <div className="text-xs" style={{ color: '#F0F6FC' }}>
+            <div className="font-medium mb-0.5">GitHub connect is disabled on the demo account</div>
+            <div style={{ color: '#9CA3AF' }}>
+              This account is shared. Connecting GitHub here would let the
+              next visitor see your repositories. Create your own account
+              to import your own repos.
+            </div>
+          </div>
+        </div>
+      )}
 
       <motion.div
         initial={{ opacity: 0 }}
@@ -196,8 +222,9 @@ const GitHubConnectionCard = () => {
             <button
               type="button"
               onClick={connect}
-              disabled={loading || connecting}
+              disabled={loading || connecting || isDemo}
               className="btn-primary flex items-center gap-1.5 px-3 py-1.5 text-xs"
+              title={isDemo ? 'Disabled on the shared demo account' : undefined}
             >
               {connecting ? (
                 <>
