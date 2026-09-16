@@ -29,13 +29,13 @@ const CircularScore = ({ score, max = 10, label, size = 120 }) => {
   const radius = (size / 2) - 8;
   const circ = 2 * Math.PI * radius;
   const dash = (pct / 100) * circ;
-  const color = score >= 8 ? '#10b981' : score >= 6 ? '#f59e0b' : '#ef4444';
+  const color = score >= 8 ? '#3FB950' : score >= 6 ? '#D29922' : '#F85149';
 
   return (
     <div className="flex flex-col items-center gap-2">
       <div style={{ width: size, height: size }} className="relative">
         <svg width={size} height={size} className="-rotate-90">
-          <circle cx={size/2} cy={size/2} r={radius} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="8" />
+          <circle cx={size/2} cy={size/2} r={radius} fill="none" stroke="#21262D" strokeWidth="8" />
           <motion.circle cx={size/2} cy={size/2} r={radius} fill="none" stroke={color} strokeWidth="8"
             strokeLinecap="round" strokeDasharray={`${dash} ${circ}`}
             initial={{ strokeDasharray: `0 ${circ}` }}
@@ -44,11 +44,11 @@ const CircularScore = ({ score, max = 10, label, size = 120 }) => {
           />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-2xl font-bold font-display">{score}</span>
-          <span className="text-xs text-white/40">/{max}</span>
+          <span className="text-2xl font-bold" style={{ color: '#F0F6FC' }}>{score}</span>
+          <span className="text-xs" style={{ color: '#6B7280' }}>/{max}</span>
         </div>
       </div>
-      <span className="text-xs text-white/50 text-center">{label}</span>
+      <span className="text-xs text-center" style={{ color: '#9CA3AF' }}>{label}</span>
     </div>
   );
 };
@@ -60,38 +60,45 @@ const QuestionReview = ({ question, index, onRetry, retrying, retryingIndex }) =
   const isThisRetryLoading = retrying && retryingIndex === index;
 
   return (
-    <div className="glass rounded-2xl overflow-hidden">
+    <div className="surface overflow-hidden">
       <button
-        className="w-full p-5 flex items-center gap-4 text-left hover:bg-white/3 transition-colors"
+        className="w-full p-5 flex items-center gap-4 text-left transition-colors"
         onClick={() => setExpanded(!expanded)}
+        onMouseEnter={(e) => (e.currentTarget.style.background = '#161B22')}
+        onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
       >
-        <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 font-bold text-sm
-          ${question.skipped ? 'bg-white/10 text-white/40' :
-            fb?.score >= 7 ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
+        <div
+          className="w-10 h-10 rounded-md flex items-center justify-center flex-shrink-0 font-bold text-sm"
+          style={question.skipped
+            ? { background: '#21262D', color: '#6B7280' }
+            : fb?.score >= 7
+              ? { background: 'rgba(63,185,80,0.15)', color: '#3FB950' }
+              : { background: 'rgba(248,81,73,0.15)', color: '#F85149' }}
+        >
           {question.skipped ? 'S' : `${fb?.score || 0}`}
         </div>
         <div className="flex-1 min-w-0">
-          <p className="font-medium text-sm truncate">{question.questionText}</p>
-          <p className="text-xs text-white/40 mt-0.5">
+          <p className="font-medium text-sm truncate" style={{ color: '#F0F6FC' }}>{question.questionText}</p>
+          <p className="text-xs mt-0.5" style={{ color: '#6B7280' }}>
             {question.skipped ? 'Skipped' : `Score: ${fb?.score || 0}/10`}
             {question.voiceMetrics?.wordsPerMinute > 0 && ` • ${question.voiceMetrics.wordsPerMinute} WPM`}
             {question.voiceMetrics?.fillerWordCount > 0 && ` • ${question.voiceMetrics.fillerWordCount} filler words`}
           </p>
         </div>
-        {expanded ? <ChevronUp size={16} className="text-white/40" /> : <ChevronDown size={16} className="text-white/40" />}
+        {expanded ? <ChevronUp size={16} style={{ color: '#6B7280' }} /> : <ChevronDown size={16} style={{ color: '#6B7280' }} />}
       </button>
 
       {expanded && !question.skipped && (
         <motion.div
           initial={{ height: 0, opacity: 0 }}
           animate={{ height: 'auto', opacity: 1 }}
-          className="border-t border-white/5"
+          style={{ borderTop: '1px solid #21262D' }}
         >
           <div className="p-5 space-y-4">
             {question.userAnswer && (
               <div>
-                <p className="text-xs font-medium text-white/40 mb-2 flex items-center gap-1"><MessageSquare size={12} /> YOUR ANSWER</p>
-                <p className="text-sm text-white/60 bg-white/3 rounded-xl p-3 whitespace-pre-line">{question.userAnswer}</p>
+                <p className="text-xs font-medium mb-2 flex items-center gap-1" style={{ color: '#6B7280' }}><MessageSquare size={12} /> YOUR ANSWER</p>
+                <p className="text-sm rounded-md p-3 whitespace-pre-line" style={{ color: '#9CA3AF', background: '#161B22' }}>{question.userAnswer}</p>
               </div>
             )}
             {/* Raw voice-to-text transcript, shown only when it materially
@@ -101,29 +108,29 @@ const QuestionReview = ({ question, index, onRetry, retrying, retryingIndex }) =
               && question.transcript.trim()
               && question.transcript.trim() !== (question.userAnswer || '').trim() && (
               <div>
-                <p className="text-xs font-medium text-white/40 mb-2">RAW TRANSCRIPT</p>
-                <p className="font-mono text-xs text-white/40 bg-white/3 rounded-xl p-3 whitespace-pre-line">
+                <p className="text-xs font-medium mb-2" style={{ color: '#6B7280' }}>RAW TRANSCRIPT</p>
+                <p className="font-mono text-xs rounded-md p-3 whitespace-pre-line" style={{ color: '#6B7280', background: '#161B22' }}>
                   {question.transcript}
                 </p>
               </div>
             )}
-            {fb?.summary && <p className="text-sm text-white/70 italic">"{fb.summary}"</p>}
+            {fb?.summary && <p className="text-sm italic" style={{ color: '#F0F6FC' }}>"{fb.summary}"</p>}
 
             {(fb?.strengths?.length > 0 || fb?.weaknesses?.length > 0) && (
               <div className="grid grid-cols-2 gap-3">
                 {fb.strengths?.length > 0 && (
                   <div>
-                    <p className="text-xs text-green-400 font-medium mb-2">STRENGTHS</p>
+                    <p className="text-xs font-medium mb-2" style={{ color: '#3FB950' }}>STRENGTHS</p>
                     {fb.strengths.slice(0, 2).map((s, i) => (
-                      <p key={i} className="text-xs text-white/50 flex gap-1"><span className="text-green-400">+</span> {s}</p>
+                      <p key={i} className="text-xs flex gap-1" style={{ color: '#9CA3AF' }}><span style={{ color: '#3FB950' }}>+</span> {s}</p>
                     ))}
                   </div>
                 )}
                 {fb.weaknesses?.length > 0 && (
                   <div>
-                    <p className="text-xs text-red-400 font-medium mb-2">IMPROVE</p>
+                    <p className="text-xs font-medium mb-2" style={{ color: '#F85149' }}>IMPROVE</p>
                     {fb.weaknesses.slice(0, 2).map((w, i) => (
-                      <p key={i} className="text-xs text-white/50 flex gap-1"><span className="text-red-400">-</span> {w}</p>
+                      <p key={i} className="text-xs flex gap-1" style={{ color: '#9CA3AF' }}><span style={{ color: '#F85149' }}>-</span> {w}</p>
                     ))}
                   </div>
                 )}
@@ -132,23 +139,23 @@ const QuestionReview = ({ question, index, onRetry, retrying, retryingIndex }) =
 
             {fb?.betterAnswer && (
               <div>
-                <p className="text-xs font-medium text-primary-400 mb-2">MODEL ANSWER</p>
-                <p className="text-xs text-white/50 bg-primary-500/5 rounded-xl p-3 line-clamp-4">{fb.betterAnswer}</p>
+                <p className="text-xs font-medium mb-2" style={{ color: '#58A6FF' }}>MODEL ANSWER</p>
+                <p className="text-xs rounded-md p-3 line-clamp-4" style={{ color: '#9CA3AF', background: 'rgba(88,166,255,0.06)' }}>{fb.betterAnswer}</p>
               </div>
             )}
 
             {/* Voice metrics */}
             {question.voiceMetrics?.wordsPerMinute > 0 && (
               <div className="flex gap-4 text-xs">
-                <span className="text-white/40">
-                  Speed: <span className={
-                    question.voiceMetrics.speakingPace === 'ideal' ? 'text-green-400' :
-                    question.voiceMetrics.speakingPace === 'too_fast' ? 'text-red-400' : 'text-yellow-400'
-                  }>{question.voiceMetrics.wordsPerMinute} WPM ({question.voiceMetrics.speakingPace?.replace('_', ' ')})</span>
+                <span style={{ color: '#6B7280' }}>
+                  Speed: <span style={{
+                    color: question.voiceMetrics.speakingPace === 'ideal' ? '#3FB950' :
+                      question.voiceMetrics.speakingPace === 'too_fast' ? '#F85149' : '#D29922',
+                  }}>{question.voiceMetrics.wordsPerMinute} WPM ({question.voiceMetrics.speakingPace?.replace('_', ' ')})</span>
                 </span>
                 {question.voiceMetrics.fillerWordCount > 0 && (
-                  <span className="text-white/40">
-                    Fillers: <span className="text-yellow-400">{question.voiceMetrics.fillerWordCount} ({question.voiceMetrics.fillerWords?.join(', ')})</span>
+                  <span style={{ color: '#6B7280' }}>
+                    Fillers: <span style={{ color: '#D29922' }}>{question.voiceMetrics.fillerWordCount} ({question.voiceMetrics.fillerWords?.join(', ')})</span>
                   </span>
                 )}
               </div>
@@ -158,7 +165,7 @@ const QuestionReview = ({ question, index, onRetry, retrying, retryingIndex }) =
                 this question's topic. Only offered for real attempts; a
                 skipped or empty question isn't a fair retry target. */}
             {canRetry && onRetry && (
-              <div className="pt-2 border-t border-white/5">
+              <div className="pt-2" style={{ borderTop: '1px solid #21262D' }}>
                 <button
                   type="button"
                   onClick={() => onRetry(index)}
@@ -234,8 +241,9 @@ const ResultsPage = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-dark-900 flex items-center justify-center">
-        <motion.div className="w-12 h-12 rounded-full border-4 border-primary-600/30 border-t-primary-500"
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#0D1117' }}>
+        <motion.div className="w-12 h-12 rounded-full border-4"
+          style={{ borderColor: '#30363D', borderTopColor: '#58A6FF' }}
           animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
         />
       </div>
@@ -266,7 +274,7 @@ const ResultsPage = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-dark-900">
+    <div className="min-h-screen" style={{ background: '#0D1117' }}>
       <Navbar />
       <main className="max-w-4xl mx-auto px-4 pt-24 pb-16">
 
@@ -323,10 +331,10 @@ const ResultsPage = () => {
 
         {/* Score breakdown */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-          <motion.div className="glass rounded-2xl p-6"
+          <motion.div className="surface p-6"
             initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }}>
-            <h3 className="font-semibold mb-6 flex items-center gap-2">
-              <BarChart3 size={18} className="text-primary-400" /> Score Breakdown
+            <h3 className="font-semibold mb-6 flex items-center gap-2" style={{ color: '#F0F6FC' }}>
+              <BarChart3 size={18} style={{ color: '#58A6FF' }} /> Score Breakdown
             </h3>
             <div className="grid grid-cols-3 gap-4">
               <CircularScore score={results.technicalScore} label="Technical" size={80} />
@@ -338,14 +346,14 @@ const ResultsPage = () => {
             </div>
           </motion.div>
 
-          <motion.div className="glass rounded-2xl p-6"
+          <motion.div className="surface p-6"
             initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 }}>
-            <h3 className="font-semibold mb-4">Skill Radar</h3>
+            <h3 className="font-semibold mb-4" style={{ color: '#F0F6FC' }}>Skill Radar</h3>
             <ResponsiveContainer width="100%" height={200}>
               <RadarChart data={radarData}>
-                <PolarGrid stroke="rgba(255,255,255,0.1)" />
-                <PolarAngleAxis dataKey="subject" tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 10 }} />
-                <Radar name="Score" dataKey="A" stroke="#4361ff" fill="#4361ff" fillOpacity={0.2} strokeWidth={2} />
+                <PolarGrid stroke="#21262D" />
+                <PolarAngleAxis dataKey="subject" tick={{ fill: '#6B7280', fontSize: 10 }} />
+                <Radar name="Score" dataKey="A" stroke="#58A6FF" fill="#58A6FF" fillOpacity={0.2} strokeWidth={2} />
               </RadarChart>
             </ResponsiveContainer>
           </motion.div>
@@ -353,31 +361,31 @@ const ResultsPage = () => {
 
         {/* Voice metrics */}
         {(results.averageWPM > 0 || results.totalFillerWords > 0) && (
-          <motion.div className="glass rounded-2xl p-6 mb-8"
+          <motion.div className="surface p-6 mb-8"
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}>
-            <h3 className="font-semibold mb-4 flex items-center gap-2">
-              <Volume2 size={18} className="text-accent-400" /> Voice Analysis
+            <h3 className="font-semibold mb-4 flex items-center gap-2" style={{ color: '#F0F6FC' }}>
+              <Volume2 size={18} style={{ color: '#58A6FF' }} /> Voice Analysis
             </h3>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               {results.averageWPM > 0 && (
-                <div className="bg-white/3 rounded-xl p-4 text-center">
-                  <p className="text-2xl font-bold">{results.averageWPM}</p>
-                  <p className="text-xs text-white/40 mt-1">Words/min</p>
-                  <p className={`text-xs mt-1 ${results.averageWPM >= 100 && results.averageWPM <= 180 ? 'text-green-400' : 'text-yellow-400'}`}>
+                <div className="rounded-md p-4 text-center" style={{ background: '#161B22' }}>
+                  <p className="text-2xl font-bold" style={{ color: '#F0F6FC' }}>{results.averageWPM}</p>
+                  <p className="text-xs mt-1" style={{ color: '#6B7280' }}>Words/min</p>
+                  <p className="text-xs mt-1" style={{ color: results.averageWPM >= 100 && results.averageWPM <= 180 ? '#3FB950' : '#D29922' }}>
                     {results.averageWPM < 100 ? 'Too slow' : results.averageWPM > 180 ? 'Too fast' : 'Ideal pace'}
                   </p>
                 </div>
               )}
-              <div className="bg-white/3 rounded-xl p-4 text-center">
-                <p className={`text-2xl font-bold ${results.totalFillerWords === 0 ? 'text-green-400' : results.totalFillerWords < 5 ? 'text-yellow-400' : 'text-red-400'}`}>
+              <div className="rounded-md p-4 text-center" style={{ background: '#161B22' }}>
+                <p className="text-2xl font-bold" style={{ color: results.totalFillerWords === 0 ? '#3FB950' : results.totalFillerWords < 5 ? '#D29922' : '#F85149' }}>
                   {results.totalFillerWords}
                 </p>
-                <p className="text-xs text-white/40 mt-1">Filler Words</p>
-                <p className="text-xs text-white/30 mt-1">{results.totalFillerWords === 0 ? 'Perfect!' : 'Reduce these'}</p>
+                <p className="text-xs mt-1" style={{ color: '#6B7280' }}>Filler Words</p>
+                <p className="text-xs mt-1" style={{ color: '#484F58' }}>{results.totalFillerWords === 0 ? 'Perfect!' : 'Reduce these'}</p>
               </div>
-              <div className="bg-white/3 rounded-xl p-4 text-center">
-                <p className="text-2xl font-bold">{results.confidenceScore}%</p>
-                <p className="text-xs text-white/40 mt-1">Confidence</p>
+              <div className="rounded-md p-4 text-center" style={{ background: '#161B22' }}>
+                <p className="text-2xl font-bold" style={{ color: '#F0F6FC' }}>{results.confidenceScore}%</p>
+                <p className="text-xs mt-1" style={{ color: '#6B7280' }}>Confidence</p>
               </div>
             </div>
           </motion.div>
@@ -387,28 +395,28 @@ const ResultsPage = () => {
         {(results.strengths?.length > 0 || results.weaknesses?.length > 0) && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
             {results.strengths?.length > 0 && (
-              <div className="glass rounded-2xl p-5">
-                <h4 className="font-medium text-green-400 mb-3 flex items-center gap-2">
+              <div className="surface p-5">
+                <h4 className="font-medium mb-3 flex items-center gap-2" style={{ color: '#3FB950' }}>
                   <CheckCircle size={16} /> Overall Strengths
                 </h4>
                 <ul className="space-y-2">
                   {results.strengths.map((s, i) => (
-                    <li key={i} className="text-sm text-white/60 flex gap-2">
-                      <span className="text-green-400 flex-shrink-0">✓</span> {s}
+                    <li key={i} className="text-sm flex gap-2" style={{ color: '#9CA3AF' }}>
+                      <span className="flex-shrink-0" style={{ color: '#3FB950' }}>✓</span> {s}
                     </li>
                   ))}
                 </ul>
               </div>
             )}
             {results.weaknesses?.length > 0 && (
-              <div className="glass rounded-2xl p-5">
-                <h4 className="font-medium text-red-400 mb-3 flex items-center gap-2">
+              <div className="surface p-5">
+                <h4 className="font-medium mb-3 flex items-center gap-2" style={{ color: '#F85149' }}>
                   <XCircle size={16} /> Areas to Improve
                 </h4>
                 <ul className="space-y-2">
                   {results.weaknesses.map((w, i) => (
-                    <li key={i} className="text-sm text-white/60 flex gap-2">
-                      <span className="text-red-400 flex-shrink-0">→</span> {w}
+                    <li key={i} className="text-sm flex gap-2" style={{ color: '#9CA3AF' }}>
+                      <span className="flex-shrink-0" style={{ color: '#F85149' }}>→</span> {w}
                     </li>
                   ))}
                 </ul>
@@ -419,8 +427,8 @@ const ResultsPage = () => {
 
         {/* Per-question review */}
         <div className="mb-8">
-          <h3 className="font-semibold mb-4 flex items-center gap-2">
-            <Zap size={18} className="text-primary-400" /> Question-by-Question Review
+          <h3 className="font-semibold mb-4 flex items-center gap-2" style={{ color: '#F0F6FC' }}>
+            <Zap size={18} style={{ color: '#58A6FF' }} /> Question-by-Question Review
           </h3>
           <div className="space-y-3">
             {questions.map((q, i) => (

@@ -52,6 +52,7 @@ const InterviewHubCard = ({
         e.currentTarget.style.borderColor = '#30363D';
       }}
       aria-disabled={disabled}
+      title={disabled ? 'This interview mode is still in development — not available yet' : undefined}
     >
       {/* Header row — icon + status badge */}
       <div className="flex items-start justify-between w-full mb-3">
@@ -95,6 +96,15 @@ const InterviewHubCard = ({
       >
         {type.description}
       </p>
+
+      {/* Disabled-state clarification — makes it explicit this is an
+          unbuilt mode (not a paywall or a bug), matching the "Coming
+          Soon" badge above. */}
+      {disabled && (
+        <p className="text-2xs leading-relaxed mb-3" style={{ color: '#6B7280' }}>
+          In development — this mode isn&apos;t available yet.
+        </p>
+      )}
 
       {/* Contextual info slot (resume/project/prompt hints) */}
       {info && (

@@ -136,6 +136,7 @@ const InterviewPage = () => {
   const [greeting, setGreeting] = useState('');
   const [aiSpeaking, setAiSpeaking] = useState(false);
   const [showAvatar, setShowAvatar] = useState(true);
+  const [showMicExplainer, setShowMicExplainer] = useState(false);
   const [sessionMetrics, setSessionMetrics] = useState({ wpm: 0, fillerCount: 0, confidence: 0, answers: [] });
   const [logs, setLogs] = useState([]);
   const [latency, setLatency] = useState(null);
@@ -335,6 +336,24 @@ const InterviewPage = () => {
       }
     }
   }, [interview, greeting]);
+
+  const MIC_EXPLAINER_KEY = 'onboarding_mic_explainer_seen';
+
+  // First time the user clicks "Speak Answer" in this browser, explain why
+  // mic access is needed and that typing is a valid alternative, before the
+  // browser's native permission prompt fires. Never shown again afterward.
+  const handleSpeakAnswerClick = () => {
+    let seen = false;
+    try { seen = localStorage.getItem(MIC_EXPLAINER_KEY) === '1'; } catch { /* ignore */ }
+    if (seen) { startRecording(); return; }
+    setShowMicExplainer(true);
+  };
+
+  const confirmMicExplainer = () => {
+    try { localStorage.setItem(MIC_EXPLAINER_KEY, '1'); } catch { /* ignore */ }
+    setShowMicExplainer(false);
+    startRecording();
+  };
 
   const startRecording = () => {
     pushLog('VOICE', 'Microphone armed · listening', '#F85149');
@@ -728,6 +747,7 @@ const InterviewPage = () => {
               <span
                 className="text-2xs px-1.5 py-0.5 rounded font-mono"
                 style={{ background: 'rgba(210,153,34,0.1)', color: '#D29922', border: '1px solid rgba(210,153,34,0.3)' }}
+                title="A follow-up question based on your previous answer"
               >
                 follow-up
               </span>
@@ -954,7 +974,14 @@ const InterviewPage = () => {
             )}
           </div>
 
-          {/* ── System log feed ─────────────────────────────────── */}
+          {/* ── System log feed ─────────────────────────────────────
+              Raw engine/debug telemetry (internal tags, strategy decisions,
+              adaptive-engine internals). Not meaningful to end users, so it
+              only renders in local development — kept for developers
+              debugging the adaptive engine, hidden from the production
+              build. pushLog() calls elsewhere are untouched; this only
+              gates whether the feed is displayed. */}
+          {import.meta.env.DEV && (
           <div
             className="flex-shrink-0 flex flex-col"
             style={{ borderTop: '1px solid #21262D', maxHeight: 180 }}
@@ -990,6 +1017,7 @@ const InterviewPage = () => {
               ))}
             </div>
           </div>
+          )}
         </div>
 
         {/* CENTER: Main Workspace */}
@@ -1019,6 +1047,7 @@ const InterviewPage = () => {
                     <span
                       className="text-2xs px-2 py-0.5 rounded"
                       style={{ background: 'rgba(210,153,34,0.1)', color: '#D29922', border: '1px solid rgba(210,153,34,0.3)' }}
+                      title="A follow-up question based on your previous answer"
                     >
                       follow-up
                     </span>
@@ -1027,6 +1056,7 @@ const InterviewPage = () => {
                     <span
                       className="text-2xs px-2 py-0.5 rounded"
                       style={{ background: 'rgba(248,81,73,0.1)', color: '#F85149', border: '1px solid rgba(248,81,73,0.3)' }}
+                      title="Revisiting a topic you found challenging earlier in this interview"
                     >
                       revisit
                     </span>
@@ -1035,6 +1065,7 @@ const InterviewPage = () => {
                     <span
                       className="text-2xs px-2 py-0.5 rounded"
                       style={{ background: 'rgba(248,81,73,0.1)', color: '#F85149', border: '1px solid rgba(248,81,73,0.3)' }}
+                      title="Checking your understanding goes beyond a memorized answer"
                     >
                       depth probe
                     </span>
@@ -1119,7 +1150,39 @@ const InterviewPage = () => {
           <div className="flex-1 overflow-y-auto p-5">
             <AnimatePresence mode="wait">
 
-              {phase === PHASE.WAITING && (
+              {phase === PHASE.WAITING && showMicExplainer && (
+                <motion.div key="mic-explainer"
+                  initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                >
+                  <div
+                    className="flex items-start gap-3 p-3"
+                    style={{ background: '#161B22', border: '1px solid #30363D', borderRadius: 6 }}
+                  >
+                    <Mic size={16} style={{ color: '#58A6FF', flexShrink: 0, marginTop: 2 }} />
+                    <div className="flex-1">
+                      <p className="text-sm font-medium" style={{ color: '#F0F6FC' }}>
+                        We&apos;ll ask for microphone access
+                      </p>
+                      <p className="text-xs mt-1 leading-relaxed" style={{ color: '#9CA3AF' }}>
+                        This lets us transcribe your spoken answer. You can type your answer instead if you&apos;d rather not use your microphone.
+                      </p>
+                      <div className="flex gap-2 mt-3">
+                        <button className="btn-accent text-xs px-3 py-1.5" onClick={confirmMicExplainer}>
+                          Continue
+                        </button>
+                        <button
+                          className="btn-secondary text-xs px-3 py-1.5"
+                          onClick={() => { setShowMicExplainer(false); setUseTextInput(true); setPhase(PHASE.USER_SPEAKING); }}
+                        >
+                          Type instead
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+
+              {phase === PHASE.WAITING && !showMicExplainer && (
                 <motion.div key="waiting"
                   initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                   className="flex flex-col gap-4"
@@ -1131,7 +1194,7 @@ const InterviewPage = () => {
                     {srSupported && (
                       <button
                         className="btn-accent flex items-center gap-2 px-5 py-2.5"
-                        onClick={startRecording}
+                        onClick={handleSpeakAnswerClick}
                       >
                         <Mic size={15} /> Speak Answer
                       </button>

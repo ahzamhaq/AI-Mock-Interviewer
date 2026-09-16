@@ -150,23 +150,6 @@ const LoginPage = () => {
           </button>
         </form>
 
-        {/* Demo credentials */}
-        <div
-          className="mt-4 px-3 py-2.5 rounded text-xs"
-          style={{ background: '#161B22', border: '1px solid #30363D' }}
-        >
-          <span style={{ color: '#6B7280' }}>Demo: </span>
-          <button
-            className="transition-colors"
-            style={{ color: '#58A6FF', background: 'none', border: 'none', cursor: 'pointer', fontSize: 12 }}
-            onClick={() => setForm({ email: 'demo@interviewai.com', password: 'demo1234' })}
-            onMouseEnter={e => e.currentTarget.style.color = '#7CBDFF'}
-            onMouseLeave={e => e.currentTarget.style.color = '#58A6FF'}
-          >
-            demo@interviewai.com / demo1234
-          </button>
-        </div>
-
         <p className="text-center text-xs mt-5" style={{ color: '#6B7280' }}>
           Don't have an account?{' '}
           <Link

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   BarChart3, Trophy, Clock, Target,
-  Play, Activity, AlertTriangle, Lightbulb, Hash,
+  Play, Activity, AlertTriangle, Lightbulb, Hash, Sparkles, X,
 } from 'lucide-react';
 import { analyticsAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
@@ -15,6 +15,7 @@ import ContinueLearning from '../components/dashboard/ContinueLearning';
 import RecentInterviews from '../components/dashboard/RecentInterviews';
 import RecentProjects from '../components/dashboard/RecentProjects';
 import AnalyticsPreview from '../components/dashboard/AnalyticsPreview';
+import EmptyState from '../components/common/EmptyState';
 
 const SCORE_COLOR = (s) => {
   if (!s && s !== 0) return '#6B7280';
@@ -23,11 +24,16 @@ const SCORE_COLOR = (s) => {
   return '#F85149';
 };
 
+const ONBOARDING_BANNER_KEY = 'onboarding_dashboard_dismissed';
+
 const DashboardPage = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [data, setData] = useState(null);
   const [, setLoading] = useState(true);
+  const [onboardingDismissed, setOnboardingDismissed] = useState(() => {
+    try { return localStorage.getItem(ONBOARDING_BANNER_KEY) === '1'; } catch { return false; }
+  });
 
   useEffect(() => {
     analyticsAPI.getDashboard()
@@ -36,25 +42,28 @@ const DashboardPage = () => {
       .finally(() => setLoading(false));
   }, []);
 
+  const dismissOnboarding = () => {
+    try { localStorage.setItem(ONBOARDING_BANNER_KEY, '1'); } catch { /* ignore */ }
+    setOnboardingDismissed(true);
+  };
+
   const avgScore = data?.stats?.averageScore || 0;
   const bestScore = data?.stats?.bestScore || 0;
   const totalSessions = data?.stats?.totalInterviews || 0;
   const streak = data?.stats?.streak || 0;
   const points = data?.stats?.points || 0;
 
-  // Mock weak topics until backend ships them in dashboard endpoint
-  const weakTopics = data?.weakTopics?.length
-    ? data.weakTopics.slice(0, 5)
-    : [
-        { topic: 'System Design',    avgScore: 5.2, attempts: 3 },
-        { topic: 'Async / Promises', avgScore: 5.8, attempts: 4 },
-        { topic: 'Data Structures',  avgScore: 6.4, attempts: 6 },
-      ];
+  const weakTopics = data?.weakTopics?.slice(0, 5) || [];
+
+  // First-time onboarding banner — only once the dashboard has actually
+  // loaded and confirmed zero completed interviews, so it never flashes
+  // for returning users while stats are still fetching.
+  const showOnboarding = !!data && totalSessions === 0 && !onboardingDismissed;
 
   const suggestion = avgScore < 6
     ? { label: 'Easy · Fundamentals',   reason: 'Build confidence first' }
     : avgScore < 8
-      ? { label: 'Medium · Weak topics', reason: `Target ${weakTopics[0]?.topic || 'weak areas'}` }
+      ? { label: 'Medium · Weak topics', reason: weakTopics[0]?.topic ? `Target ${weakTopics[0].topic}` : 'Target weak areas' }
       : { label: 'Hard · FAANG-style',   reason: 'You are ready to push' };
 
   return (
@@ -72,6 +81,44 @@ const DashboardPage = () => {
         />
 
         <div className="max-w-[1600px] mx-auto px-3 sm:px-4 lg:px-6 py-4">
+
+          {/* ── First-time onboarding banner ─────────────────────────
+              Non-blocking, dismissible via localStorage. Shown only to
+              users with zero completed interviews; never reappears once
+              dismissed or once they complete their first session. */}
+          {showOnboarding && (
+            <Panel className="mb-4">
+              <div className="p-3 flex items-center gap-3">
+                <div
+                  className="flex items-center justify-center flex-shrink-0"
+                  style={{ width: 28, height: 28, background: '#161B22', border: '1px solid #30363D', borderRadius: 6 }}
+                >
+                  <Sparkles size={13} style={{ color: '#58A6FF' }} />
+                </div>
+                <p className="flex-1 text-xs leading-relaxed" style={{ color: '#9CA3AF' }}>
+                  <span style={{ color: '#F0F6FC', fontWeight: 500 }}>New here? </span>
+                  Start with a General Interview to see how it works — it adapts to your role and experience as you go.
+                </p>
+                <button
+                  onClick={() => navigate('/interviews/new')}
+                  className="btn-accent flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 text-xs"
+                >
+                  <Play size={11} /> Start Interview
+                </button>
+                <button
+                  onClick={dismissOnboarding}
+                  className="flex-shrink-0 flex items-center justify-center transition-colors"
+                  style={{ width: 24, height: 24, color: '#6B7280', background: 'none', border: 'none', cursor: 'pointer' }}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = '#9CA3AF')}
+                  onMouseLeave={(e) => (e.currentTarget.style.color = '#6B7280')}
+                  aria-label="Dismiss"
+                  title="Dismiss"
+                >
+                  <X size={13} />
+                </button>
+              </div>
+            </Panel>
+          )}
 
           {/* ── Top · Primary Actions ─────────────────────────────── */}
           <PrimaryActions />
@@ -120,27 +167,45 @@ const DashboardPage = () => {
 
               <Panel>
                 <PanelHeader icon={AlertTriangle} label="weak topics" />
-                <div className="p-3 space-y-2.5">
-                  {weakTopics.map((wt, i) => (
-                    <div key={i}>
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="text-xs truncate" style={{ color: '#F0F6FC' }}>{wt.topic}</span>
-                        <span className="font-mono text-2xs" style={{ color: SCORE_COLOR(wt.avgScore) }}>
-                          {wt.avgScore.toFixed(1)}
-                        </span>
+                {weakTopics.length === 0 ? (
+                  <EmptyState
+                    compact
+                    icon={AlertTriangle}
+                    title="No weak topics yet"
+                    description="Complete an interview and we'll surface areas to focus on."
+                    action={
+                      <button
+                        type="button"
+                        onClick={() => navigate('/interviews/new')}
+                        className="btn-accent flex items-center gap-1.5 px-3 py-1.5 text-xs"
+                      >
+                        <Play size={11} /> Start Interview
+                      </button>
+                    }
+                  />
+                ) : (
+                  <div className="p-3 space-y-2.5">
+                    {weakTopics.map((wt, i) => (
+                      <div key={i}>
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-xs truncate" style={{ color: '#F0F6FC' }}>{wt.topic}</span>
+                          <span className="font-mono text-2xs" style={{ color: SCORE_COLOR(wt.avgScore) }}>
+                            {wt.avgScore.toFixed(1)}
+                          </span>
+                        </div>
+                        <div className="h-0.5 rounded" style={{ background: '#21262D' }}>
+                          <div
+                            className="h-full rounded"
+                            style={{ width: `${(wt.avgScore / 10) * 100}%`, background: SCORE_COLOR(wt.avgScore) }}
+                          />
+                        </div>
+                        <div className="font-mono text-2xs mt-1" style={{ color: '#484F58' }}>
+                          {wt.attempts} attempts
+                        </div>
                       </div>
-                      <div className="h-0.5 rounded" style={{ background: '#21262D' }}>
-                        <div
-                          className="h-full rounded"
-                          style={{ width: `${(wt.avgScore / 10) * 100}%`, background: SCORE_COLOR(wt.avgScore) }}
-                        />
-                      </div>
-                      <div className="font-mono text-2xs mt-1" style={{ color: '#484F58' }}>
-                        {wt.attempts} attempts
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
               </Panel>
 
               <Panel>
