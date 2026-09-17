@@ -59,7 +59,11 @@ Return ONLY a valid JSON array (no markdown, no commentary):
     const text = await this.generateText(prompt, { temperature: 0.85 });
     const jsonMatch = text.match(/\[[\s\S]*\]/);
     if (!jsonMatch) throw new Error('Failed to parse AI questions response');
-    return JSON.parse(jsonMatch[0]);
+    try {
+      return JSON.parse(jsonMatch[0]);
+    } catch {
+      throw new Error('Failed to parse AI questions response');
+    }
   }
 
   // Generate ONE replacement question (used when anti-repetition rejects a candidate).

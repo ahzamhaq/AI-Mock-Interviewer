@@ -431,7 +431,10 @@ const interviewSchema = new mongoose.Schema({
     weaknesses: [String],
     overallFeedback: String,
     recommendation: String,
-    grade: { type: String, enum: ['A+', 'A', 'B+', 'B', 'C+', 'C', 'D', 'F'], default: 'C' },
+    // Matches the 0-default on the score fields above — an interview with
+    // no scored answers should read as F, not the misleadingly middling 'C'
+    // this previously defaulted to when calculateResults() returns early.
+    grade: { type: String, enum: ['A+', 'A', 'B+', 'B', 'C+', 'C', 'D', 'F'], default: 'F' },
     // Natural conversational closing line spoken at end-of-interview
     closing: { type: String, default: '' },
   },

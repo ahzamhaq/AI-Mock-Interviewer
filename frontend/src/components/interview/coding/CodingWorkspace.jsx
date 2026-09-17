@@ -98,6 +98,9 @@ const CodingWorkspace = ({
 
   const autosaveTimer = useRef(null);
   const rootRef = useRef(null);
+  // Warn once per session, not on every failed autosave tick — quota-exceeded
+  // (or private-browsing) failures happen on every keystroke otherwise.
+  const autosaveWarnedRef = useRef(false);
 
   // Track whether the editor has been modified vs the current language's
   // boilerplate. Used for the "switch language safely" decision — if the
@@ -121,7 +124,15 @@ const CodingWorkspace = ({
             lastUpdated: Date.now(),
           }),
         );
-      } catch { /* quota / private mode — skip silently */ }
+      } catch {
+        // quota exceeded / private browsing — code still works, it just
+        // won't survive a refresh. Tell the candidate once so it doesn't
+        // look like silent data loss.
+        if (!autosaveWarnedRef.current) {
+          autosaveWarnedRef.current = true;
+          toast.error("Couldn't autosave your code locally — it won't persist across a refresh.");
+        }
+      }
     }, AUTOSAVE_DEBOUNCE_MS);
     return () => {
       if (autosaveTimer.current) clearTimeout(autosaveTimer.current);
