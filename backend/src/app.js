@@ -42,8 +42,11 @@ app.use(cors({
     // Allow requests with no origin (curl, mobile apps, Postman)
     if (!origin) return callback(null, true);
     if (allowed.includes(origin)) return callback(null, true);
-    // Allow any *.vercel.app deployment (production, preview, branch deploys)
-    if (/^https:\/\/[a-z0-9-]+\.vercel\.app$/i.test(origin)) return callback(null, true);
+    // Allow this project's own Vercel deployments only (production + preview/
+    // branch deploys, which Vercel names "<project>-<hash-or-branch>.vercel.app").
+    // Previously matched ANY *.vercel.app project, which let any Vercel-hosted
+    // app make credentialed cross-origin requests.
+    if (/^https:\/\/ai-mock-interviewer(-[a-z0-9-]+)?\.vercel\.app$/i.test(origin)) return callback(null, true);
     callback(new Error(`CORS blocked: ${origin}`));
   },
   credentials: true,

@@ -29,10 +29,12 @@ const getPace = (wpm) => {
 
 export const useSpeechSynthesis = () => {
   const [speaking, setSpeaking] = useState(false);
-  const synthRef = useRef(window.speechSynthesis);
+  const supported = 'speechSynthesis' in window;
+  const synthRef = useRef(supported ? window.speechSynthesis : null);
 
   const speak = useCallback((text, onEnd) => {
     const synth = synthRef.current;
+    if (!synth) { onEnd?.(); return; }
     synth.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.rate = 0.9;
@@ -53,13 +55,13 @@ export const useSpeechSynthesis = () => {
   }, []);
 
   const stop = useCallback(() => {
-    synthRef.current.cancel();
+    synthRef.current?.cancel();
     setSpeaking(false);
   }, []);
 
-  useEffect(() => () => synthRef.current.cancel(), []);
+  useEffect(() => () => synthRef.current?.cancel(), []);
 
-  return { speak, stop, speaking, supported: 'speechSynthesis' in window };
+  return { speak, stop, speaking, supported };
 };
 
 export const useSpeechRecognition = () => {

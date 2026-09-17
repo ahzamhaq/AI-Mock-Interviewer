@@ -106,29 +106,20 @@ const googleAuth = async (req, res, next) => {
       return res.status(400).json({ success: false, error: 'Google credential required' });
     }
 
-    // Verify token with Google — accept any of our client IDs
-    const ticket = await googleClient.verifyIdToken({
-      idToken: credential,
-      audience: [
-        process.env.GOOGLE_CLIENT_ID,
-        // also accept without strict audience check during dev
-      ],
-    }).catch(async () => {
-      // Fallback: decode token via Google tokeninfo endpoint
-      const https = require('https');
-      const payload = await new Promise((resolve, reject) => {
-        https.get(`https://oauth2.googleapis.com/tokeninfo?id_token=${credential}`, (res) => {
-          let data = '';
-          res.on('data', chunk => data += chunk);
-          res.on('end', () => {
-            try { resolve(JSON.parse(data)); }
-            catch { reject(new Error('Failed to parse token')); }
-          });
-        }).on('error', reject);
+    // Verify token with Google. No fallback path here on purpose — the
+    // previous fallback (calling the tokeninfo endpoint on verification
+    // failure) trusted the response without cryptographic signature/audience
+    // verification, which defeats the point of verifyIdToken. If it fails,
+    // the login fails.
+    let ticket;
+    try {
+      ticket = await googleClient.verifyIdToken({
+        idToken: credential,
+        audience: process.env.GOOGLE_CLIENT_ID,
       });
-      if (payload.error) throw new Error(payload.error_description || 'Invalid token');
-      return { getPayload: () => ({ name: payload.name, email: payload.email, picture: payload.picture, sub: payload.sub }) };
-    });
+    } catch {
+      return res.status(401).json({ success: false, error: 'Invalid Google credential' });
+    }
 
     const { name, email, picture, sub: googleId } = ticket.getPayload();
 

@@ -23,11 +23,21 @@ const errorHandler = (err, req, res, next) => {
 
   if (process.env.NODE_ENV === 'development') {
     console.error('Error:', err);
+  } else if (statusCode >= 500) {
+    // Still log server-side so the real cause isn't lost, just not sent to the client.
+    console.error('Unhandled error:', err);
   }
+
+  // Only expected 4xx messages (validation, "not found", etc.) are safe to
+  // show verbatim — a raw 5xx error can leak internals (DB error text, file
+  // paths, env var names). Genericize those outside development.
+  const clientMessage = statusCode >= 500 && process.env.NODE_ENV !== 'development'
+    ? 'Internal Server Error'
+    : message;
 
   res.status(statusCode).json({
     success: false,
-    error: message,
+    error: clientMessage,
     ...(process.env.NODE_ENV === 'development' && { stack: err.stack }),
   });
 };
