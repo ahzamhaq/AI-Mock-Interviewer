@@ -2,9 +2,9 @@ import React, { useState, useEffect, useCallback, useRef, lazy, Suspense } from 
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Mic, MicOff, Volume2, VolumeX, SkipForward, CheckCircle,
-  AlertCircle, Clock, ChevronRight, Zap, Brain, MessageSquare,
-  Activity, Wifi, WifiOff, Circle, Square, Play, TerminalSquare,
+  Mic, Volume2, VolumeX, SkipForward, CheckCircle,
+  AlertCircle, ChevronRight, Zap, Brain, MessageSquare,
+  Activity, Wifi, Circle, Square, TerminalSquare,
   Lightbulb,
 } from 'lucide-react';
 import { interviewAPI } from '../services/api';
@@ -12,6 +12,7 @@ import { useAuth } from '../context/AuthContext';
 import { applyBadgeUnlocks } from '../services/badgeUnlocks';
 import { useSpeechSynthesis, useSpeechRecognition } from '../hooks/useVoice';
 import { useAmplitudeAnalyzer } from '../hooks/useAmplitudeAnalyzer';
+import useElapsedSeconds from '../hooks/useElapsedSeconds';
 import { speak as ttsSpeak, cancelTTS } from '../services/tts';
 import toast from 'react-hot-toast';
 // Sprint 7 Commit 3 — Live Coding Workspace helpers. The workspace +
@@ -126,6 +127,7 @@ const InterviewPage = () => {
 
   const [interview, setInterview] = useState(null);
   const [phase, setPhase] = useState(PHASE.LOADING);
+  const processingElapsed = useElapsedSeconds(phase === PHASE.PROCESSING);
   const [currentIdx, setCurrentIdx] = useState(0);
   const [feedback, setFeedback] = useState(null);
   const [textAnswer, setTextAnswer] = useState('');
@@ -232,7 +234,6 @@ const InterviewPage = () => {
     if (q.reaction)     parts.push(q.reaction);
     if (q.transition)   parts.push(q.transition);
 
-    const isFirstQuestion = currentIdx === 0;
     if (interview.adaptive) {
       // Avoid "Question 1. ..." numbering for adaptive — feels less like a quiz
       parts.push(q.questionText);
@@ -249,6 +250,10 @@ const InterviewPage = () => {
       setPhase(PHASE.WAITING);
     }
     return () => stopSpeaking();
+    // Deliberately scoped to [phase, currentIdx, voiceEnabled] — interview/speak/
+    // stopSpeaking/pushLog aren't stable across renders and including them would
+    // re-trigger TTS mid-question.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase, currentIdx, voiceEnabled]);
 
   useEffect(() => {
@@ -324,6 +329,8 @@ const InterviewPage = () => {
     setTextAnswer('');
     setFeedback(null);
     setPhase(PHASE.AI_SPEAKING);
+    // resetTranscript isn't stable across renders — omitted deliberately.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [interview, currentIdx]);
 
   useEffect(() => {
@@ -335,6 +342,9 @@ const InterviewPage = () => {
         setTimeout(begin, 800);
       }
     }
+    // Only meant to fire once the interview/greeting first load, not on every
+    // phase/currentIdx change — other deps omitted deliberately.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [interview, greeting]);
 
   const MIC_EXPLAINER_KEY = 'onboarding_mic_explainer_seen';
@@ -847,13 +857,15 @@ const InterviewPage = () => {
       </div>
 
       {/* ── Three-Panel Workspace ─────────────────────────────────────────── */}
-      <div ref={codingRowRef} className="flex flex-1 overflow-hidden">
+      {/* overflow-x-auto (not -hidden) so on viewports narrower than the panels'
+          combined min-width, the row scrolls horizontally instead of clipping
+          content with no way to reach it. */}
+      <div ref={codingRowRef} className="flex flex-1 overflow-y-hidden overflow-x-auto">
 
         {/* LEFT: AI Interviewer Zone */}
         <div
-          className="flex-shrink-0 flex flex-col overflow-hidden"
+          className="flex-shrink-0 flex flex-col overflow-hidden w-[200px] sm:w-[230px] lg:w-[260px]"
           style={{
-            width: 260,
             borderRight: '1px solid #30363D',
             background: '#0D1117',
           }}
@@ -1007,7 +1019,7 @@ const InterviewPage = () => {
               style={{ background: '#010409', fontSize: 9.5, lineHeight: 1.5 }}
             >
               {logs.length === 0 ? (
-                <div style={{ color: '#484F58' }}>// waiting for events…</div>
+                <div style={{ color: '#484F58' }}>{'// waiting for events…'}</div>
               ) : logs.slice(-30).map(l => (
                 <div key={l.id} className="flex gap-1.5">
                   <span style={{ color: '#484F58' }}>{l.t}</span>
@@ -1021,7 +1033,7 @@ const InterviewPage = () => {
         </div>
 
         {/* CENTER: Main Workspace */}
-        <div className="flex-1 flex flex-col overflow-hidden" style={{ minWidth: 0 }}>
+        <div className="flex-1 flex flex-col overflow-hidden" style={{ minWidth: 320 }}>
 
           {/* Question Area */}
           <div
@@ -1359,7 +1371,9 @@ const InterviewPage = () => {
                   <div>
                     <p className="text-sm font-medium" style={{ color: '#F0F6FC' }}>Analyzing response…</p>
                     <p className="text-xs mt-0.5" style={{ color: '#6B7280' }}>
-                      Evaluating technical accuracy, communication, confidence
+                      {processingElapsed >= 10
+                        ? 'Still working — the AI is taking a bit longer than usual'
+                        : 'Evaluating technical accuracy, communication, confidence'}
                     </p>
                   </div>
                 </motion.div>

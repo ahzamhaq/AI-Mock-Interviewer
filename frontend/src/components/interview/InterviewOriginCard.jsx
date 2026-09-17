@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-  Sparkles, Sliders, Layers, Bookmark, Clock, RotateCcw, Compass, Info,
+  Sparkles, Sliders, Layers, Bookmark, Clock, RotateCcw, Compass,
 } from 'lucide-react';
 
 /**

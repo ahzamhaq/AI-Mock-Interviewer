@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Mic, GitCommit, ChevronRight } from 'lucide-react';
+import { Mic, GitCommit, ChevronRight, Loader2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { Panel, PanelHeader } from '../common/Panel';
 
@@ -16,7 +16,7 @@ const SCORE_COLOR = (s) => {
  * RecentInterviews — extracted from DashboardPage's left panel. JSX and data
  * shape preserved verbatim so behavior is identical.
  */
-const RecentInterviews = ({ interviews }) => {
+const RecentInterviews = ({ interviews, loading = false }) => {
   const navigate = useNavigate();
 
   return (
@@ -31,7 +31,11 @@ const RecentInterviews = ({ interviews }) => {
         }
       />
       <div className="flex-1 overflow-y-auto">
-        {interviews?.length > 0 ? (
+        {loading ? (
+          <div className="flex items-center justify-center py-6">
+            <Loader2 size={12} className="animate-spin" style={{ color: '#6B7280' }} />
+          </div>
+        ) : interviews?.length > 0 ? (
           <div>
             {interviews.slice(0, 12).map((iv, i) => (
               <motion.button

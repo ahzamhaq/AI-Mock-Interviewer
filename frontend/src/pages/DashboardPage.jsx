@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import {
   BarChart3, Trophy, Clock, Target,
   Play, Activity, AlertTriangle, Lightbulb, Hash, Sparkles, X,
@@ -30,7 +31,8 @@ const DashboardPage = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [data, setData] = useState(null);
-  const [, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [onboardingDismissed, setOnboardingDismissed] = useState(() => {
     try { return localStorage.getItem(ONBOARDING_BANNER_KEY) === '1'; } catch { return false; }
   });
@@ -38,7 +40,11 @@ const DashboardPage = () => {
   useEffect(() => {
     analyticsAPI.getDashboard()
       .then((res) => setData(res))
-      .catch((err) => console.error('Dashboard fetch failed:', err))
+      .catch((err) => {
+        console.error('Dashboard fetch failed:', err);
+        setLoadError(true);
+        toast.error(err.message || 'Failed to load dashboard data');
+      })
       .finally(() => setLoading(false));
   }, []);
 
@@ -81,6 +87,27 @@ const DashboardPage = () => {
         />
 
         <div className="max-w-[1600px] mx-auto px-3 sm:px-4 lg:px-6 py-4">
+
+          {/* ── Load error banner ─────────────────────────────────────
+              Shown when the dashboard fetch fails outright, so a network
+              hiccup doesn't silently read as "you have no history yet." */}
+          {loadError && (
+            <Panel className="mb-4">
+              <div className="p-3 flex items-center gap-3">
+                <AlertTriangle size={14} style={{ color: '#F85149' }} className="flex-shrink-0" />
+                <p className="flex-1 text-xs" style={{ color: '#9CA3AF' }}>
+                  Couldn't load your dashboard stats. Some sections may be showing stale or empty data.
+                </p>
+                <button
+                  onClick={() => window.location.reload()}
+                  className="flex-shrink-0 text-xs font-medium"
+                  style={{ color: '#58A6FF', background: 'none', border: 'none', cursor: 'pointer' }}
+                >
+                  Retry
+                </button>
+              </div>
+            </Panel>
+          )}
 
           {/* ── First-time onboarding banner ─────────────────────────
               Non-blocking, dismissible via localStorage. Shown only to
@@ -141,7 +168,7 @@ const DashboardPage = () => {
           {/* ── Middle · Recents ──────────────────────────────────── */}
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[1fr_1fr_300px] gap-3 mb-4">
-            <RecentInterviews interviews={data?.recentInterviews} />
+            <RecentInterviews interviews={data?.recentInterviews} loading={loading} />
             <RecentProjects />
 
             {/* Right rail — insights preserved from previous dashboard so no

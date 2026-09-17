@@ -5,7 +5,7 @@ import {
   Play, ChevronRight, Loader2, Mic,
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
-import { Panel, PanelHeader } from '../common/Panel';
+import { Panel } from '../common/Panel';
 import EmptyState from '../common/EmptyState';
 
 /**

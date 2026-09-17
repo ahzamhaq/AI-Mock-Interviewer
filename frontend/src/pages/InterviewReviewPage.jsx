@@ -14,6 +14,7 @@ import { useAuth } from '../context/AuthContext';
 import { applyBadgeUnlocks } from '../services/badgeUnlocks';
 import DSAConfigurationCard from '../components/interview/DSAConfigurationCard';
 import { DSA_QUESTION_COUNT } from '../data/dsaConstants';
+import useElapsedSeconds from '../hooks/useElapsedSeconds';
 
 /**
  * InterviewReviewPage — the human-in-the-loop review screen.
@@ -234,6 +235,7 @@ const InterviewReviewPage = () => {
   const [reasons] = useState(location.state?.reasons || {});
   const [unknown, setUnknown] = useState(new Set(location.state?.unknown || []));
   const [starting, setStarting] = useState(false);
+  const startingElapsed = useElapsedSeconds(starting);
   const [savePresetOpen, setSavePresetOpen] = useState(false);
 
   // Sprint 5 Commit 6: origin travels with the draft. Templates, presets,
@@ -658,7 +660,8 @@ const InterviewReviewPage = () => {
               >
                 {starting ? (
                   <>
-                    <Loader2 size={11} className="animate-spin" /> Starting…
+                    <Loader2 size={11} className="animate-spin" />
+                    {startingElapsed >= 8 ? 'Still working…' : 'Starting…'}
                   </>
                 ) : (
                   <>

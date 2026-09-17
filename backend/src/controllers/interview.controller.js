@@ -171,6 +171,11 @@ function serializeQuestion(q, index) {
 // ── Create interview (adaptive) ───────────────────────────────────────────────
 
 const createInterview = async (req, res, next) => {
+  // Tracks the doc across Interview.create() so a failure before the first
+  // question is fully saved can clean up the orphaned in_progress/0-question
+  // record instead of leaving it behind in history.
+  let createdInterview = null;
+  let interviewPersisted = false;
   try {
     // Sprint 5 Commit 1: the InterviewBlueprint is the ONE object that
     // represents "an interview to create." Every downstream service
@@ -253,6 +258,7 @@ const createInterview = async (req, res, next) => {
       status: 'in_progress',
       startedAt: new Date(),
     });
+    createdInterview = interview;
 
     // Generate the very first question (a pivot, since nothing has been asked).
     // The first question has no reaction/transition — the greeting handles the lead-in.
@@ -280,6 +286,7 @@ const createInterview = async (req, res, next) => {
     });
 
     await interview.save();
+    interviewPersisted = true;
 
     // Personalized greeting (best-effort)
     let greeting = '';
@@ -354,6 +361,9 @@ const createInterview = async (req, res, next) => {
       },
     });
   } catch (error) {
+    if (createdInterview && !interviewPersisted) {
+      Interview.deleteOne({ _id: createdInterview._id }).catch(() => { /* best-effort cleanup */ });
+    }
     next(error);
   }
 };

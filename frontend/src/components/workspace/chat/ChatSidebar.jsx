@@ -144,7 +144,6 @@ const ChatRow = ({ chat, active, onSelect, onRename, onArchive }) => {
 
   const handleArchive = async () => {
     setMenuOpen(false);
-    // eslint-disable-next-line no-alert
     if (!window.confirm(`Archive "${chat.title}"?`)) return;
     try {
       await onArchive();

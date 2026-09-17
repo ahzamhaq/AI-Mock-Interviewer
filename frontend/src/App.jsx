@@ -5,8 +5,26 @@ import { GoogleOAuthProvider } from '@react-oauth/google';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { SearchProvider, useSearch } from './context/SearchContext';
 import LoadingScreen from './components/common/LoadingScreen';
+import ErrorBoundary from './components/common/ErrorBoundary';
 import CommandPalette from './components/search/CommandPalette';
 import useHotkey from './hooks/useHotkey';
+
+const AppCrashFallback = () => (
+  <div className="min-h-screen bg-dark-900 flex items-center justify-center px-4">
+    <div className="text-center max-w-sm">
+      <p className="text-white text-lg font-semibold mb-2">Something went wrong</p>
+      <p className="text-white/50 text-sm mb-6">
+        This page hit an unexpected error. Reloading usually fixes it.
+      </p>
+      <button
+        onClick={() => window.location.reload()}
+        className="px-4 py-2 rounded-lg bg-primary-600 text-white text-sm font-medium hover:bg-primary-500"
+      >
+        Reload page
+      </button>
+    </div>
+  </div>
+);
 
 // Lazy load pages
 const LandingPage = lazy(() => import('./pages/LandingPage'));
@@ -103,7 +121,9 @@ const App = () => (
   <Router>
     <AuthProvider>
       <SearchProvider>
-      <AppRoutes />
+      <ErrorBoundary fallback={<AppCrashFallback />}>
+        <AppRoutes />
+      </ErrorBoundary>
       <SearchLayer />
       <Toaster
         position="top-right"

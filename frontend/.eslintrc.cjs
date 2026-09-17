@@ -41,4 +41,27 @@ module.exports = {
       caughtErrors: 'none',
     }],
   },
+  overrides: [
+    {
+      // react-three-fiber renders its own intrinsic elements (mesh,
+      // geometry, meshStandardMaterial, etc.) as real DOM-like JSX tags.
+      // eslint-plugin-react doesn't know about them without the R3F ESLint
+      // plugin, which isn't installed — scoped off here rather than adding
+      // a new dependency for one file.
+      files: ['src/components/avatar/AvatarScene.jsx'],
+      rules: {
+        'react/no-unknown-property': 'off',
+      },
+    },
+    {
+      // Context files intentionally co-export a Provider component and its
+      // companion `useX` hook — the established pattern across this codebase.
+      // Fast Refresh works fine for these in practice; splitting them into
+      // separate files just to satisfy this heuristic isn't warranted.
+      files: ['src/context/*.jsx'],
+      rules: {
+        'react-refresh/only-export-components': 'off',
+      },
+    },
+  ],
 };

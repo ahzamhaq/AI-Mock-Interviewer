@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
+import toast from 'react-hot-toast';
 import {
-  BarChart3, TrendingUp, Mic, Activity, Target, Volume2,
-  Flame, AlertTriangle, Calendar, Clock, Filter
+  BarChart3, TrendingUp, Target, Volume2,
+  AlertTriangle, Calendar
 } from 'lucide-react';
 import {
   LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
@@ -79,13 +80,18 @@ const Metric = ({ label, value, sub, color = '#F0F6FC', delta }) => (
 const AnalyticsPage = () => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [period, setPeriod] = useState(30);
 
   useEffect(() => {
     setLoading(true);
+    setLoadError(false);
     analyticsAPI.getDetailed(period)
       .then(res => setData(res.analytics))
-      .catch(() => {})
+      .catch((err) => {
+        setLoadError(true);
+        toast.error(err.message || 'Failed to load analytics data');
+      })
       .finally(() => setLoading(false));
   }, [period]);
 
@@ -180,6 +186,26 @@ const AnalyticsPage = () => {
 
         <div className="max-w-[1600px] mx-auto px-3 sm:px-4 lg:px-6 py-4 space-y-3">
 
+          {/* Load error banner — shown when the analytics fetch fails outright,
+              so a network hiccup doesn't silently read as "no data recorded." */}
+          {loadError && (
+            <Panel>
+              <div className="p-3 flex items-center gap-3">
+                <AlertTriangle size={14} style={{ color: '#F85149' }} className="flex-shrink-0" />
+                <p className="flex-1 text-xs" style={{ color: '#9CA3AF' }}>
+                  Couldn't load your analytics data. Charts below may be showing empty placeholders.
+                </p>
+                <button
+                  onClick={() => window.location.reload()}
+                  className="flex-shrink-0 text-xs font-medium"
+                  style={{ color: '#58A6FF', background: 'none', border: 'none', cursor: 'pointer' }}
+                >
+                  Retry
+                </button>
+              </div>
+            </Panel>
+          )}
+
           {/* Top metric strip */}
           <div className="grid grid-cols-2 md:grid-cols-5 gap-px overflow-hidden"
             style={{ background: '#21262D', border: '1px solid #30363D', borderRadius: 6 }}>
@@ -215,7 +241,7 @@ const AnalyticsPage = () => {
                   </ResponsiveContainer>
                 ) : (
                   <div className="h-[240px] flex items-center justify-center font-mono text-xs" style={{ color: '#484F58' }}>
-                    // no progression data
+                    {'// no progression data'}
                   </div>
                 )}
                 <div className="flex items-center gap-4 mt-2 font-mono text-2xs">
@@ -260,7 +286,7 @@ const AnalyticsPage = () => {
                   </ResponsiveContainer>
                 ) : (
                   <div className="h-[200px] flex items-center justify-center font-mono text-xs" style={{ color: '#484F58' }}>
-                    // no data
+                    {'// no data'}
                   </div>
                 )}
               </div>
@@ -284,7 +310,7 @@ const AnalyticsPage = () => {
                   );
                 }) : (
                   <div className="h-[180px] flex items-center justify-center font-mono text-xs" style={{ color: '#484F58' }}>
-                    // none detected
+                    {'// none detected'}
                   </div>
                 )}
               </div>
@@ -312,7 +338,7 @@ const AnalyticsPage = () => {
                   </ResponsiveContainer>
                 ) : (
                   <div className="h-[200px] flex items-center justify-center font-mono text-xs" style={{ color: '#484F58' }}>
-                    // no sessions
+                    {'// no sessions'}
                   </div>
                 )}
               </div>
@@ -351,7 +377,7 @@ const AnalyticsPage = () => {
                 </div>
               ) : (
                 <div className="h-24 flex items-center justify-center font-mono text-xs" style={{ color: '#484F58' }}>
-                  // no weak topics tracked yet
+                  {'// no weak topics tracked yet'}
                 </div>
               )}
             </div>

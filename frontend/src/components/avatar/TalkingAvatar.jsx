@@ -2,12 +2,25 @@
 // Reacts via amplitude + speaking/listening state through emissive intensity and scale.
 
 import React, { Suspense, lazy } from 'react';
+import ErrorBoundary from '../common/ErrorBoundary';
 
 const Canvas = lazy(() =>
   import('@react-three/fiber').then(m => ({ default: m.Canvas }))
 );
 
 const AvatarScene = lazy(() => import('./AvatarScene'));
+
+const AvatarFallback = () => (
+  <div className="w-full h-full flex items-center justify-center">
+    <div
+      className="w-14 h-14 rounded-full"
+      style={{
+        background: 'radial-gradient(circle, rgba(31,111,235,0.3) 0%, transparent 70%)',
+        border: '1px solid #30363D',
+      }}
+    />
+  </div>
+);
 
 const TalkingAvatar = ({
   isSpeaking = false,
@@ -62,32 +75,22 @@ const TalkingAvatar = ({
         />
       ))}
 
-      <Suspense
-        fallback={
-          <div className="w-full h-full flex items-center justify-center">
-            <div
-              className="w-14 h-14 rounded-full"
-              style={{
-                background: 'radial-gradient(circle, rgba(31,111,235,0.3) 0%, transparent 70%)',
-                border: '1px solid #30363D',
-              }}
+      <ErrorBoundary fallback={<AvatarFallback />}>
+        <Suspense fallback={<AvatarFallback />}>
+          <Canvas
+            camera={{ position: [0, 0, 4.2], fov: 40 }}
+            style={{ background: 'transparent' }}
+            gl={{ antialias: true, alpha: true }}
+            dpr={[1, 2]}
+          >
+            <AvatarScene
+              isSpeaking={isSpeaking}
+              isListening={isListening}
+              amplitude={amplitude}
             />
-          </div>
-        }
-      >
-        <Canvas
-          camera={{ position: [0, 0, 4.2], fov: 40 }}
-          style={{ background: 'transparent' }}
-          gl={{ antialias: true, alpha: true }}
-          dpr={[1, 2]}
-        >
-          <AvatarScene
-            isSpeaking={isSpeaking}
-            isListening={isListening}
-            amplitude={amplitude}
-          />
-        </Canvas>
-      </Suspense>
+          </Canvas>
+        </Suspense>
+      </ErrorBoundary>
     </div>
   );
 };
