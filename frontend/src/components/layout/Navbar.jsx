@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useAuth } from '../../context/AuthContext';
 import {
-  Mic, User, LogOut, Menu, X, Shield, Play, ChevronDown, Activity, Circle, Search, Bookmark,
+  Mic, User, LogOut, Menu, X, Shield, Play, ChevronDown, Search, Bookmark,
 } from 'lucide-react';
 import { useSearch } from '../../context/SearchContext';
 

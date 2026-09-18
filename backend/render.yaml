@@ -16,5 +16,28 @@ services:
         value: gemini
       - key: GEMINI_API_KEY
         sync: false
+      # Optional fallback providers — without these the AI fallback chain
+      # has only Gemini to try, so a Gemini outage/quota hit has no fallback.
+      - key: GROQ_API_KEY
+        sync: false
+      - key: OPENROUTER_API_KEY
+        sync: false
       - key: FRONTEND_URL
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      # Required for DSA code execution (/run, /submit). Without these, Judge0
+      # calls return a clean "not configured" error rather than crashing.
+      - key: JUDGE0_URL
+        sync: false
+      - key: JUDGE0_API_KEY
+        sync: false
+      # Optional — GitHub account linking (private repo import) only.
+      - key: GITHUB_CLIENT_ID
+        sync: false
+      - key: GITHUB_CLIENT_SECRET
+        sync: false
+      - key: GITHUB_OAUTH_REDIRECT_URI
+        sync: false
+      - key: GITHUB_TOKEN_ENCRYPTION_KEY
         sync: false

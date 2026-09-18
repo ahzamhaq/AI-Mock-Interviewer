@@ -51,6 +51,16 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
+    localStorage.removeItem('onboarding_dashboard_dismissed');
+    // DSA coding-workspace autosave keys are per-interview (dsa:workspace:<id>,
+    // dsa:split:<id>, dsa:test-cases:<id>, dsa:active-test:<id>) — clear all of
+    // them on logout so a shared/demo machine doesn't leak the previous
+    // account's in-progress code into the next login.
+    try {
+      Object.keys(localStorage)
+        .filter((key) => key.startsWith('dsa:'))
+        .forEach((key) => localStorage.removeItem(key));
+    } catch { /* localStorage may be unavailable */ }
     setUser(null);
     toast.success('Logged out successfully');
   };

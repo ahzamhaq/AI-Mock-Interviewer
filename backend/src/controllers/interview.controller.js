@@ -171,6 +171,11 @@ function serializeQuestion(q, index) {
 // ── Create interview (adaptive) ───────────────────────────────────────────────
 
 const createInterview = async (req, res, next) => {
+  // Tracks the doc across Interview.create() so a failure before the first
+  // question is fully saved can clean up the orphaned in_progress/0-question
+  // record instead of leaving it behind in history.
+  let createdInterview = null;
+  let interviewPersisted = false;
   try {
     // Sprint 5 Commit 1: the InterviewBlueprint is the ONE object that
     // represents "an interview to create." Every downstream service
@@ -253,6 +258,7 @@ const createInterview = async (req, res, next) => {
       status: 'in_progress',
       startedAt: new Date(),
     });
+    createdInterview = interview;
 
     // Generate the very first question (a pivot, since nothing has been asked).
     // The first question has no reaction/transition — the greeting handles the lead-in.
@@ -280,6 +286,7 @@ const createInterview = async (req, res, next) => {
     });
 
     await interview.save();
+    interviewPersisted = true;
 
     // Personalized greeting (best-effort)
     let greeting = '';
@@ -354,6 +361,9 @@ const createInterview = async (req, res, next) => {
       },
     });
   } catch (error) {
+    if (createdInterview && !interviewPersisted) {
+      Interview.deleteOne({ _id: createdInterview._id }).catch(() => { /* best-effort cleanup */ });
+    }
     next(error);
   }
 };
@@ -1217,7 +1227,20 @@ const runCode = async (req, res, next) => {
     });
     await interview.save();
 
-    return res.json({ success: true, result });
+    // config_error/network_error mean the execution SERVICE failed, not the
+    // candidate's code — surface that distinctly via HTTP status so a direct
+    // API consumer (not just the frontend, which already checks the payload)
+    // can't mistake it for a normal compile/runtime/test outcome.
+    const isServiceError = result.status === 'config_error' || result.status === 'network_error';
+    return res.status(isServiceError ? 502 : 200).json({
+      success: !isServiceError,
+      result,
+      // Top-level `error` mirrors result.error so the frontend's axios error
+      // handler (which reads error.response.data.error) surfaces the same
+      // specific message it already shows on the 200 path, instead of a
+      // generic "Request failed with status code 502".
+      ...(isServiceError && { error: result.error }),
+    });
   } catch (err) {
     next(err);
   }
@@ -1287,7 +1310,17 @@ const submitCode = async (req, res, next) => {
     });
     await interview.save();
 
-    return res.json({ success: true, summary: suite.summary, results: suite.results });
+    // Same distinction as /run: config_error/network_error means the
+    // execution service itself failed, not that the candidate's tests
+    // failed — surface it as a 5xx so it can't be mistaken for a normal
+    // pass/fail result by a consumer checking only HTTP status.
+    const isServiceError = suite.summary.status === 'config_error' || suite.summary.status === 'network_error';
+    return res.status(isServiceError ? 502 : 200).json({
+      success: !isServiceError,
+      summary: suite.summary,
+      results: suite.results,
+      ...(isServiceError && { error: suite.error || 'Code execution service is unavailable.' }),
+    });
   } catch (err) {
     next(err);
   }

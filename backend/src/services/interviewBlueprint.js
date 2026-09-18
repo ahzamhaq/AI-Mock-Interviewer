@@ -37,6 +37,16 @@ const VALID_MODES = new Set([
   'general', 'project', 'resume', 'dsa', 'aptitude', 'behavioral', 'system_design', 'custom',
 ]);
 
+// Modes with a real strategy (or an intentional default-strategy ride, e.g.
+// resume/custom — see interviewStrategies/index.js and CLAUDE.md §7). The
+// remaining VALID_MODES entries are reserved enum slots with no UI path and
+// no dedicated behavior yet — block them here so they're only reachable by
+// direct API call with a clear error, not silently run through defaultStrategy
+// indistinguishably from a general interview.
+const IMPLEMENTED_MODES = new Set([
+  'general', 'project', 'resume', 'dsa', 'custom',
+]);
+
 const VALID_SOURCES = new Set([
   'guided', 'quick_ai', 'template', 'preset', 'recent', 'retry', 'coach',
 ]);
@@ -214,6 +224,9 @@ async function resolve(blueprint, user) {
 function validate(blueprint) {
   if (!VALID_MODES.has(blueprint.mode)) {
     throw new Error(`Unknown interview mode: ${blueprint.mode}`);
+  }
+  if (!IMPLEMENTED_MODES.has(blueprint.mode)) {
+    throw new Error(`Interview mode "${blueprint.mode}" is not available yet.`);
   }
   if (!blueprint.role || !VALID_ROLES.has(blueprint.role)) {
     throw new Error('A valid role is required.');

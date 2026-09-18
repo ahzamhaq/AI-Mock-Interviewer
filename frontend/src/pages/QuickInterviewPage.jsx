@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Sparkles, ArrowLeft, FileText, GitBranch, CheckCircle, Loader2 } from 'lucide-react';
+import useElapsedSeconds from '../hooks/useElapsedSeconds';
 import toast from 'react-hot-toast';
 import Navbar from '../components/layout/Navbar';
 import SectionHeader from '../components/common/SectionHeader';
@@ -59,6 +60,7 @@ const QuickInterviewPage = () => {
   const [useResume, setUseResume] = useState(initialUseResume);
   const [useProjects, setUseProjects] = useState(initialUseProject);
   const [generating, setGenerating] = useState(false);
+  const generatingElapsed = useElapsedSeconds(generating);
 
   const [projects, setProjects] = useState(null); // null while loading
 
@@ -259,7 +261,8 @@ const QuickInterviewPage = () => {
             >
               {generating ? (
                 <>
-                  <Loader2 size={11} className="animate-spin" /> Parsing…
+                  <Loader2 size={11} className="animate-spin" />
+                  {generatingElapsed >= 8 ? 'Still working…' : 'Parsing…'}
                 </>
               ) : (
                 <>

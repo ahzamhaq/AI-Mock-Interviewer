@@ -105,7 +105,6 @@ const HistoryPage = () => {
                       borderBottom: i < interviews.length - 1 ? '1px solid #21262D' : 'none',
                       background: 'transparent',
                       border: 'none',
-                      borderBottom: i < interviews.length - 1 ? '1px solid #21262D' : 'none',
                       cursor: 'pointer',
                     }}
                     onMouseEnter={e => e.currentTarget.style.background = '#161B22'}

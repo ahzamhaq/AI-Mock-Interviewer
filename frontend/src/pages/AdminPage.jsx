@@ -9,8 +9,7 @@ const AdminPage = () => {
   const [stats, setStats] = useState(null);
   const [users, setUsers] = useState([]);
   const [search, setSearch] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState('stats');
+  const [_loading, setLoading] = useState(true);
 
   useEffect(() => {
     adminAPI.getStats().then(r => setStats(r.stats)).catch(() => {});

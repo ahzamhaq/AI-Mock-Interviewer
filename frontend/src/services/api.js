@@ -8,10 +8,36 @@ const api = axios.create({
   headers: { 'Content-Type': 'application/json' },
 });
 
+// Reads the `exp` claim without verifying the signature — verification is
+// the backend's job; this is purely a client-side "don't bother sending an
+// obviously-expired token" optimization.
+function isTokenExpired(token) {
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+    return typeof payload.exp === 'number' && Date.now() >= payload.exp * 1000;
+  } catch {
+    return false; // malformed token — let the backend reject it normally
+  }
+}
+
 // Attach JWT token
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
-  if (token) config.headers.Authorization = `Bearer ${token}`;
+  if (token) {
+    // Previously, an expired token was only caught reactively after a 401
+    // came back from the server, then hard-redirected. Checking here means
+    // an expired session redirects to /login immediately instead of firing
+    // a request that's guaranteed to fail.
+    if (isTokenExpired(token)) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      if (!window.location.pathname.includes('/login')) {
+        window.location.href = '/login';
+      }
+      return Promise.reject(new Error('Session expired'));
+    }
+    config.headers.Authorization = `Bearer ${token}`;
+  }
   return config;
 }, Promise.reject);
 

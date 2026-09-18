@@ -134,7 +134,6 @@ const GitHubConnectionCard = () => {
             }}
           >
             {status?.connected && status.avatarUrl ? (
-              // eslint-disable-next-line jsx-a11y/alt-text
               <img
                 src={status.avatarUrl}
                 alt=""
