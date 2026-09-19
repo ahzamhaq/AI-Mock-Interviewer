@@ -112,7 +112,7 @@ const WorkspacePage = () => {
     <div className="min-h-screen flex flex-col" style={{ background: '#0D1117' }}>
       <Navbar />
 
-      <div className="flex-1 pt-12">
+      <main className="flex-1 pt-12">
         <div className="max-w-[1600px] mx-auto px-3 sm:px-4 lg:px-6 py-6">
 
           {loading && (
@@ -351,7 +351,7 @@ const WorkspacePage = () => {
             </>
           )}
         </div>
-      </div>
+      </main>
     </div>
   );
 };

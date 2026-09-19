@@ -1,0 +1,13 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard
+Disallow: /interviews
+Disallow: /interview/
+Disallow: /projects
+Disallow: /analytics
+Disallow: /coach
+Disallow: /history
+Disallow: /leaderboard
+Disallow: /profile
+Disallow: /presets
+Disallow: /admin

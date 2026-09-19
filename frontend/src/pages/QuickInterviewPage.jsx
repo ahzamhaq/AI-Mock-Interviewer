@@ -142,7 +142,7 @@ const QuickInterviewPage = () => {
     <div className="min-h-screen flex flex-col" style={{ background: '#0D1117' }}>
       <Navbar />
 
-      <div className="flex-1 pt-12">
+      <main className="flex-1 pt-12">
         <div className="max-w-[720px] mx-auto px-3 sm:px-4 lg:px-6 py-6">
 
           <SectionHeader
@@ -276,7 +276,7 @@ const QuickInterviewPage = () => {
             {'// AI parses your prompt into a draft you can review before starting'}
           </p>
         </div>
-      </div>
+      </main>
     </div>
   );
 };

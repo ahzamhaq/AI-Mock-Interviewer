@@ -135,7 +135,7 @@ const AnalyticsPage = () => {
     return (
       <div className="min-h-screen" style={{ background: '#0D1117' }}>
         <Navbar />
-        <div className="flex items-center justify-center pt-40 gap-3">
+        <main className="flex items-center justify-center pt-40 gap-3">
           <motion.div
             className="w-6 h-6 rounded-full border-2 border-t-transparent"
             style={{ borderColor: '#30363D', borderTopColor: '#58A6FF' }}
@@ -143,7 +143,7 @@ const AnalyticsPage = () => {
             transition={{ duration: 0.7, repeat: Infinity, ease: 'linear' }}
           />
           <span className="font-mono text-xs" style={{ color: '#6B7280' }}>Loading diagnostics…</span>
-        </div>
+        </main>
       </div>
     );
   }
@@ -152,7 +152,7 @@ const AnalyticsPage = () => {
     <div className="min-h-screen flex flex-col" style={{ background: '#0D1117' }}>
       <Navbar />
 
-      <div className="flex-1 pt-12">
+      <main className="flex-1 pt-12">
         {/* Sub-toolbar */}
         <div className="flex items-center justify-between px-4 sm:px-6 lg:px-8"
           style={{ height: 40, borderBottom: '1px solid #21262D', background: '#161B22' }}>
@@ -384,7 +384,7 @@ const AnalyticsPage = () => {
           </Panel>
 
         </div>
-      </div>
+      </main>
     </div>
   );
 };
