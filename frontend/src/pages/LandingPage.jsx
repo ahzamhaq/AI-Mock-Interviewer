@@ -42,13 +42,13 @@ const TerminalFeed = () => {
           transition={{ duration: 0.18 }}
           className="flex gap-2"
         >
-          <span style={{ color: '#484F58' }}>{l.t}</span>
+          <span style={{ color: '#8B949E' }}>{l.t}</span>
           <span style={{ color: l.tone, width: 52, flexShrink: 0 }}>{l.tag}</span>
           <span style={{ color: '#9CA3AF' }}>{l.msg}</span>
         </motion.div>
       ))}
       <div className="flex gap-2">
-        <span style={{ color: '#484F58' }}>[12:05:..]</span>
+        <span style={{ color: '#8B949E' }}>[12:05:..]</span>
         <span style={{ color: '#58A6FF' }}>SYSTEM</span>
         <span style={{ color: '#9CA3AF' }}>
           ready<span className="animate-blink" style={{ color: '#58A6FF' }}>▌</span>
@@ -75,7 +75,7 @@ const WorkspacePreview = () => (
         <div className="w-2.5 h-2.5 rounded-full" style={{ background: '#D29922' }} />
         <div className="w-2.5 h-2.5 rounded-full" style={{ background: '#3FB950' }} />
       </div>
-      <div className="flex-1 text-center font-mono text-2xs" style={{ color: '#6B7280' }}>
+      <div className="flex-1 text-center font-mono text-2xs" style={{ color: '#9CA3AF' }}>
         interviewai · live session · Frontend Engineer
       </div>
       <div className="flex items-center gap-1">
@@ -106,14 +106,14 @@ const WorkspacePreview = () => (
           </motion.div>
         </div>
         <div>
-          <div className="text-2xs font-medium uppercase tracking-wide mb-1" style={{ color: '#484F58' }}>State</div>
+          <div className="text-2xs font-medium uppercase tracking-wide mb-1" style={{ color: '#8B949E' }}>State</div>
           <div className="flex items-center gap-1">
             <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: '#58A6FF' }} />
             <span className="text-2xs" style={{ color: '#58A6FF' }}>speaking</span>
           </div>
         </div>
         <div>
-          <div className="text-2xs font-medium uppercase tracking-wide mb-1" style={{ color: '#484F58' }}>Status</div>
+          <div className="text-2xs font-medium uppercase tracking-wide mb-1" style={{ color: '#8B949E' }}>Status</div>
           <div className="font-mono text-2xs" style={{ color: '#3FB950' }}>online</div>
         </div>
       </div>
@@ -142,7 +142,7 @@ const WorkspacePreview = () => (
           className="rounded p-2 font-mono text-2xs leading-relaxed"
           style={{ background: '#010409', border: '1px solid #21262D' }}
         >
-          <div className="uppercase tracking-wide font-sans mb-1.5" style={{ color: '#484F58', fontSize: 9 }}>
+          <div className="uppercase tracking-wide font-sans mb-1.5" style={{ color: '#8B949E', fontSize: 9 }}>
             Live transcript
           </div>
           <span style={{ color: '#9CA3AF' }}>
@@ -164,7 +164,7 @@ const WorkspacePreview = () => (
               />
             ))}
           </div>
-          <span className="font-mono text-2xs" style={{ color: '#6B7280' }}>0:48</span>
+          <span className="font-mono text-2xs" style={{ color: '#9CA3AF' }}>0:48</span>
         </div>
       </div>
 
@@ -174,27 +174,27 @@ const WorkspacePreview = () => (
         style={{ width: 110, borderLeft: '1px solid #21262D', background: '#0D1117' }}
       >
         <div>
-          <div className="text-2xs font-medium uppercase tracking-wide mb-1" style={{ color: '#484F58' }}>Avg</div>
+          <div className="text-2xs font-medium uppercase tracking-wide mb-1" style={{ color: '#8B949E' }}>Avg</div>
           <div className="font-mono text-lg font-bold" style={{ color: '#F0F6FC' }}>8.4</div>
         </div>
         <div>
-          <div className="text-2xs font-medium uppercase tracking-wide mb-1" style={{ color: '#484F58' }}>WPM</div>
+          <div className="text-2xs font-medium uppercase tracking-wide mb-1" style={{ color: '#8B949E' }}>WPM</div>
           <div className="font-mono text-sm font-bold" style={{ color: '#3FB950' }}>142</div>
         </div>
         <div>
-          <div className="text-2xs font-medium uppercase tracking-wide mb-1" style={{ color: '#484F58' }}>Filler</div>
+          <div className="text-2xs font-medium uppercase tracking-wide mb-1" style={{ color: '#8B949E' }}>Filler</div>
           <div className="font-mono text-sm font-bold" style={{ color: '#D29922' }}>2</div>
         </div>
         <div>
-          <div className="text-2xs font-medium uppercase tracking-wide mb-1" style={{ color: '#484F58' }}>Conf</div>
+          <div className="text-2xs font-medium uppercase tracking-wide mb-1" style={{ color: '#8B949E' }}>Conf</div>
           <div className="font-mono text-sm font-bold" style={{ color: '#3FB950' }}>82%</div>
         </div>
         <div className="pt-2" style={{ borderTop: '1px solid #21262D' }}>
-          <div className="text-2xs font-medium uppercase tracking-wide mb-1.5" style={{ color: '#484F58' }}>Scores</div>
+          <div className="text-2xs font-medium uppercase tracking-wide mb-1.5" style={{ color: '#8B949E' }}>Scores</div>
           <div className="space-y-1">
             {[8.2, 8.4].map((s, i) => (
               <div key={i} className="flex items-center gap-1">
-                <span className="font-mono text-2xs" style={{ color: '#6B7280' }}>Q{i + 1}</span>
+                <span className="font-mono text-2xs" style={{ color: '#9CA3AF' }}>Q{i + 1}</span>
                 <div className="flex-1 h-0.5 rounded" style={{ background: '#21262D' }}>
                   <div className="h-full rounded" style={{ width: `${s * 10}%`, background: '#3FB950' }} />
                 </div>
@@ -209,7 +209,7 @@ const WorkspacePreview = () => (
     {/* Status bar */}
     <div
       className="flex items-center justify-between px-2 flex-shrink-0 select-none"
-      style={{ background: '#1F6FEB', height: 18, fontSize: 10, color: 'rgba(255,255,255,0.92)' }}
+      style={{ background: '#1F6FEB', height: 18, fontSize: 10, color: '#FFFFFF' }}
     >
       <div className="flex items-center gap-3 font-mono">
         <span className="flex items-center gap-1">
@@ -243,6 +243,7 @@ const LandingPage = () => {
     <div className="min-h-screen" style={{ background: '#0D1117' }}>
       <Navbar />
 
+      <main>
       {/* ── Hero: split workspace preview ─────────────────────────────── */}
       <section className="pt-20" style={{ borderBottom: '1px solid #21262D' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:py-14">
@@ -285,9 +286,9 @@ const LandingPage = () => {
                 <a
                   href="#features"
                   className="text-xs ml-2 transition-colors"
-                  style={{ color: '#6B7280' }}
+                  style={{ color: '#9CA3AF' }}
                   onMouseEnter={e => e.currentTarget.style.color = '#F0F6FC'}
-                  onMouseLeave={e => e.currentTarget.style.color = '#6B7280'}
+                  onMouseLeave={e => e.currentTarget.style.color = '#9CA3AF'}
                 >
                   See feature list <ChevronRight size={11} className="inline" />
                 </a>
@@ -299,8 +300,8 @@ const LandingPage = () => {
                 style={{ background: '#010409', border: '1px solid #21262D' }}
               >
                 <div className="flex items-center gap-2 mb-1.5">
-                  <TerminalSquare size={12} style={{ color: '#6B7280' }} />
-                  <span className="font-mono text-2xs uppercase tracking-wide" style={{ color: '#6B7280' }}>
+                  <TerminalSquare size={12} style={{ color: '#9CA3AF' }} />
+                  <span className="font-mono text-2xs uppercase tracking-wide" style={{ color: '#9CA3AF' }}>
                     System log
                   </span>
                   <span className="ml-auto flex items-center gap-1 text-2xs font-mono" style={{ color: '#3FB950' }}>
@@ -331,8 +332,8 @@ const LandingPage = () => {
               { k: 'Reliability',    v: '99.7%',  tag: 'uptime'  },
             ].map((s, i) => (
               <div key={i} className="p-4" style={{ background: '#0D1117' }}>
-                <div className="font-mono text-2xs uppercase tracking-wide mb-1.5" style={{ color: '#484F58' }}>
-                  {s.k} · <span style={{ color: '#6B7280' }}>{s.tag}</span>
+                <div className="font-mono text-2xs uppercase tracking-wide mb-1.5" style={{ color: '#8B949E' }}>
+                  {s.k} · <span style={{ color: '#9CA3AF' }}>{s.tag}</span>
                 </div>
                 <div className="font-mono text-2xl font-bold" style={{ color: '#F0F6FC' }}>{s.v}</div>
               </div>
@@ -352,7 +353,7 @@ const LandingPage = () => {
               <h2 className="text-xl font-semibold" style={{ color: '#F0F6FC' }}>
                 Engineered for the interview loop
               </h2>
-              <p className="text-sm mt-2" style={{ color: '#6B7280', lineHeight: 1.6 }}>
+              <p className="text-sm mt-2" style={{ color: '#9CA3AF', lineHeight: 1.6 }}>
                 Each feature is built around a real bottleneck in technical interview prep.
               </p>
             </div>
@@ -369,7 +370,7 @@ const LandingPage = () => {
                     <span className="font-mono text-2xs" style={{ color: '#58A6FF' }}>--{f.tag}</span>
                     <span className="text-sm font-medium" style={{ color: '#F0F6FC' }}>{f.label}</span>
                   </div>
-                  <p className="text-xs leading-relaxed" style={{ color: '#6B7280' }}>{f.desc}</p>
+                  <p className="text-xs leading-relaxed" style={{ color: '#9CA3AF' }}>{f.desc}</p>
                 </div>
               ))}
             </div>
@@ -394,9 +395,9 @@ const LandingPage = () => {
               { n: '04', title: 'Iterate',   desc: 'Weak topics tracked. Next session adapts automatically.' },
             ].map(s => (
               <div key={s.n} className="p-5" style={{ background: '#0D1117' }}>
-                <div className="font-mono text-2xs mb-3" style={{ color: '#484F58' }}>{s.n}</div>
+                <div className="font-mono text-2xs mb-3" style={{ color: '#8B949E' }}>{s.n}</div>
                 <h3 className="text-sm font-semibold mb-1.5" style={{ color: '#F0F6FC' }}>{s.title}</h3>
-                <p className="text-xs leading-relaxed" style={{ color: '#6B7280' }}>{s.desc}</p>
+                <p className="text-xs leading-relaxed" style={{ color: '#9CA3AF' }}>{s.desc}</p>
               </div>
             ))}
           </div>
@@ -410,7 +411,7 @@ const LandingPage = () => {
             <h2 className="text-xl font-semibold mb-2" style={{ color: '#F0F6FC' }}>
               Open a session
             </h2>
-            <p className="text-sm mb-5" style={{ color: '#6B7280' }}>
+            <p className="text-sm mb-5" style={{ color: '#9CA3AF' }}>
               Free to start. No credit card. Sessions run in under 2 minutes.
             </p>
             <Link to="/signup">
@@ -419,6 +420,7 @@ const LandingPage = () => {
           </div>
         </section>
       )}
+      </main>
 
       {/* ── Footer ─────────────────────────────────────────────────────── */}
       <footer style={{ borderTop: '1px solid #21262D', background: '#0D1117' }} className="py-6">
@@ -428,9 +430,9 @@ const LandingPage = () => {
               <Mic size={10} style={{ color: '#fff' }} />
             </div>
             <span className="text-xs font-semibold" style={{ color: '#F0F6FC' }}>InterviewAI</span>
-            <span className="font-mono text-2xs" style={{ color: '#484F58' }}>v1.2.0</span>
+            <span className="font-mono text-2xs" style={{ color: '#8B949E' }}>v1.2.0</span>
           </div>
-          <p className="font-mono text-2xs" style={{ color: '#484F58' }}>
+          <p className="font-mono text-2xs" style={{ color: '#8B949E' }}>
             © {new Date().getFullYear()} · built for placement preparation
           </p>
         </div>
