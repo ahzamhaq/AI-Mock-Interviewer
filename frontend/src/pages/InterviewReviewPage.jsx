@@ -332,7 +332,7 @@ const InterviewReviewPage = () => {
     return (
       <div className="min-h-screen flex flex-col" style={{ background: '#0D1117' }}>
         <Navbar />
-        <div className="flex-1 pt-12">
+        <main className="flex-1 pt-12">
           <div className="max-w-[720px] mx-auto px-3 sm:px-4 lg:px-6 py-6">
             <div
               style={{ background: '#161B22', border: '1px solid #30363D', borderRadius: 6 }}
@@ -353,7 +353,7 @@ const InterviewReviewPage = () => {
               />
             </div>
           </div>
-        </div>
+        </main>
       </div>
     );
   }
@@ -366,7 +366,7 @@ const InterviewReviewPage = () => {
     <div className="min-h-screen flex flex-col" style={{ background: '#0D1117' }}>
       <Navbar />
 
-      <div className="flex-1 pt-12">
+      <main className="flex-1 pt-12">
         <div className="max-w-[1000px] mx-auto px-3 sm:px-4 lg:px-6 py-6">
 
           <SectionHeader
@@ -684,7 +684,7 @@ const InterviewReviewPage = () => {
             {'// interview is created via the same endpoint as the guided wizard'}
           </p>
         </div>
-      </div>
+      </main>
     </div>
   );
 };

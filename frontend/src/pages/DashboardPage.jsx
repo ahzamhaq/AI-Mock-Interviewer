@@ -76,7 +76,7 @@ const DashboardPage = () => {
     <div className="min-h-screen flex flex-col" style={{ background: '#0D1117' }}>
       <Navbar />
 
-      <div className="flex-1 pt-12">
+      <main className="flex-1 pt-12">
 
         {/* ── Top · Welcome ─────────────────────────────────────────── */}
         <DashboardHero
@@ -320,7 +320,7 @@ const DashboardPage = () => {
           <AnalyticsPreview scoreHistory={data?.scoreHistory} />
 
         </div>
-      </div>
+      </main>
     </div>
   );
 };

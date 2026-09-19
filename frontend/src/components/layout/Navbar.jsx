@@ -173,6 +173,7 @@ const Navbar = () => {
                 onClick={() => navigate('/interviews/new')}
                 className="btn-accent flex items-center gap-1.5 px-2.5 py-1 text-xs"
                 style={{ height: 28 }}
+                aria-label="Start new interview"
               >
                 <Play size={11} /> <span className="hidden sm:inline">New session</span>
               </button>
@@ -273,6 +274,8 @@ const Navbar = () => {
             onMouseEnter={e => e.currentTarget.style.background = '#161B22'}
             onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
             onClick={() => setMenuOpen(v => !v)}
+            aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+            aria-expanded={menuOpen}
           >
             {menuOpen ? <X size={15} /> : <Menu size={15} />}
           </button>

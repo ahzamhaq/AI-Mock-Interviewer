@@ -38,7 +38,7 @@ const LeaderboardPage = () => {
     <div className="min-h-screen flex flex-col" style={{ background: '#0D1117' }}>
       <Navbar />
 
-      <div className="flex-1 pt-12">
+      <main className="flex-1 pt-12">
         {/* Sub-toolbar */}
         <div
           className="flex items-center justify-between px-4 sm:px-6 lg:px-8"
@@ -264,7 +264,7 @@ const LeaderboardPage = () => {
             </>
           )}
         </div>
-      </div>
+      </main>
     </div>
   );
 };

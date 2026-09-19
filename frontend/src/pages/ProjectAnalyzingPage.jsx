@@ -100,7 +100,7 @@ const ProjectAnalyzingPage = () => {
     <div className="min-h-screen flex flex-col" style={{ background: '#0D1117' }}>
       <Navbar />
 
-      <div className="flex-1 pt-12">
+      <main className="flex-1 pt-12">
         <div className="max-w-[720px] mx-auto px-3 sm:px-4 lg:px-6 py-6">
           <SectionHeader
             eyebrow="projects · analyzing"
@@ -170,7 +170,7 @@ const ProjectAnalyzingPage = () => {
             {'// analysis reads at most 40 files or 150 KB — quality over completeness'}
           </p>
         </div>
-      </div>
+      </main>
     </div>
   );
 };

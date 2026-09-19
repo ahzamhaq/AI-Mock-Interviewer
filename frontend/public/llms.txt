@@ -1,0 +1,7 @@
+# InterviewAI
+
+AI-powered voice mock interviewer that helps candidates practice technical and behavioral interviews with real-time AI feedback, adaptive follow-up questions, and repository-aware project interviews.
+
+## Docs
+
+- [Home](https://ai-mock-interviewer-woad.vercel.app/)

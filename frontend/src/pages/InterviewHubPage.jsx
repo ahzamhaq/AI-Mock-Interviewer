@@ -252,7 +252,7 @@ const InterviewHubPage = () => {
     <div className="min-h-screen flex flex-col" style={{ background: '#0D1117' }}>
       <Navbar />
 
-      <div className="flex-1 pt-12">
+      <main className="flex-1 pt-12">
         <div className="max-w-[1200px] mx-auto px-3 sm:px-4 lg:px-6 py-6">
 
           {/* ── Continue Last Interview ─────────────────────────────
@@ -455,7 +455,7 @@ const InterviewHubPage = () => {
             {'// more modes ship progressively — Sprint 5+ activates them one at a time'}
           </p>
         </div>
-      </div>
+      </main>
 
       {/* ── Prompts (non-blocking) ─────────────────────────────────────── */}
       {prompt === 'resume' && (
