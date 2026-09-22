@@ -64,7 +64,7 @@ const VerdictStrip = ({
             {topStrength}
           </p>
         ) : (
-          <p className="text-xs" style={{ color: '#6B7280' }}>
+          <p className="text-xs" style={{ color: '#9CA3AF' }}>
             No strengths identified yet.
           </p>
         )}
@@ -86,7 +86,7 @@ const VerdictStrip = ({
             {topImprovement}
           </p>
         ) : (
-          <p className="text-xs" style={{ color: '#6B7280' }}>
+          <p className="text-xs" style={{ color: '#9CA3AF' }}>
             No specific improvements suggested.
           </p>
         )}

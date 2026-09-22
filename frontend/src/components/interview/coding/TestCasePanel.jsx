@@ -111,7 +111,7 @@ const TestCasePanel = ({
               background: 'transparent',
               border: '1px solid transparent',
               borderRadius: 4,
-              color: cases.length >= MAX_CASES ? '#484F58' : '#9CA3AF',
+              color: cases.length >= MAX_CASES ? '#8B949E' : '#9CA3AF',
               cursor: cases.length >= MAX_CASES ? 'not-allowed' : 'pointer',
             }}
             onMouseEnter={(e) => { if (!disabled && cases.length < MAX_CASES) e.currentTarget.style.background = '#21262D'; }}
@@ -131,7 +131,7 @@ const TestCasePanel = ({
               background: 'transparent',
               border: '1px solid transparent',
               borderRadius: 4,
-              color: cases.length <= MIN_CASES ? '#484F58' : '#F85149',
+              color: cases.length <= MIN_CASES ? '#8B949E' : '#F85149',
               cursor: cases.length <= MIN_CASES ? 'not-allowed' : 'pointer',
             }}
             onMouseEnter={(e) => { if (!disabled && cases.length > MIN_CASES) e.currentTarget.style.background = 'rgba(248,81,73,0.1)'; }}
@@ -146,7 +146,7 @@ const TestCasePanel = ({
       <div className="flex-1 min-h-0 flex flex-col p-2 gap-1">
         <label
           className="font-mono text-2xs uppercase tracking-wide"
-          style={{ color: '#6B7280' }}
+          style={{ color: '#9CA3AF' }}
           htmlFor="test-case-stdin"
         >
           stdin

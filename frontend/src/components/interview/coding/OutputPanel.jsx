@@ -129,7 +129,7 @@ const OutputPanel = ({
 };
 
 const Placeholder = ({ text }) => (
-  <span style={{ color: '#484F58' }}>{`// ${text}`}</span>
+  <span style={{ color: '#8B949E' }}>{`// ${text}`}</span>
 );
 
 const OutputContent = ({ result, submitSuite, busy }) => {
@@ -204,7 +204,7 @@ const InfoContent = ({ result, submitSuite, busy, language }) => {
     <dl className="grid grid-cols-2 gap-x-4 gap-y-1">
       {rows.map((r) => (
         <React.Fragment key={r.label}>
-          <dt className="text-2xs uppercase tracking-wide" style={{ color: '#6B7280' }}>{r.label}</dt>
+          <dt className="text-2xs uppercase tracking-wide" style={{ color: '#9CA3AF' }}>{r.label}</dt>
           <dd style={{ color: '#F0F6FC' }}>{r.value}</dd>
         </React.Fragment>
       ))}
@@ -216,7 +216,7 @@ const TestsContent = ({ submitSuite }) => (
   <div className="space-y-1.5">
     <div
       className="text-2xs uppercase tracking-wide flex items-center gap-2"
-      style={{ color: '#6B7280' }}
+      style={{ color: '#9CA3AF' }}
     >
       <span>Hidden tests</span>
       <span

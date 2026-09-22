@@ -39,7 +39,7 @@ const LanguageSelector = ({ value, onChange, disabled = false }) => (
     <ChevronDown
       size={11}
       style={{
-        color: '#6B7280',
+        color: '#9CA3AF',
         position: 'absolute',
         right: 6,
         pointerEvents: 'none',

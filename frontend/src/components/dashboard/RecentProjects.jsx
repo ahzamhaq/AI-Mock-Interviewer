@@ -47,7 +47,7 @@ const RecentProjects = () => {
       <div className="flex-1">
         {loading ? (
           <div className="flex items-center justify-center py-6">
-            <Loader2 size={12} className="animate-spin" style={{ color: '#6B7280' }} />
+            <Loader2 size={12} className="animate-spin" style={{ color: '#9CA3AF' }} />
           </div>
         ) : projects.length === 0 ? (
           <EmptyState
@@ -88,14 +88,14 @@ const RecentProjects = () => {
                     <div className="text-xs truncate" style={{ color: '#F0F6FC' }}>
                       {p.repoOwner}/{p.repoName}
                     </div>
-                    <div className="font-mono text-2xs mt-0.5" style={{ color: '#484F58' }}>
+                    <div className="font-mono text-2xs mt-0.5" style={{ color: '#8B949E' }}>
                       {processing ? 'analyzing…' : (p.updatedAt
                         ? formatDistanceToNow(new Date(p.updatedAt), { addSuffix: true })
                         : '—')}
                       {p.metadata?.language && (
                         <>
                           <span style={{ color: '#30363D' }}> · </span>
-                          <span style={{ color: '#6B7280' }}>{p.metadata.language}</span>
+                          <span style={{ color: '#9CA3AF' }}>{p.metadata.language}</span>
                         </>
                       )}
                     </div>

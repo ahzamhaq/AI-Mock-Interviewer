@@ -16,12 +16,12 @@ const DashboardHero = ({ userName, totalSessions, streak, points }) => {
       style={{ height: 40, borderBottom: '1px solid #21262D', background: '#161B22' }}
     >
       <div className="flex items-center gap-3 min-w-0">
-        <span className="font-mono text-2xs" style={{ color: '#484F58' }}>~/workspace</span>
+        <span className="font-mono text-2xs" style={{ color: '#8B949E' }}>~/workspace</span>
         <span style={{ color: '#30363D' }}>/</span>
         <span className="text-sm font-medium truncate" style={{ color: '#F0F6FC' }}>
           {displayName}
         </span>
-        <span className="font-mono text-2xs hidden md:inline" style={{ color: '#6B7280' }}>
+        <span className="font-mono text-2xs hidden md:inline" style={{ color: '#9CA3AF' }}>
           · {totalSessions} sessions · streak {streak}d · {points} pts
         </span>
       </div>

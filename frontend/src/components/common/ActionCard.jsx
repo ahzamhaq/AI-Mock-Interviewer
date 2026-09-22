@@ -7,7 +7,7 @@ import { ArrowUpRight } from 'lucide-react';
  * you like to do today?" row and on the Interviews entry page.
  *
  * Visual language mirrors the existing Panel/card-hover pattern: 1px #30363D
- * border on #0D1117, brightens to #484F58 on hover, #58A6FF accent for the
+ * border on #0D1117, brightens to #8B949E on hover, #58A6FF accent for the
  * corner arrow. No gradients, no glassmorphism — consistent with the rest of
  * the app.
  *
@@ -46,7 +46,7 @@ const ActionCard = ({
     onMouseEnter={(e) => {
       if (disabled) return;
       e.currentTarget.style.background = '#161B22';
-      e.currentTarget.style.borderColor = '#484F58';
+      e.currentTarget.style.borderColor = '#8B949E';
     }}
     onMouseLeave={(e) => {
       if (disabled) return;
@@ -74,7 +74,7 @@ const ActionCard = ({
     {eyebrow && (
       <span
         className="font-mono text-2xs uppercase tracking-wide mb-1"
-        style={{ color: '#6B7280' }}
+        style={{ color: '#9CA3AF' }}
       >
         {eyebrow}
       </span>

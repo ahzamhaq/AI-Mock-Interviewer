@@ -33,7 +33,7 @@ const BadgeIcon = ({ name, unlocked }) => {
   return (
     <Icon
       size={18}
-      style={{ color: unlocked ? '#58A6FF' : '#484F58' }}
+      style={{ color: unlocked ? '#58A6FF' : '#8B949E' }}
     />
   );
 };
@@ -65,7 +65,7 @@ const BadgeCard = ({ def, unlocked, unlockedAt, delay = 0 }) => (
         <BadgeIcon name={def.icon} unlocked={unlocked} />
       </div>
       {!unlocked && (
-        <Icons.Lock size={11} style={{ color: '#484F58' }} aria-label="Locked" />
+        <Icons.Lock size={11} style={{ color: '#8B949E' }} aria-label="Locked" />
       )}
     </div>
     <h4
@@ -76,14 +76,14 @@ const BadgeCard = ({ def, unlocked, unlockedAt, delay = 0 }) => (
     </h4>
     <p
       className="text-xs leading-relaxed"
-      style={{ color: unlocked ? '#9CA3AF' : '#6B7280' }}
+      style={{ color: unlocked ? '#9CA3AF' : '#9CA3AF' }}
     >
       {def.description}
     </p>
     {unlocked && unlockedAt && (
       <p
         className="font-mono text-2xs mt-2"
-        style={{ color: '#484F58' }}
+        style={{ color: '#8B949E' }}
       >
         unlocked {formatDistanceToNow(new Date(unlockedAt), { addSuffix: true })}
       </p>
@@ -91,7 +91,7 @@ const BadgeCard = ({ def, unlocked, unlockedAt, delay = 0 }) => (
     {unlocked && !unlockedAt && (
       <p
         className="font-mono text-2xs mt-2"
-        style={{ color: '#484F58' }}
+        style={{ color: '#8B949E' }}
       >
         unlocked
       </p>
@@ -135,13 +135,13 @@ const AchievementsTab = ({ user }) => {
           <div className="text-right">
             <div className="font-mono text-xl font-bold" style={{ color: '#58A6FF' }}>
               {totalUnlocked}
-              <span className="text-sm" style={{ color: '#6B7280' }}>
+              <span className="text-sm" style={{ color: '#9CA3AF' }}>
                 {' / '}{totalAvailable}
               </span>
             </div>
             <div
               className="font-mono text-2xs uppercase tracking-wide mt-0.5"
-              style={{ color: '#484F58' }}
+              style={{ color: '#8B949E' }}
             >
               unlocked
             </div>

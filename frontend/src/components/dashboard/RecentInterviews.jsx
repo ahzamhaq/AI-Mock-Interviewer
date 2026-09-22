@@ -6,7 +6,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { Panel, PanelHeader } from '../common/Panel';
 
 const SCORE_COLOR = (s) => {
-  if (!s && s !== 0) return '#6B7280';
+  if (!s && s !== 0) return '#9CA3AF';
   if (s >= 8) return '#3FB950';
   if (s >= 6) return '#D29922';
   return '#F85149';
@@ -33,7 +33,7 @@ const RecentInterviews = ({ interviews, loading = false }) => {
       <div className="flex-1 overflow-y-auto">
         {loading ? (
           <div className="flex items-center justify-center py-6">
-            <Loader2 size={12} className="animate-spin" style={{ color: '#6B7280' }} />
+            <Loader2 size={12} className="animate-spin" style={{ color: '#9CA3AF' }} />
           </div>
         ) : interviews?.length > 0 ? (
           <div>
@@ -59,10 +59,10 @@ const RecentInterviews = ({ interviews, loading = false }) => {
                   <div className="text-xs truncate" style={{ color: '#F0F6FC' }}>
                     {iv.title}
                   </div>
-                  <div className="font-mono text-2xs mt-0.5" style={{ color: '#484F58' }}>
+                  <div className="font-mono text-2xs mt-0.5" style={{ color: '#8B949E' }}>
                     {formatDistanceToNow(new Date(iv.completedAt), { addSuffix: true })}
                     <span style={{ color: '#30363D' }}> · </span>
-                    <span style={{ color: '#6B7280' }}>{iv.config?.interviewType}</span>
+                    <span style={{ color: '#9CA3AF' }}>{iv.config?.interviewType}</span>
                   </div>
                 </div>
                 <ChevronRight size={11} style={{ color: '#30363D', flexShrink: 0, marginTop: 2 }} />
@@ -72,7 +72,7 @@ const RecentInterviews = ({ interviews, loading = false }) => {
         ) : (
           <div className="p-6 text-center">
             <Mic size={20} style={{ color: '#30363D' }} className="mx-auto mb-3" />
-            <p className="text-xs mb-3" style={{ color: '#6B7280' }}>No sessions yet</p>
+            <p className="text-xs mb-3" style={{ color: '#9CA3AF' }}>No sessions yet</p>
             <button onClick={() => navigate('/interviews/new')} className="btn-accent text-xs px-3 py-1.5">
               Start first session
             </button>

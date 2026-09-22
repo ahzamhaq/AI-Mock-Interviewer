@@ -170,7 +170,7 @@ const QuickInterviewPage = () => {
           >
             <label
               className="block font-mono text-2xs uppercase tracking-wide mb-2"
-              style={{ color: '#6B7280' }}
+              style={{ color: '#9CA3AF' }}
             >
               Your prompt
             </label>
@@ -190,7 +190,7 @@ const QuickInterviewPage = () => {
                 className="font-mono text-2xs"
                 style={{
                   color: charCount === 0
-                    ? '#484F58'
+                    ? '#8B949E'
                     : isValid
                       ? '#3FB950'
                       : '#D29922',
@@ -210,7 +210,7 @@ const QuickInterviewPage = () => {
           <div className="mb-3">
             <div
               className="font-mono text-2xs uppercase tracking-wide mb-2"
-              style={{ color: '#6B7280' }}
+              style={{ color: '#9CA3AF' }}
             >
               Try one of these
             </div>
@@ -272,7 +272,7 @@ const QuickInterviewPage = () => {
             </button>
           </div>
 
-          <p className="font-mono text-2xs mt-4" style={{ color: '#484F58' }}>
+          <p className="font-mono text-2xs mt-4" style={{ color: '#8B949E' }}>
             {'// AI parses your prompt into a draft you can review before starting'}
           </p>
         </div>
@@ -300,13 +300,13 @@ const ToggleRow = ({
         borderRadius: 6,
       }}
     >
-      {Icon && <Icon size={13} style={{ color: disabled ? '#484F58' : '#58A6FF' }} />}
+      {Icon && <Icon size={13} style={{ color: disabled ? '#8B949E' : '#58A6FF' }} />}
     </div>
     <div className="flex-1 min-w-0">
       <div className="text-xs font-medium" style={{ color: disabled ? '#9CA3AF' : '#F0F6FC' }}>
         {label}
       </div>
-      <div className="font-mono text-2xs mt-0.5" style={{ color: '#6B7280' }}>
+      <div className="font-mono text-2xs mt-0.5" style={{ color: '#9CA3AF' }}>
         {description}
       </div>
     </div>

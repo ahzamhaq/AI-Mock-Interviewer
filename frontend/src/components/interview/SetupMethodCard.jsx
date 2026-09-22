@@ -32,7 +32,7 @@ const SetupMethodCard = ({ icon: Icon, title, description, bullets = [], ctaLabe
     }}
     onMouseEnter={(e) => {
       e.currentTarget.style.background = '#161B22';
-      e.currentTarget.style.borderColor = '#484F58';
+      e.currentTarget.style.borderColor = '#8B949E';
     }}
     onMouseLeave={(e) => {
       e.currentTarget.style.background = '#0D1117';
@@ -72,9 +72,9 @@ const SetupMethodCard = ({ icon: Icon, title, description, bullets = [], ctaLabe
           <li
             key={b}
             className="font-mono text-2xs flex items-start gap-1.5"
-            style={{ color: '#6B7280' }}
+            style={{ color: '#9CA3AF' }}
           >
-            <span style={{ color: '#484F58' }}>·</span>
+            <span style={{ color: '#8B949E' }}>·</span>
             <span>{b}</span>
           </li>
         ))}

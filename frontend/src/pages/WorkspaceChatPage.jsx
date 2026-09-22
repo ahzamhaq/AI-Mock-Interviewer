@@ -487,8 +487,8 @@ const WorkspaceChatPage = () => {
               className="flex items-center justify-center py-10"
               style={{ background: '#161B22', border: '1px solid #30363D', borderRadius: 6 }}
             >
-              <Loader2 size={16} className="animate-spin" style={{ color: '#6B7280' }} />
-              <span className="font-mono text-2xs ml-2" style={{ color: '#6B7280' }}>
+              <Loader2 size={16} className="animate-spin" style={{ color: '#9CA3AF' }} />
+              <span className="font-mono text-2xs ml-2" style={{ color: '#9CA3AF' }}>
                 loading workspace…
               </span>
             </div>
@@ -561,7 +561,7 @@ const WorkspaceChatPage = () => {
                     className="inline-flex items-center gap-1 px-1.5 py-0.5 font-mono text-2xs ml-1"
                     style={{
                       background: '#0D1117', border: '1px solid #30363D',
-                      borderRadius: 3, color: '#6B7280',
+                      borderRadius: 3, color: '#9CA3AF',
                     }}
                   >
                     <span className="w-1.5 h-1.5 rounded-full" style={{ background: '#58A6FF' }} />
@@ -571,7 +571,7 @@ const WorkspaceChatPage = () => {
                 {analysis?.status && (
                   <span
                     className="ml-auto font-mono text-2xs"
-                    style={{ color: '#484F58' }}
+                    style={{ color: '#8B949E' }}
                   >
                     analysis · {analysis.status}
                   </span>
@@ -635,7 +635,7 @@ const WorkspaceChatPage = () => {
                 </div>
               </div>
 
-              <p className="font-mono text-2xs mt-4" style={{ color: '#484F58' }}>
+              <p className="font-mono text-2xs mt-4" style={{ color: '#8B949E' }}>
                 {'// v1.2.0 — markdown · syntax highlighting · regenerate · copy · smart scroll'}
               </p>
             </>

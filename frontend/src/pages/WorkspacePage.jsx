@@ -120,8 +120,8 @@ const WorkspacePage = () => {
               className="flex items-center justify-center py-10"
               style={{ background: '#161B22', border: '1px solid #30363D', borderRadius: 6 }}
             >
-              <Loader2 size={16} className="animate-spin" style={{ color: '#6B7280' }} />
-              <span className="font-mono text-2xs ml-2" style={{ color: '#6B7280' }}>loading workspace…</span>
+              <Loader2 size={16} className="animate-spin" style={{ color: '#9CA3AF' }} />
+              <span className="font-mono text-2xs ml-2" style={{ color: '#9CA3AF' }}>loading workspace…</span>
             </div>
           )}
 
@@ -147,9 +147,9 @@ const WorkspacePage = () => {
                 <Link
                   to="/projects"
                   className="inline-flex items-center gap-1.5 font-mono text-2xs mb-2 transition-colors"
-                  style={{ color: '#6B7280' }}
+                  style={{ color: '#9CA3AF' }}
                   onMouseEnter={(e) => (e.currentTarget.style.color = '#F0F6FC')}
-                  onMouseLeave={(e) => (e.currentTarget.style.color = '#6B7280')}
+                  onMouseLeave={(e) => (e.currentTarget.style.color = '#9CA3AF')}
                 >
                   <ArrowLeft size={11} /> Projects
                 </Link>
@@ -195,7 +195,7 @@ const WorkspacePage = () => {
                         {project.metadata.description}
                       </p>
                     )}
-                    <div className="flex items-center gap-3 font-mono text-2xs mt-2" style={{ color: '#6B7280' }}>
+                    <div className="flex items-center gap-3 font-mono text-2xs mt-2" style={{ color: '#9CA3AF' }}>
                       {project.metadata?.language && (
                         <span className="inline-flex items-center gap-1">
                           <span className="w-1.5 h-1.5 rounded-full" style={{ background: '#58A6FF' }} />
@@ -276,7 +276,7 @@ const WorkspacePage = () => {
                           <div className="p-4">
                             {analysis?.summary
                               ? <p className="text-xs leading-relaxed" style={{ color: '#F0F6FC' }}>{analysis.summary}</p>
-                              : <p className="text-xs" style={{ color: '#6B7280' }}>No summary produced.</p>}
+                              : <p className="text-xs" style={{ color: '#9CA3AF' }}>No summary produced.</p>}
                           </div>
                         </Panel>
 
@@ -291,7 +291,7 @@ const WorkspacePage = () => {
                           <PanelHeader
                             label="key files"
                             action={
-                              <span className="font-mono text-2xs" style={{ color: '#6B7280' }}>
+                              <span className="font-mono text-2xs" style={{ color: '#9CA3AF' }}>
                                 {analysis?.filesRead ?? 0} read
                               </span>
                             }
@@ -311,7 +311,7 @@ const WorkspacePage = () => {
                       <div className="p-3">
                         {analysis?.techStack?.length
                           ? <TechStackChips items={analysis.techStack} />
-                          : <p className="text-xs" style={{ color: '#6B7280' }}>No tech stack detected.</p>}
+                          : <p className="text-xs" style={{ color: '#9CA3AF' }}>No tech stack detected.</p>}
                       </div>
                     </Panel>
 

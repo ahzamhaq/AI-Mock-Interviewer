@@ -67,7 +67,7 @@ const Navbar = () => {
           {user && (
             <>
               <span className="hidden md:inline" style={{ color: '#30363D' }}>/</span>
-              <span className="hidden md:inline font-mono text-2xs" style={{ color: '#6B7280' }}>
+              <span className="hidden md:inline font-mono text-2xs" style={{ color: '#9CA3AF' }}>
                 {user?.name?.split(' ')[0]?.toLowerCase()}
               </span>
             </>
@@ -142,7 +142,7 @@ const Navbar = () => {
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.background = '#1C2128';
-                  e.currentTarget.style.borderColor = '#484F58';
+                  e.currentTarget.style.borderColor = '#8B949E';
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.background = '#161B22';
@@ -161,7 +161,7 @@ const Navbar = () => {
                     background: '#0D1117',
                     border: '1px solid #30363D',
                     borderRadius: 3,
-                    color: '#6B7280',
+                    color: '#9CA3AF',
                     lineHeight: 1,
                   }}
                 >
@@ -197,7 +197,7 @@ const Navbar = () => {
                   >
                     {user.name?.[0]?.toUpperCase() || 'U'}
                   </div>
-                  <ChevronDown size={10} style={{ color: '#6B7280' }} />
+                  <ChevronDown size={10} style={{ color: '#9CA3AF' }} />
                 </button>
 
                 <AnimatePresence>
@@ -219,7 +219,7 @@ const Navbar = () => {
                     >
                       <div className="px-3 py-2.5" style={{ borderBottom: '1px solid #30363D' }}>
                         <p className="text-sm font-medium" style={{ color: '#F0F6FC' }}>{user.name}</p>
-                        <p className="font-mono text-2xs mt-0.5" style={{ color: '#6B7280' }}>{user.email}</p>
+                        <p className="font-mono text-2xs mt-0.5" style={{ color: '#9CA3AF' }}>{user.email}</p>
                       </div>
                       <div className="p-1">
                         {[

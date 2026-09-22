@@ -77,14 +77,14 @@ const GitHubRepoPicker = ({ onSubmit, disabled = false }) => {
     <div className="w-full">
       <label
         className="block font-mono text-2xs uppercase tracking-wide mb-2"
-        style={{ color: '#6B7280' }}
+        style={{ color: '#9CA3AF' }}
       >
         Or import from your GitHub
       </label>
 
       {/* Search bar */}
       <div className="flex items-center mb-2" style={{ position: 'relative' }}>
-        <Search size={12} style={{ color: '#484F58', position: 'absolute', left: 10 }} />
+        <Search size={12} style={{ color: '#8B949E', position: 'absolute', left: 10 }} />
         <input
           type="text"
           value={search}
@@ -99,8 +99,8 @@ const GitHubRepoPicker = ({ onSubmit, disabled = false }) => {
       {/* States */}
       {loading && (
         <div className="flex items-center justify-center py-6">
-          <Loader2 size={12} className="animate-spin" style={{ color: '#6B7280' }} />
-          <span className="font-mono text-2xs ml-2" style={{ color: '#6B7280' }}>loading repositories…</span>
+          <Loader2 size={12} className="animate-spin" style={{ color: '#9CA3AF' }} />
+          <span className="font-mono text-2xs ml-2" style={{ color: '#9CA3AF' }}>loading repositories…</span>
         </div>
       )}
 
@@ -119,7 +119,7 @@ const GitHubRepoPicker = ({ onSubmit, disabled = false }) => {
       )}
 
       {!loading && !error && filtered.length === 0 && (
-        <p className="text-xs py-3 text-center" style={{ color: '#6B7280' }}>
+        <p className="text-xs py-3 text-center" style={{ color: '#9CA3AF' }}>
           {search ? 'No repositories match that filter.' : 'No repositories found.'}
         </p>
       )}
@@ -151,19 +151,19 @@ const GitHubRepoPicker = ({ onSubmit, disabled = false }) => {
                 <div className="flex-1 min-w-0">
                   <div className="text-xs flex items-center gap-1.5" style={{ color: '#F0F6FC' }}>
                     <span className="truncate">{r.fullName}</span>
-                    {r.private && <Lock size={9} style={{ color: '#6B7280' }} />}
+                    {r.private && <Lock size={9} style={{ color: '#9CA3AF' }} />}
                   </div>
                   {r.description && (
                     <div className="text-xs mt-0.5 truncate" style={{ color: '#9CA3AF' }}>
                       {r.description}
                     </div>
                   )}
-                  <div className="font-mono text-2xs mt-0.5" style={{ color: '#484F58' }}>
+                  <div className="font-mono text-2xs mt-0.5" style={{ color: '#8B949E' }}>
                     {r.language || '—'}
                   </div>
                 </div>
                 {busy ? (
-                  <Loader2 size={11} className="animate-spin" style={{ color: '#6B7280', flexShrink: 0, marginTop: 2 }} />
+                  <Loader2 size={11} className="animate-spin" style={{ color: '#9CA3AF', flexShrink: 0, marginTop: 2 }} />
                 ) : (
                   <ArrowRight size={11} style={{ color: '#30363D', flexShrink: 0, marginTop: 2 }} />
                 )}

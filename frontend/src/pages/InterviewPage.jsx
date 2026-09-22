@@ -63,7 +63,7 @@ const MiniBar = ({ value, max = 10, label }) => {
   return (
     <div>
       <div className="flex justify-between items-center mb-1">
-        <span className="text-2xs font-medium" style={{ color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{label}</span>
+        <span className="text-2xs font-medium" style={{ color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{label}</span>
         <span className="metric text-xs font-semibold" style={{ color }}>{value}{max === 100 ? '%' : `/${max}`}</span>
       </div>
       <div className="h-1 rounded-full" style={{ background: '#21262D' }}>
@@ -310,7 +310,7 @@ const InterviewPage = () => {
           if (voiceEnabled) speak(nudge.phrase);
         } else if (nudge.nudgeType === 'silent') {
           // Silent tier — interviewer waits patiently; just log it
-          pushLog('NUDGE', 'silent · waiting…', '#6B7280');
+          pushLog('NUDGE', 'silent · waiting…', '#9CA3AF');
         }
       } catch {
         // Best-effort — silence-handling failures shouldn't break the interview
@@ -644,7 +644,7 @@ const InterviewPage = () => {
             animate={{ rotate: 360 }}
             transition={{ duration: 0.8, repeat: Infinity, ease: 'linear' }}
           />
-          <span className="text-sm" style={{ color: '#6B7280' }}>Loading session…</span>
+          <span className="text-sm" style={{ color: '#9CA3AF' }}>Loading session…</span>
         </div>
       </div>
     );
@@ -697,11 +697,11 @@ const InterviewPage = () => {
             {interview.config?.role}
           </span>
           <span className="text-xs" style={{ color: '#30363D' }}>/</span>
-          <span className="text-xs" style={{ color: '#6B7280' }}>
+          <span className="text-xs" style={{ color: '#9CA3AF' }}>
             {interview.config?.interviewType}
           </span>
           <span className="text-xs" style={{ color: '#30363D' }}>/</span>
-          <span className="text-xs" style={{ color: '#6B7280' }}>
+          <span className="text-xs" style={{ color: '#9CA3AF' }}>
             {interview.adaptive
               ? (interview.liveState?.currentDifficulty || interview.config?.difficulty)
               : interview.config?.difficulty}
@@ -800,7 +800,7 @@ const InterviewPage = () => {
 
         {/* Center: progress */}
         <div className="flex items-center gap-2">
-          <span className="metric text-xs" style={{ color: '#6B7280' }}>
+          <span className="metric text-xs" style={{ color: '#9CA3AF' }}>
             Q{primaryAskedCount}/{plannedCount}
           </span>
           <div className="w-24 h-1 rounded-full" style={{ background: '#21262D' }}>
@@ -820,7 +820,7 @@ const InterviewPage = () => {
             className="flex items-center gap-1.5 px-2.5 py-1 rounded text-xs transition-colors"
             style={{
               background: 'transparent',
-              color: voiceEnabled ? '#9CA3AF' : '#484F58',
+              color: voiceEnabled ? '#9CA3AF' : '#8B949E',
               border: '1px solid transparent',
             }}
             onMouseEnter={e => e.currentTarget.style.background = '#21262D'}
@@ -832,7 +832,7 @@ const InterviewPage = () => {
           <button
             onClick={() => setShowAvatar(v => !v)}
             className="flex items-center gap-1.5 px-2.5 py-1 rounded text-xs transition-colors"
-            style={{ color: showAvatar ? '#9CA3AF' : '#484F58', border: '1px solid transparent' }}
+            style={{ color: showAvatar ? '#9CA3AF' : '#8B949E', border: '1px solid transparent' }}
             onMouseEnter={e => e.currentTarget.style.background = '#21262D'}
             onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
           >
@@ -954,7 +954,7 @@ const InterviewPage = () => {
                   {question.questionType?.replace('_', ' ') || 'technical'}
                 </div>
                 {question.topic && (
-                  <div className="text-2xs" style={{ color: '#6B7280' }}>Topic: {question.topic}</div>
+                  <div className="text-2xs" style={{ color: '#9CA3AF' }}>Topic: {question.topic}</div>
                 )}
               </div>
             )}
@@ -1003,7 +1003,7 @@ const InterviewPage = () => {
               style={{ background: '#161B22', borderBottom: '1px solid #21262D' }}
             >
               <div className="flex items-center gap-1.5">
-                <TerminalSquare size={10} style={{ color: '#6B7280' }} />
+                <TerminalSquare size={10} style={{ color: '#9CA3AF' }} />
                 <span className="font-mono uppercase tracking-wide" style={{ color: '#9CA3AF', fontSize: 9 }}>
                   system log
                 </span>
@@ -1019,10 +1019,10 @@ const InterviewPage = () => {
               style={{ background: '#010409', fontSize: 9.5, lineHeight: 1.5 }}
             >
               {logs.length === 0 ? (
-                <div style={{ color: '#484F58' }}>{'// waiting for events…'}</div>
+                <div style={{ color: '#8B949E' }}>{'// waiting for events…'}</div>
               ) : logs.slice(-30).map(l => (
                 <div key={l.id} className="flex gap-1.5">
-                  <span style={{ color: '#484F58' }}>{l.t}</span>
+                  <span style={{ color: '#8B949E' }}>{l.t}</span>
                   <span style={{ color: l.tone, width: 44, flexShrink: 0 }}>{l.tag}</span>
                   <span style={{ color: '#9CA3AF', wordBreak: 'break-word' }}>{l.msg}</span>
                 </div>
@@ -1114,7 +1114,7 @@ const InterviewPage = () => {
                     style={{ color: '#9CA3AF', lineHeight: 1.5 }}
                   >
                     {question.reaction && <span>{question.reaction} </span>}
-                    {question.transition && <span style={{ color: '#6B7280' }}>{question.transition}</span>}
+                    {question.transition && <span style={{ color: '#9CA3AF' }}>{question.transition}</span>}
                   </p>
                 )}
 
@@ -1128,7 +1128,7 @@ const InterviewPage = () => {
                   <div className="flex flex-wrap gap-1.5 mt-3">
                     {question.hints.map((h, i) => (
                       <span key={i} className="text-2xs px-2 py-0.5 rounded"
-                        style={{ background: '#161B22', color: '#6B7280', border: '1px solid #30363D' }}>
+                        style={{ background: '#161B22', color: '#9CA3AF', border: '1px solid #30363D' }}>
                         {h}
                       </span>
                     ))}
@@ -1199,7 +1199,7 @@ const InterviewPage = () => {
                   initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                   className="flex flex-col gap-4"
                 >
-                  <p className="text-sm" style={{ color: '#6B7280' }}>
+                  <p className="text-sm" style={{ color: '#9CA3AF' }}>
                     Your turn. Answer verbally or type your response.
                   </p>
                   <div className="flex gap-2 flex-wrap">
@@ -1225,9 +1225,9 @@ const InterviewPage = () => {
                         }
                       }}
                       className="flex items-center gap-1.5 text-xs px-3 py-2.5 rounded transition-colors"
-                      style={{ color: '#6B7280', border: '1px solid #30363D', background: 'transparent' }}
+                      style={{ color: '#9CA3AF', border: '1px solid #30363D', background: 'transparent' }}
                       onMouseEnter={e => { e.currentTarget.style.background = '#161B22'; e.currentTarget.style.color = '#9CA3AF'; }}
-                      onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#6B7280'; }}
+                      onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#9CA3AF'; }}
                       title="Repeat the question aloud"
                     >
                       <Volume2 size={13} /> Repeat
@@ -1235,9 +1235,9 @@ const InterviewPage = () => {
                     <button
                       onClick={skipQuestion}
                       className="text-xs px-3 py-2.5 rounded transition-colors"
-                      style={{ color: '#6B7280' }}
+                      style={{ color: '#9CA3AF' }}
                       onMouseEnter={e => e.currentTarget.style.color = '#9CA3AF'}
-                      onMouseLeave={e => e.currentTarget.style.color = '#6B7280'}
+                      onMouseLeave={e => e.currentTarget.style.color = '#9CA3AF'}
                     >
                       <SkipForward size={13} className="inline mr-1" />
                       Skip
@@ -1257,7 +1257,7 @@ const InterviewPage = () => {
                         }
                         className="text-xs px-3 py-2.5 rounded transition-colors flex items-center gap-1.5"
                         style={{
-                          color: interview.config?.dsa?.allowHints ? '#D29922' : '#484F58',
+                          color: interview.config?.dsa?.allowHints ? '#D29922' : '#8B949E',
                           border: '1px solid transparent',
                           background: 'transparent',
                           cursor: interview.config?.dsa?.allowHints ? 'pointer' : 'not-allowed',
@@ -1309,7 +1309,7 @@ const InterviewPage = () => {
                       className="rounded p-3 font-mono text-sm leading-relaxed max-h-40 overflow-y-auto"
                       style={{ background: '#010409', border: '1px solid #21262D', color: '#9CA3AF' }}
                     >
-                      <div className="text-2xs mb-2 font-sans uppercase tracking-wide" style={{ color: '#484F58' }}>
+                      <div className="text-2xs mb-2 font-sans uppercase tracking-wide" style={{ color: '#8B949E' }}>
                         Live Transcript
                       </div>
                       {transcript}
@@ -1331,7 +1331,7 @@ const InterviewPage = () => {
                   initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                   className="flex flex-col gap-3"
                 >
-                  <div className="text-xs" style={{ color: '#6B7280' }}>Write your answer below</div>
+                  <div className="text-xs" style={{ color: '#9CA3AF' }}>Write your answer below</div>
                   <textarea
                     className="input-field resize-none font-mono text-sm leading-relaxed"
                     style={{ height: 180, background: '#010409', fontFamily: 'inherit' }}
@@ -1370,7 +1370,7 @@ const InterviewPage = () => {
                   />
                   <div>
                     <p className="text-sm font-medium" style={{ color: '#F0F6FC' }}>Analyzing response…</p>
-                    <p className="text-xs mt-0.5" style={{ color: '#6B7280' }}>
+                    <p className="text-xs mt-0.5" style={{ color: '#9CA3AF' }}>
                       {processingElapsed >= 10
                         ? 'Still working — the AI is taking a bit longer than usual'
                         : 'Evaluating technical accuracy, communication, confidence'}
@@ -1537,7 +1537,7 @@ const InterviewPage = () => {
                 fallback={
                   <div
                     className="flex items-center justify-center h-full w-full"
-                    style={{ background: '#1E1E1E', color: '#6B7280' }}
+                    style={{ background: '#1E1E1E', color: '#9CA3AF' }}
                   >
                     <span className="font-mono text-2xs">loading editor…</span>
                   </div>
@@ -1567,7 +1567,7 @@ const InterviewPage = () => {
 
             {/* Panel title */}
             <div className="flex items-center gap-1.5">
-              <Activity size={12} style={{ color: '#6B7280' }} />
+              <Activity size={12} style={{ color: '#9CA3AF' }} />
               <span className="label">Live Metrics</span>
             </div>
 
@@ -1576,9 +1576,9 @@ const InterviewPage = () => {
               <div className="label mb-1">Session Avg</div>
               <div className="metric text-2xl font-bold" style={{ color: '#F0F6FC' }}>
                 {avgScore}
-                {avgScore !== '—' && <span className="text-sm font-normal ml-0.5" style={{ color: '#6B7280' }}>/10</span>}
+                {avgScore !== '—' && <span className="text-sm font-normal ml-0.5" style={{ color: '#9CA3AF' }}>/10</span>}
               </div>
-              <div className="text-2xs mt-0.5" style={{ color: '#6B7280' }}>
+              <div className="text-2xs mt-0.5" style={{ color: '#9CA3AF' }}>
                 {sessionMetrics.answers.length} answer{sessionMetrics.answers.length !== 1 ? 's' : ''} scored
               </div>
             </div>
@@ -1588,11 +1588,11 @@ const InterviewPage = () => {
             {/* WPM */}
             <div>
               <div className="label mb-1">Speaking Speed</div>
-              <div className="metric text-lg font-bold" style={{ color: sessionMetrics.wpm > 180 ? '#F85149' : sessionMetrics.wpm > 0 ? '#3FB950' : '#484F58' }}>
+              <div className="metric text-lg font-bold" style={{ color: sessionMetrics.wpm > 180 ? '#F85149' : sessionMetrics.wpm > 0 ? '#3FB950' : '#8B949E' }}>
                 {sessionMetrics.wpm || '—'}
-                {sessionMetrics.wpm > 0 && <span className="text-xs font-normal ml-1" style={{ color: '#6B7280' }}>wpm</span>}
+                {sessionMetrics.wpm > 0 && <span className="text-xs font-normal ml-1" style={{ color: '#9CA3AF' }}>wpm</span>}
               </div>
-              <div className="text-2xs mt-0.5" style={{ color: '#6B7280' }}>
+              <div className="text-2xs mt-0.5" style={{ color: '#9CA3AF' }}>
                 {sessionMetrics.wpm > 180 ? 'Too fast' : sessionMetrics.wpm > 120 ? 'Ideal pace' : sessionMetrics.wpm > 0 ? 'Too slow' : 'Awaiting data'}
               </div>
             </div>
@@ -1602,10 +1602,10 @@ const InterviewPage = () => {
             {/* Filler words */}
             <div>
               <div className="label mb-1">Filler Words</div>
-              <div className="metric text-lg font-bold" style={{ color: sessionMetrics.fillerCount > 5 ? '#F85149' : sessionMetrics.fillerCount > 0 ? '#D29922' : '#484F58' }}>
+              <div className="metric text-lg font-bold" style={{ color: sessionMetrics.fillerCount > 5 ? '#F85149' : sessionMetrics.fillerCount > 0 ? '#D29922' : '#8B949E' }}>
                 {sessionMetrics.fillerCount || '0'}
               </div>
-              <div className="text-2xs mt-0.5" style={{ color: '#6B7280' }}>
+              <div className="text-2xs mt-0.5" style={{ color: '#9CA3AF' }}>
                 um, uh, like, basically…
               </div>
             </div>
@@ -1615,7 +1615,7 @@ const InterviewPage = () => {
             {/* Confidence */}
             <div>
               <div className="label mb-1">Confidence</div>
-              <div className="metric text-lg font-bold" style={{ color: sessionMetrics.confidence > 70 ? '#3FB950' : sessionMetrics.confidence > 0 ? '#D29922' : '#484F58' }}>
+              <div className="metric text-lg font-bold" style={{ color: sessionMetrics.confidence > 70 ? '#3FB950' : sessionMetrics.confidence > 0 ? '#D29922' : '#8B949E' }}>
                 {sessionMetrics.confidence || '—'}
                 {sessionMetrics.confidence > 0 && <span className="text-xs font-normal ml-0.5">%</span>}
               </div>
@@ -1630,7 +1630,7 @@ const InterviewPage = () => {
                 <div className="space-y-1.5">
                   {sessionMetrics.answers.map((score, i) => (
                     <div key={i} className="flex items-center gap-2">
-                      <span className="metric text-2xs w-6" style={{ color: '#6B7280' }}>Q{i + 1}</span>
+                      <span className="metric text-2xs w-6" style={{ color: '#9CA3AF' }}>Q{i + 1}</span>
                       <div className="flex-1 h-1 rounded-full" style={{ background: '#21262D' }}>
                         <div
                           className="h-full rounded-full"

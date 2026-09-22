@@ -49,7 +49,7 @@ const ProjectCard = ({ project }) => {
       }}
       onMouseEnter={(e) => {
         e.currentTarget.style.background = '#161B22';
-        e.currentTarget.style.borderColor = '#484F58';
+        e.currentTarget.style.borderColor = '#8B949E';
       }}
       onMouseLeave={(e) => {
         e.currentTarget.style.background = '#0D1117';
@@ -70,13 +70,13 @@ const ProjectCard = ({ project }) => {
           <GitBranch size={13} style={{ color: '#58A6FF' }} />
         </div>
         {project.metadata?.private && (
-          <Lock size={11} style={{ color: '#6B7280' }} aria-label="Private repository" />
+          <Lock size={11} style={{ color: '#9CA3AF' }} aria-label="Private repository" />
         )}
       </div>
 
       <div
         className="font-mono text-2xs uppercase tracking-wide mb-1 truncate max-w-full"
-        style={{ color: '#6B7280' }}
+        style={{ color: '#9CA3AF' }}
       >
         {project.repoOwner}
       </div>
@@ -97,7 +97,7 @@ const ProjectCard = ({ project }) => {
         </p>
       )}
 
-      <div className="flex items-center gap-2 font-mono text-2xs mt-auto pt-2 w-full" style={{ color: '#6B7280' }}>
+      <div className="flex items-center gap-2 font-mono text-2xs mt-auto pt-2 w-full" style={{ color: '#9CA3AF' }}>
         {processing ? (
           <span
             className="inline-flex items-center gap-1 px-1.5 py-0.5"

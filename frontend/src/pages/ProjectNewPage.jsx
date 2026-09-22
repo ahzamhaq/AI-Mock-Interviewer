@@ -111,7 +111,7 @@ const ProjectNewPage = () => {
           {/* Divider + GitHub picker OR connect CTA. */}
           <div className="flex items-center gap-3 my-4">
             <div className="flex-1" style={{ height: 1, background: '#21262D' }} />
-            <span className="font-mono text-2xs uppercase tracking-wide" style={{ color: '#484F58' }}>
+            <span className="font-mono text-2xs uppercase tracking-wide" style={{ color: '#8B949E' }}>
               or
             </span>
             <div className="flex-1" style={{ height: 1, background: '#21262D' }} />
@@ -123,7 +123,7 @@ const ProjectNewPage = () => {
           >
             {statusLoading ? (
               <div className="flex items-center justify-center py-4">
-                <Loader2 size={12} className="animate-spin" style={{ color: '#6B7280' }} />
+                <Loader2 size={12} className="animate-spin" style={{ color: '#9CA3AF' }} />
               </div>
             ) : ghStatus?.connected ? (
               <GitHubRepoPicker onSubmit={submitGithub} disabled={submitting} />

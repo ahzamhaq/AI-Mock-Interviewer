@@ -75,7 +75,7 @@ const CodeEditor = ({
 const EditorLoadingSkeleton = () => (
   <div
     className="flex items-center justify-center h-full w-full"
-    style={{ background: '#1E1E1E', color: '#6B7280' }}
+    style={{ background: '#1E1E1E', color: '#9CA3AF' }}
     role="status"
     aria-label="Loading code editor"
   >

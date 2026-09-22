@@ -112,7 +112,7 @@ const ContinueLearning = () => {
               onMouseEnter={(e) => {
                 if (startingId) return;
                 e.currentTarget.style.background = '#161B22';
-                e.currentTarget.style.borderColor = '#484F58';
+                e.currentTarget.style.borderColor = '#8B949E';
               }}
               onMouseLeave={(e) => {
                 if (startingId) return;
@@ -165,7 +165,7 @@ const ContinueLearning = () => {
               {card.meta && (
                 <div
                   className="font-mono text-2xs mt-auto pt-1"
-                  style={{ color: '#484F58' }}
+                  style={{ color: '#8B949E' }}
                 >
                   {card.meta}
                 </div>

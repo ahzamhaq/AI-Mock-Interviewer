@@ -23,7 +23,7 @@ import EmptyState from '../common/EmptyState';
  *   projectId       — for navigation on the "Start new" CTA
  */
 const SCORE_COLOR = (s) => {
-  if (!s && s !== 0) return '#6B7280';
+  if (!s && s !== 0) return '#9CA3AF';
   if (s >= 8) return '#3FB950';
   if (s >= 6) return '#D29922';
   return '#F85149';
@@ -41,7 +41,7 @@ const InterviewsTab = ({ sessions = [], sessionsLoaded, analysisReady, projectId
         <div className="min-w-0">
           <div
             className="font-mono text-2xs uppercase tracking-wide"
-            style={{ color: '#6B7280' }}
+            style={{ color: '#9CA3AF' }}
           >
             project interviews
           </div>
@@ -65,7 +65,7 @@ const InterviewsTab = ({ sessions = [], sessionsLoaded, analysisReady, projectId
       <Panel>
         {!sessionsLoaded ? (
           <div className="flex items-center justify-center py-10">
-            <Loader2 size={14} className="animate-spin" style={{ color: '#6B7280' }} />
+            <Loader2 size={14} className="animate-spin" style={{ color: '#9CA3AF' }} />
           </div>
         ) : sessions.length === 0 ? (
           <EmptyState
@@ -125,7 +125,7 @@ const InterviewsTab = ({ sessions = [], sessionsLoaded, analysisReady, projectId
                       {subMode}
                     </div>
                     <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                      <span className="font-mono text-2xs" style={{ color: '#6B7280' }}>
+                      <span className="font-mono text-2xs" style={{ color: '#9CA3AF' }}>
                         {s.completedAt
                           ? formatDistanceToNow(new Date(s.completedAt), { addSuffix: true })
                           : 'in progress'}
@@ -137,14 +137,14 @@ const InterviewsTab = ({ sessions = [], sessionsLoaded, analysisReady, projectId
                             background: '#0D1117',
                             border: '1px solid #30363D',
                             borderRadius: 3,
-                            color: '#6B7280',
+                            color: '#9CA3AF',
                           }}
                         >
                           {diff}
                         </span>
                       )}
                       {typeof s.duration === 'number' && s.duration > 0 && (
-                        <span className="font-mono text-2xs" style={{ color: '#484F58' }}>
+                        <span className="font-mono text-2xs" style={{ color: '#8B949E' }}>
                           {Math.floor(s.duration / 60)}m {s.duration % 60}s
                         </span>
                       )}

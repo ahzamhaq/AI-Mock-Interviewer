@@ -56,8 +56,8 @@ const ProjectsPage = () => {
               className="flex items-center justify-center py-10"
               style={{ background: '#161B22', border: '1px solid #30363D', borderRadius: 6 }}
             >
-              <Loader2 size={16} className="animate-spin" style={{ color: '#6B7280' }} />
-              <span className="font-mono text-2xs ml-2" style={{ color: '#6B7280' }}>loading…</span>
+              <Loader2 size={16} className="animate-spin" style={{ color: '#9CA3AF' }} />
+              <span className="font-mono text-2xs ml-2" style={{ color: '#9CA3AF' }}>loading…</span>
             </div>
           )}
 

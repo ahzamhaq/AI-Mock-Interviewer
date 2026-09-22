@@ -44,7 +44,7 @@ const InterviewHubCard = ({
       onMouseEnter={(e) => {
         if (disabled) return;
         e.currentTarget.style.background = '#161B22';
-        e.currentTarget.style.borderColor = '#484F58';
+        e.currentTarget.style.borderColor = '#8B949E';
       }}
       onMouseLeave={(e) => {
         if (disabled) return;
@@ -66,7 +66,7 @@ const InterviewHubCard = ({
             borderRadius: 6,
           }}
         >
-          <Icon size={15} style={{ color: disabled ? '#6B7280' : '#58A6FF' }} />
+          <Icon size={15} style={{ color: disabled ? '#9CA3AF' : '#58A6FF' }} />
         </div>
         {disabled ? (
           <span
@@ -101,7 +101,7 @@ const InterviewHubCard = ({
           unbuilt mode (not a paywall or a bug), matching the "Coming
           Soon" badge above. */}
       {disabled && (
-        <p className="text-2xs leading-relaxed mb-3" style={{ color: '#6B7280' }}>
+        <p className="text-2xs leading-relaxed mb-3" style={{ color: '#9CA3AF' }}>
           In development — this mode isn&apos;t available yet.
         </p>
       )}
@@ -117,7 +117,7 @@ const InterviewHubCard = ({
       <div className="w-full mt-auto flex items-center justify-between">
         <span
           className="font-mono text-2xs uppercase tracking-wide"
-          style={{ color: disabled ? '#484F58' : '#58A6FF' }}
+          style={{ color: disabled ? '#8B949E' : '#58A6FF' }}
         >
           {type.actionLabel}
         </span>

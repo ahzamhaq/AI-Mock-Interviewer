@@ -72,8 +72,8 @@ const AppRoutes = () => (
   <Suspense fallback={<LoadingScreen />}>
     <Routes>
       <Route path="/" element={<LandingPage />} />
-      <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
-      <Route path="/signup" element={<PublicRoute><SignupPage /></PublicRoute>} />
+      <Route path="/login" element={<PublicRoute><GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID || ''}><LoginPage /></GoogleOAuthProvider></PublicRoute>} />
+      <Route path="/signup" element={<PublicRoute><GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID || ''}><SignupPage /></GoogleOAuthProvider></PublicRoute>} />
       <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
       <Route path="/interviews" element={<ProtectedRoute><InterviewsPage /></ProtectedRoute>} />
       <Route path="/interviews/new" element={<ProtectedRoute><InterviewHubPage /></ProtectedRoute>} />
@@ -117,7 +117,6 @@ const SearchLayer = () => {
 };
 
 const App = () => (
-  <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID || ''}>
   <Router>
     <AuthProvider>
       <SearchProvider>
@@ -144,7 +143,6 @@ const App = () => (
       </SearchProvider>
     </AuthProvider>
   </Router>
-  </GoogleOAuthProvider>
 );
 
 export default App;

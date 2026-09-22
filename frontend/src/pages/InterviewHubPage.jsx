@@ -128,20 +128,20 @@ const InterviewHubPage = () => {
           <CheckCircle size={10} /> Resume uploaded
         </div>
       ) : (
-        <div className="font-mono text-2xs" style={{ color: '#6B7280' }}>
+        <div className="font-mono text-2xs" style={{ color: '#9CA3AF' }}>
           No resume uploaded yet
         </div>
       );
     }
     if (id === 'project') {
       if (projects === null) {
-        return <div className="font-mono text-2xs" style={{ color: '#484F58' }}>Checking projects…</div>;
+        return <div className="font-mono text-2xs" style={{ color: '#8B949E' }}>Checking projects…</div>;
       }
       if (!hasProjects) {
-        return <div className="font-mono text-2xs" style={{ color: '#6B7280' }}>No analyzed projects yet</div>;
+        return <div className="font-mono text-2xs" style={{ color: '#9CA3AF' }}>No analyzed projects yet</div>;
       }
       return (
-        <div className="font-mono text-2xs" style={{ color: '#6B7280' }}>
+        <div className="font-mono text-2xs" style={{ color: '#9CA3AF' }}>
           <span style={{ color: '#3FB950' }}>{projects.length}</span>
           {` project${projects.length === 1 ? '' : 's'} available`}
           {latestProject && (
@@ -161,7 +161,7 @@ const InterviewHubPage = () => {
             background: '#161B22',
             border: '1px dashed #30363D',
             borderRadius: 4,
-            color: '#6B7280',
+            color: '#9CA3AF',
           }}
         >
           30 topics · 9 languages · 1&ndash;20 questions
@@ -176,7 +176,7 @@ const InterviewHubPage = () => {
             background: '#161B22',
             border: '1px dashed #30363D',
             borderRadius: 4,
-            color: '#6B7280',
+            color: '#9CA3AF',
           }}
         >
           e.g. &quot;Behavioral round for a senior backend role at a fintech&quot;
@@ -291,7 +291,7 @@ const InterviewHubPage = () => {
                   <div className="text-sm font-medium truncate" style={{ color: '#F0F6FC' }}>
                     {inProgress.subtitle || inProgress.title || 'Resume interview'}
                   </div>
-                  <div className="font-mono text-2xs mt-0.5" style={{ color: '#6B7280' }}>
+                  <div className="font-mono text-2xs mt-0.5" style={{ color: '#9CA3AF' }}>
                     {inProgress.meta || 'in progress'}
                   </div>
                 </div>
@@ -441,7 +441,7 @@ const InterviewHubPage = () => {
           {/* Reserved / coming soon */}
           <div
             className="font-mono text-2xs uppercase tracking-wide mb-2"
-            style={{ color: '#6B7280' }}
+            style={{ color: '#9CA3AF' }}
           >
             coming soon
           </div>
@@ -451,7 +451,7 @@ const InterviewHubPage = () => {
             ))}
           </div>
 
-          <p className="font-mono text-2xs mt-4" style={{ color: '#484F58' }}>
+          <p className="font-mono text-2xs mt-4" style={{ color: '#8B949E' }}>
             {'// more modes ship progressively — Sprint 5+ activates them one at a time'}
           </p>
         </div>

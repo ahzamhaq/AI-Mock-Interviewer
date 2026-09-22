@@ -8,7 +8,7 @@ import React from 'react';
 const ArchitectureSummary = ({ text }) => {
   if (!text) {
     return (
-      <p className="text-xs" style={{ color: '#6B7280' }}>
+      <p className="text-xs" style={{ color: '#9CA3AF' }}>
         No architecture summary was produced for this repository.
       </p>
     );

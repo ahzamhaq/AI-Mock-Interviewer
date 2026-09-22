@@ -122,7 +122,7 @@ const ChatInput = React.forwardRef(({
             minHeight: MIN_HEIGHT,
             maxHeight: MAX_HEIGHT,
             background: '#0D1117',
-            color: isDisabled ? '#6B7280' : '#F0F6FC',
+            color: isDisabled ? '#9CA3AF' : '#F0F6FC',
             cursor: isDisabled ? 'not-allowed' : 'text',
             lineHeight: 1.5,
           }}
@@ -145,7 +145,7 @@ const ChatInput = React.forwardRef(({
       </div>
       <div
         className="flex items-center justify-between mt-2 font-mono text-2xs"
-        style={{ color: '#484F58' }}
+        style={{ color: '#8B949E' }}
       >
         <span>
           {disabled
@@ -154,7 +154,7 @@ const ChatInput = React.forwardRef(({
         </span>
         <span
           style={{
-            color: overLimit ? '#F85149' : nearLimit ? '#D29922' : '#484F58',
+            color: overLimit ? '#F85149' : nearLimit ? '#D29922' : '#8B949E',
           }}
           aria-live="polite"
         >

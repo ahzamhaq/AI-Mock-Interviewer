@@ -34,7 +34,7 @@ const TemplateCard = ({ template, onClick }) => {
       }}
       onMouseEnter={(e) => {
         e.currentTarget.style.background = '#161B22';
-        e.currentTarget.style.borderColor = '#484F58';
+        e.currentTarget.style.borderColor = '#8B949E';
       }}
       onMouseLeave={(e) => {
         e.currentTarget.style.background = '#0D1117';
@@ -56,7 +56,7 @@ const TemplateCard = ({ template, onClick }) => {
         </div>
         <span
           className="inline-flex items-center gap-1 font-mono text-2xs"
-          style={{ color: '#6B7280' }}
+          style={{ color: '#9CA3AF' }}
         >
           <Clock size={9} /> {estMinutes}m
         </span>

@@ -24,7 +24,7 @@ export const PanelHeader = ({ icon: Icon, label, action }) => (
     style={{ borderBottom: '1px solid #21262D', background: '#161B22' }}
   >
     <div className="flex items-center gap-1.5">
-      {Icon && <Icon size={12} style={{ color: '#6B7280' }} />}
+      {Icon && <Icon size={12} style={{ color: '#9CA3AF' }} />}
       <span className="font-mono text-2xs uppercase tracking-wide" style={{ color: '#9CA3AF' }}>
         {label}
       </span>

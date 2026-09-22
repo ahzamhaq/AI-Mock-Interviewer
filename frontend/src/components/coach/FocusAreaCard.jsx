@@ -68,7 +68,7 @@ const FocusAreaCard = ({ item, dense = false }) => {
             {typeof item?.estimatedMinutes === 'number' && (
               <span
                 className="inline-flex items-center gap-1 font-mono text-2xs"
-                style={{ color: '#6B7280' }}
+                style={{ color: '#9CA3AF' }}
               >
                 <Clock size={9} /> {item.estimatedMinutes}m
               </span>

@@ -40,19 +40,19 @@ const ProjectPlaceholderCard = ({
           borderRadius: 6,
         }}
       >
-        <GitBranch size={13} style={{ color: '#484F58' }} />
+        <GitBranch size={13} style={{ color: '#8B949E' }} />
       </div>
-      <Lock size={11} style={{ color: '#484F58' }} />
+      <Lock size={11} style={{ color: '#8B949E' }} />
     </div>
 
     <div
       className="text-xs font-medium mb-1 truncate"
-      style={{ color: '#6B7280' }}
+      style={{ color: '#9CA3AF' }}
     >
       {title}
     </div>
 
-    <div className="flex items-center gap-2 font-mono text-2xs" style={{ color: '#484F58' }}>
+    <div className="flex items-center gap-2 font-mono text-2xs" style={{ color: '#8B949E' }}>
       <span
         className="inline-flex items-center gap-1 px-1.5 py-0.5"
         style={{
@@ -63,7 +63,7 @@ const ProjectPlaceholderCard = ({
       >
         <span
           className="w-1.5 h-1.5 rounded-full"
-          style={{ background: '#484F58' }}
+          style={{ background: '#8B949E' }}
         />
         {language}
       </span>

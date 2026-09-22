@@ -68,7 +68,7 @@ const SignupPage = () => {
 
         <div className="surface p-8">
           <h1 className="text-xl font-semibold mb-1" style={{ color: '#F0F6FC' }}>Create your account</h1>
-          <p className="text-sm mb-6" style={{ color: '#6B7280' }}>Start practicing interviews with AI — free forever</p>
+          <p className="text-sm mb-6" style={{ color: '#9CA3AF' }}>Start practicing interviews with AI — free forever</p>
 
           {/* Google Signup */}
           <div className="mb-5 flex justify-center">
@@ -85,7 +85,7 @@ const SignupPage = () => {
 
           <div className="flex items-center gap-3 mb-5">
             <div className="flex-1 h-px" style={{ background: '#30363D' }} />
-            <span className="text-xs" style={{ color: '#484F58' }}>or sign up with email</span>
+            <span className="text-xs" style={{ color: '#8B949E' }}>or sign up with email</span>
             <div className="flex-1 h-px" style={{ background: '#30363D' }} />
           </div>
 
@@ -94,7 +94,7 @@ const SignupPage = () => {
               <div>
                 <label className="block text-xs font-medium mb-1.5" style={{ color: '#9CA3AF' }}>Full Name</label>
                 <div className="relative">
-                  <User size={14} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: '#484F58' }} />
+                  <User size={14} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: '#8B949E' }} />
                   <input type="text" placeholder="Aarav Sharma" className="input-field" style={{ paddingLeft: 36 }}
                     value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} required />
                 </div>
@@ -103,7 +103,7 @@ const SignupPage = () => {
               <div>
                 <label className="block text-xs font-medium mb-1.5" style={{ color: '#9CA3AF' }}>Email</label>
                 <div className="relative">
-                  <Mail size={14} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: '#484F58' }} />
+                  <Mail size={14} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: '#8B949E' }} />
                   <input type="email" placeholder="you@example.com" className="input-field" style={{ paddingLeft: 36 }}
                     value={form.email} onChange={e => setForm(p => ({ ...p, email: e.target.value }))} required />
                 </div>
@@ -112,15 +112,15 @@ const SignupPage = () => {
               <div>
                 <label className="block text-xs font-medium mb-1.5" style={{ color: '#9CA3AF' }}>Password</label>
                 <div className="relative">
-                  <Lock size={14} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: '#484F58' }} />
+                  <Lock size={14} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: '#8B949E' }} />
                   <input type={showPassword ? 'text' : 'password'} placeholder="Min. 6 characters"
                     className="input-field" style={{ paddingLeft: 36, paddingRight: 40 }}
                     value={form.password} onChange={e => setForm(p => ({ ...p, password: e.target.value }))} required />
                   <button type="button" onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 transition-colors"
-                    style={{ color: '#484F58', background: 'none', border: 'none', cursor: 'pointer' }}
+                    style={{ color: '#8B949E', background: 'none', border: 'none', cursor: 'pointer' }}
                     onMouseEnter={e => e.currentTarget.style.color = '#9CA3AF'}
-                    onMouseLeave={e => e.currentTarget.style.color = '#484F58'}>
+                    onMouseLeave={e => e.currentTarget.style.color = '#8B949E'}>
                     {showPassword ? <EyeOff size={14} /> : <Eye size={14} />}
                   </button>
                 </div>
@@ -175,7 +175,7 @@ const SignupPage = () => {
             </motion.button>
           </form>
 
-          <p className="text-center text-xs mt-5" style={{ color: '#6B7280' }}>
+          <p className="text-center text-xs mt-5" style={{ color: '#9CA3AF' }}>
             Already have an account?{' '}
             <Link
               to="/login"

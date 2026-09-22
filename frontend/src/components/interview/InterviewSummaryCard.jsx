@@ -40,7 +40,7 @@ const InterviewSummaryCard = ({ config = {}, dense = false }) => {
       {!dense && (
         <div
           className="font-mono text-2xs uppercase tracking-wide mb-3"
-          style={{ color: '#6B7280' }}
+          style={{ color: '#9CA3AF' }}
         >
           Summary
         </div>
@@ -52,7 +52,7 @@ const InterviewSummaryCard = ({ config = {}, dense = false }) => {
             <div className="min-w-0">
               <dt
                 className="font-mono text-2xs uppercase tracking-wide"
-                style={{ color: '#6B7280' }}
+                style={{ color: '#9CA3AF' }}
               >
                 {label}
               </dt>
