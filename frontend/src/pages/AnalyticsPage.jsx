@@ -142,7 +142,7 @@ const AnalyticsPage = () => {
             animate={{ rotate: 360 }}
             transition={{ duration: 0.7, repeat: Infinity, ease: 'linear' }}
           />
-          <span className="font-mono text-xs" style={{ color: '#9CA3AF' }}>Loading diagnostics…</span>
+          <span className="font-mono text-xs" style={{ color: '#6B7280' }}>Loading diagnostics…</span>
         </main>
       </div>
     );
