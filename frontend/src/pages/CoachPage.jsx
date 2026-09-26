@@ -64,7 +64,7 @@ const CoachPage = () => {
                 {generatedAt && (
                   <span
                     className="inline-flex items-center gap-1 font-mono text-2xs"
-                    style={{ color: '#484F58' }}
+                    style={{ color: '#8B949E' }}
                   >
                     <Sparkles size={9} /> {roadmap?.cached ? 'cached · ' : ''}
                     updated {formatDistanceToNow(generatedAt, { addSuffix: true })}
@@ -88,8 +88,8 @@ const CoachPage = () => {
               className="flex items-center justify-center py-16"
               style={{ background: '#161B22', border: '1px solid #30363D', borderRadius: 6 }}
             >
-              <Loader2 size={16} className="animate-spin" style={{ color: '#6B7280' }} />
-              <span className="font-mono text-2xs ml-2" style={{ color: '#6B7280' }}>
+              <Loader2 size={16} className="animate-spin" style={{ color: '#9CA3AF' }} />
+              <span className="font-mono text-2xs ml-2" style={{ color: '#9CA3AF' }}>
                 composing your roadmap…
               </span>
             </div>
@@ -139,7 +139,7 @@ const CoachPage = () => {
 
           <p
             className="font-mono text-2xs mt-4"
-            style={{ color: '#484F58' }}
+            style={{ color: '#8B949E' }}
           >
             {'// roadmap regenerates every 24h · refresh anytime'}
           </p>

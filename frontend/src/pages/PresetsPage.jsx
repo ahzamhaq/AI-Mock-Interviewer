@@ -139,7 +139,7 @@ const PresetsPage = () => {
               className="flex items-center justify-center py-16"
               style={{ background: '#161B22', border: '1px solid #30363D', borderRadius: 6 }}
             >
-              <Loader2 size={16} className="animate-spin" style={{ color: '#6B7280' }} />
+              <Loader2 size={16} className="animate-spin" style={{ color: '#9CA3AF' }} />
             </div>
           )}
 
@@ -205,7 +205,7 @@ const PresetsPage = () => {
                           {preset.name}
                         </div>
                       )}
-                      <div className="font-mono text-2xs mt-0.5 truncate" style={{ color: '#6B7280' }}>
+                      <div className="font-mono text-2xs mt-0.5 truncate" style={{ color: '#9CA3AF' }}>
                         {(p.role || '').replace(/_/g, ' ')} · {p.interviewType} · {p.difficulty}
                         {preset.updatedAt && (
                           <>
@@ -277,7 +277,7 @@ const PresetsPage = () => {
             </div>
           )}
 
-          <p className="font-mono text-2xs mt-4" style={{ color: '#484F58' }}>
+          <p className="font-mono text-2xs mt-4" style={{ color: '#8B949E' }}>
             {'// presets and templates both produce the same POST /interviews payload'}
           </p>
         </div>

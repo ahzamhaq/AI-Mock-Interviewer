@@ -45,7 +45,7 @@ const CircularScore = ({ score, max = 10, label, size = 120 }) => {
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
           <span className="text-2xl font-bold" style={{ color: '#F0F6FC' }}>{score}</span>
-          <span className="text-xs" style={{ color: '#6B7280' }}>/{max}</span>
+          <span className="text-xs" style={{ color: '#9CA3AF' }}>/{max}</span>
         </div>
       </div>
       <span className="text-xs text-center" style={{ color: '#9CA3AF' }}>{label}</span>
@@ -70,7 +70,7 @@ const QuestionReview = ({ question, index, onRetry, retrying, retryingIndex }) =
         <div
           className="w-10 h-10 rounded-md flex items-center justify-center flex-shrink-0 font-bold text-sm"
           style={question.skipped
-            ? { background: '#21262D', color: '#6B7280' }
+            ? { background: '#21262D', color: '#9CA3AF' }
             : fb?.score >= 7
               ? { background: 'rgba(63,185,80,0.15)', color: '#3FB950' }
               : { background: 'rgba(248,81,73,0.15)', color: '#F85149' }}
@@ -79,13 +79,13 @@ const QuestionReview = ({ question, index, onRetry, retrying, retryingIndex }) =
         </div>
         <div className="flex-1 min-w-0">
           <p className="font-medium text-sm truncate" style={{ color: '#F0F6FC' }}>{question.questionText}</p>
-          <p className="text-xs mt-0.5" style={{ color: '#6B7280' }}>
+          <p className="text-xs mt-0.5" style={{ color: '#9CA3AF' }}>
             {question.skipped ? 'Skipped' : `Score: ${fb?.score || 0}/10`}
             {question.voiceMetrics?.wordsPerMinute > 0 && ` • ${question.voiceMetrics.wordsPerMinute} WPM`}
             {question.voiceMetrics?.fillerWordCount > 0 && ` • ${question.voiceMetrics.fillerWordCount} filler words`}
           </p>
         </div>
-        {expanded ? <ChevronUp size={16} style={{ color: '#6B7280' }} /> : <ChevronDown size={16} style={{ color: '#6B7280' }} />}
+        {expanded ? <ChevronUp size={16} style={{ color: '#9CA3AF' }} /> : <ChevronDown size={16} style={{ color: '#9CA3AF' }} />}
       </button>
 
       {expanded && !question.skipped && (
@@ -97,7 +97,7 @@ const QuestionReview = ({ question, index, onRetry, retrying, retryingIndex }) =
           <div className="p-5 space-y-4">
             {question.userAnswer && (
               <div>
-                <p className="text-xs font-medium mb-2 flex items-center gap-1" style={{ color: '#6B7280' }}><MessageSquare size={12} /> YOUR ANSWER</p>
+                <p className="text-xs font-medium mb-2 flex items-center gap-1" style={{ color: '#9CA3AF' }}><MessageSquare size={12} /> YOUR ANSWER</p>
                 <p className="text-sm rounded-md p-3 whitespace-pre-line" style={{ color: '#9CA3AF', background: '#161B22' }}>{question.userAnswer}</p>
               </div>
             )}
@@ -108,8 +108,8 @@ const QuestionReview = ({ question, index, onRetry, retrying, retryingIndex }) =
               && question.transcript.trim()
               && question.transcript.trim() !== (question.userAnswer || '').trim() && (
               <div>
-                <p className="text-xs font-medium mb-2" style={{ color: '#6B7280' }}>RAW TRANSCRIPT</p>
-                <p className="font-mono text-xs rounded-md p-3 whitespace-pre-line" style={{ color: '#6B7280', background: '#161B22' }}>
+                <p className="text-xs font-medium mb-2" style={{ color: '#9CA3AF' }}>RAW TRANSCRIPT</p>
+                <p className="font-mono text-xs rounded-md p-3 whitespace-pre-line" style={{ color: '#9CA3AF', background: '#161B22' }}>
                   {question.transcript}
                 </p>
               </div>
@@ -147,14 +147,14 @@ const QuestionReview = ({ question, index, onRetry, retrying, retryingIndex }) =
             {/* Voice metrics */}
             {question.voiceMetrics?.wordsPerMinute > 0 && (
               <div className="flex gap-4 text-xs">
-                <span style={{ color: '#6B7280' }}>
+                <span style={{ color: '#9CA3AF' }}>
                   Speed: <span style={{
                     color: question.voiceMetrics.speakingPace === 'ideal' ? '#3FB950' :
                       question.voiceMetrics.speakingPace === 'too_fast' ? '#F85149' : '#D29922',
                   }}>{question.voiceMetrics.wordsPerMinute} WPM ({question.voiceMetrics.speakingPace?.replace('_', ' ')})</span>
                 </span>
                 {question.voiceMetrics.fillerWordCount > 0 && (
-                  <span style={{ color: '#6B7280' }}>
+                  <span style={{ color: '#9CA3AF' }}>
                     Fillers: <span style={{ color: '#D29922' }}>{question.voiceMetrics.fillerWordCount} ({question.voiceMetrics.fillerWords?.join(', ')})</span>
                   </span>
                 )}
@@ -352,7 +352,7 @@ const ResultsPage = () => {
             <ResponsiveContainer width="100%" height={200}>
               <RadarChart data={radarData}>
                 <PolarGrid stroke="#21262D" />
-                <PolarAngleAxis dataKey="subject" tick={{ fill: '#6B7280', fontSize: 10 }} />
+                <PolarAngleAxis dataKey="subject" tick={{ fill: '#9CA3AF', fontSize: 10 }} />
                 <Radar name="Score" dataKey="A" stroke="#58A6FF" fill="#58A6FF" fillOpacity={0.2} strokeWidth={2} />
               </RadarChart>
             </ResponsiveContainer>
@@ -370,7 +370,7 @@ const ResultsPage = () => {
               {results.averageWPM > 0 && (
                 <div className="rounded-md p-4 text-center" style={{ background: '#161B22' }}>
                   <p className="text-2xl font-bold" style={{ color: '#F0F6FC' }}>{results.averageWPM}</p>
-                  <p className="text-xs mt-1" style={{ color: '#6B7280' }}>Words/min</p>
+                  <p className="text-xs mt-1" style={{ color: '#9CA3AF' }}>Words/min</p>
                   <p className="text-xs mt-1" style={{ color: results.averageWPM >= 100 && results.averageWPM <= 180 ? '#3FB950' : '#D29922' }}>
                     {results.averageWPM < 100 ? 'Too slow' : results.averageWPM > 180 ? 'Too fast' : 'Ideal pace'}
                   </p>
@@ -380,12 +380,12 @@ const ResultsPage = () => {
                 <p className="text-2xl font-bold" style={{ color: results.totalFillerWords === 0 ? '#3FB950' : results.totalFillerWords < 5 ? '#D29922' : '#F85149' }}>
                   {results.totalFillerWords}
                 </p>
-                <p className="text-xs mt-1" style={{ color: '#6B7280' }}>Filler Words</p>
-                <p className="text-xs mt-1" style={{ color: '#484F58' }}>{results.totalFillerWords === 0 ? 'Perfect!' : 'Reduce these'}</p>
+                <p className="text-xs mt-1" style={{ color: '#9CA3AF' }}>Filler Words</p>
+                <p className="text-xs mt-1" style={{ color: '#8B949E' }}>{results.totalFillerWords === 0 ? 'Perfect!' : 'Reduce these'}</p>
               </div>
               <div className="rounded-md p-4 text-center" style={{ background: '#161B22' }}>
                 <p className="text-2xl font-bold" style={{ color: '#F0F6FC' }}>{results.confidenceScore}%</p>
-                <p className="text-xs mt-1" style={{ color: '#6B7280' }}>Confidence</p>
+                <p className="text-xs mt-1" style={{ color: '#9CA3AF' }}>Confidence</p>
               </div>
             </div>
           </motion.div>

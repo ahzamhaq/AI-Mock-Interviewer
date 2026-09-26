@@ -30,10 +30,10 @@ const StatTile = ({ icon: Icon, label, value, sub, color = '#F0F6FC' }) => (
     style={{ background: '#0D1117' }}
   >
     <div className="flex items-center gap-1.5 mb-1">
-      {Icon && <Icon size={11} style={{ color: '#6B7280' }} />}
+      {Icon && <Icon size={11} style={{ color: '#9CA3AF' }} />}
       <span
         className="font-mono text-2xs uppercase tracking-wide"
-        style={{ color: '#484F58' }}
+        style={{ color: '#8B949E' }}
       >
         {label}
       </span>
@@ -43,7 +43,7 @@ const StatTile = ({ icon: Icon, label, value, sub, color = '#F0F6FC' }) => (
         {value}
       </span>
       {sub && (
-        <span className="font-mono text-2xs" style={{ color: '#6B7280' }}>
+        <span className="font-mono text-2xs" style={{ color: '#9CA3AF' }}>
           {sub}
         </span>
       )}
@@ -90,7 +90,7 @@ const ProgressTab = ({ user }) => {
           label="streak"
           value={streak}
           sub="days"
-          color={streak > 0 ? '#D29922' : '#6B7280'}
+          color={streak > 0 ? '#D29922' : '#9CA3AF'}
         />
         <StatTile
           icon={Trophy}
@@ -110,7 +110,7 @@ const ProgressTab = ({ user }) => {
           label="last session"
           value={lastInterviewDate ? formatDistanceToNow(lastInterviewDate, { addSuffix: false }) : '—'}
           sub={lastInterviewDate ? 'ago' : ''}
-          color={lastInterviewDate ? '#F0F6FC' : '#6B7280'}
+          color={lastInterviewDate ? '#F0F6FC' : '#9CA3AF'}
         />
       </div>
 
@@ -120,8 +120,8 @@ const ProgressTab = ({ user }) => {
           className="flex items-center justify-center py-10 rounded-xl"
           style={{ background: '#161B22', border: '1px solid #30363D' }}
         >
-          <Loader2 size={16} className="animate-spin" style={{ color: '#6B7280' }} />
-          <span className="font-mono text-2xs ml-2" style={{ color: '#6B7280' }}>
+          <Loader2 size={16} className="animate-spin" style={{ color: '#9CA3AF' }} />
+          <span className="font-mono text-2xs ml-2" style={{ color: '#9CA3AF' }}>
             loading progress…
           </span>
         </div>
@@ -149,7 +149,7 @@ const ProgressTab = ({ user }) => {
           >
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-1.5">
-                <TrendingUp size={12} style={{ color: '#6B7280' }} />
+                <TrendingUp size={12} style={{ color: '#9CA3AF' }} />
                 <span
                   className="font-mono text-2xs uppercase tracking-wide"
                   style={{ color: '#9CA3AF' }}
@@ -157,7 +157,7 @@ const ProgressTab = ({ user }) => {
                   skill radar
                 </span>
               </div>
-              <span className="font-mono text-2xs" style={{ color: '#484F58' }}>
+              <span className="font-mono text-2xs" style={{ color: '#8B949E' }}>
                 last {WINDOW_DAYS} days
               </span>
             </div>
@@ -176,7 +176,7 @@ const ProgressTab = ({ user }) => {
               >
                 weakest topics
               </span>
-              <span className="font-mono text-2xs" style={{ color: '#484F58' }}>
+              <span className="font-mono text-2xs" style={{ color: '#8B949E' }}>
                 where to invest
               </span>
             </div>
@@ -196,7 +196,7 @@ const ProgressTab = ({ user }) => {
                 >
                   average by question type
                 </span>
-                <span className="font-mono text-2xs" style={{ color: '#484F58' }}>
+                <span className="font-mono text-2xs" style={{ color: '#8B949E' }}>
                   {typeAverages.reduce((s, t) => s + t.count, 0)} answered
                 </span>
               </div>
@@ -213,7 +213,7 @@ const ProgressTab = ({ user }) => {
                   >
                     <div
                       className="font-mono text-2xs uppercase tracking-wide mb-1 truncate"
-                      style={{ color: '#6B7280' }}
+                      style={{ color: '#9CA3AF' }}
                     >
                       {t.type.replace(/_/g, ' ')}
                     </div>
@@ -228,11 +228,11 @@ const ProgressTab = ({ user }) => {
                       >
                         {Number(t.avgScore).toFixed(1)}
                       </span>
-                      <span className="font-mono text-2xs" style={{ color: '#6B7280' }}>
+                      <span className="font-mono text-2xs" style={{ color: '#9CA3AF' }}>
                         /10
                       </span>
                     </div>
-                    <div className="font-mono text-2xs mt-0.5" style={{ color: '#484F58' }}>
+                    <div className="font-mono text-2xs mt-0.5" style={{ color: '#8B949E' }}>
                       {t.count} answers
                     </div>
                   </div>
@@ -246,7 +246,7 @@ const ProgressTab = ({ user }) => {
       {!loading && !error && lastInterviewDate && (
         <p
           className="font-mono text-2xs mt-1"
-          style={{ color: '#484F58' }}
+          style={{ color: '#8B949E' }}
         >
           {'// last session '}{format(lastInterviewDate, 'dd MMM yyyy')}
         </p>

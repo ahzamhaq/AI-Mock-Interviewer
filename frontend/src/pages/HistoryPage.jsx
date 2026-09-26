@@ -8,7 +8,7 @@ import InterviewOriginCard from '../components/interview/InterviewOriginCard';
 import { format, formatDistanceToNow } from 'date-fns';
 
 const SCORE_COLOR = (s) => {
-  if (!s && s !== 0) return '#6B7280';
+  if (!s && s !== 0) return '#9CA3AF';
   if (s >= 8) return '#3FB950';
   if (s >= 6) return '#D29922';
   return '#F85149';
@@ -43,12 +43,12 @@ const HistoryPage = () => {
           style={{ height: 40, borderBottom: '1px solid #21262D', background: '#161B22' }}
         >
           <div className="flex items-center gap-2">
-            <GitCommit size={12} style={{ color: '#6B7280' }} />
+            <GitCommit size={12} style={{ color: '#9CA3AF' }} />
             <span className="font-mono text-2xs uppercase tracking-wide" style={{ color: '#9CA3AF' }}>
               session history
             </span>
             {!loading && (
-              <span className="font-mono text-2xs" style={{ color: '#484F58' }}>
+              <span className="font-mono text-2xs" style={{ color: '#8B949E' }}>
                 · {pagination.total || 0} completed
               </span>
             )}
@@ -78,7 +78,7 @@ const HistoryPage = () => {
             >
               <Mic size={28} style={{ color: '#30363D' }} className="mb-4" />
               <p className="text-sm font-medium mb-1" style={{ color: '#F0F6FC' }}>No sessions yet</p>
-              <p className="text-xs mb-5" style={{ color: '#6B7280' }}>
+              <p className="text-xs mb-5" style={{ color: '#9CA3AF' }}>
                 Complete your first interview to see history here
               </p>
               <button
@@ -132,12 +132,12 @@ const HistoryPage = () => {
                         {iv.title}
                       </div>
                       <div className="flex items-center gap-3 mt-0.5 flex-wrap">
-                        <span className="font-mono text-2xs flex items-center gap-1" style={{ color: '#484F58' }}>
+                        <span className="font-mono text-2xs flex items-center gap-1" style={{ color: '#8B949E' }}>
                           <Calendar size={10} />
                           {format(new Date(iv.completedAt), 'dd MMM yyyy')}
                         </span>
                         {iv.duration != null && (
-                          <span className="font-mono text-2xs flex items-center gap-1" style={{ color: '#484F58' }}>
+                          <span className="font-mono text-2xs flex items-center gap-1" style={{ color: '#8B949E' }}>
                             <Clock size={10} />
                             {Math.floor(iv.duration / 60)}m {iv.duration % 60}s
                           </span>
@@ -157,7 +157,7 @@ const HistoryPage = () => {
                         {iv.config?.interviewType && iv.mode !== 'project' && (
                           <span
                             className="font-mono text-2xs px-1.5 py-0.5 rounded"
-                            style={{ background: '#21262D', color: '#6B7280', border: '1px solid #30363D' }}
+                            style={{ background: '#21262D', color: '#9CA3AF', border: '1px solid #30363D' }}
                           >
                             {iv.config.interviewType}
                           </span>
@@ -165,7 +165,7 @@ const HistoryPage = () => {
                         {iv.mode === 'project' && iv.config?.projectMode?.subMode && (
                           <span
                             className="font-mono text-2xs px-1.5 py-0.5 rounded"
-                            style={{ background: '#21262D', color: '#6B7280', border: '1px solid #30363D' }}
+                            style={{ background: '#21262D', color: '#9CA3AF', border: '1px solid #30363D' }}
                           >
                             {iv.config.projectMode.subMode.replace('_', ' ')}
                           </span>
@@ -181,14 +181,14 @@ const HistoryPage = () => {
                           />
                         )}
                         {iv.config?.role && (
-                          <span className="font-mono text-2xs" style={{ color: '#6B7280' }}>
+                          <span className="font-mono text-2xs" style={{ color: '#9CA3AF' }}>
                             {iv.config.role.replace(/_/g, ' ')}
                           </span>
                         )}
                       </div>
                     </div>
 
-                    <span className="font-mono text-2xs flex-shrink-0" style={{ color: '#484F58' }}>
+                    <span className="font-mono text-2xs flex-shrink-0" style={{ color: '#8B949E' }}>
                       {formatDistanceToNow(new Date(iv.completedAt), { addSuffix: true })}
                     </span>
 
@@ -209,7 +209,7 @@ const HistoryPage = () => {
                         width: 32, height: 32, borderRadius: 4, border: '1px solid',
                         borderColor: page === i + 1 ? '#58A6FF' : '#30363D',
                         background: page === i + 1 ? 'rgba(88,166,255,0.1)' : 'transparent',
-                        color: page === i + 1 ? '#58A6FF' : '#6B7280',
+                        color: page === i + 1 ? '#58A6FF' : '#9CA3AF',
                         cursor: 'pointer',
                       }}
                     >

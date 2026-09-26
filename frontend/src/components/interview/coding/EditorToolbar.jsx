@@ -42,7 +42,7 @@ const EditorToolbar = ({
     <div className="flex items-center gap-2 min-w-0">
       <span
         className="font-mono text-2xs uppercase tracking-wide flex-shrink-0"
-        style={{ color: '#6B7280' }}
+        style={{ color: '#9CA3AF' }}
       >
         Language
       </span>
@@ -92,7 +92,7 @@ const ToolbarButton = ({ icon: Icon, label, onClick, disabled = false, title, to
   const colors = tone === 'warning'
     ? { fg: '#D29922', hover: 'rgba(210,153,34,0.1)' }
     : tone === 'disabled'
-      ? { fg: '#484F58', hover: 'transparent' }
+      ? { fg: '#8B949E', hover: 'transparent' }
       : tone === 'success'
         ? { fg: '#3FB950', hover: 'rgba(63,185,80,0.1)' }
         : tone === 'accent'

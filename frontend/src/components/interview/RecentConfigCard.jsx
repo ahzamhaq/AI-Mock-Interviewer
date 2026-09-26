@@ -40,7 +40,7 @@ const RecentConfigCard = ({ variant = 'recent', title, subtitle, createdAt, onCl
       }}
       onMouseEnter={(e) => {
         e.currentTarget.style.background = '#161B22';
-        e.currentTarget.style.borderColor = '#484F58';
+        e.currentTarget.style.borderColor = '#8B949E';
       }}
       onMouseLeave={(e) => {
         e.currentTarget.style.background = '#0D1117';
@@ -66,7 +66,7 @@ const RecentConfigCard = ({ variant = 'recent', title, subtitle, createdAt, onCl
         </div>
         <div
           className="font-mono text-2xs mt-0.5 truncate"
-          style={{ color: '#6B7280' }}
+          style={{ color: '#9CA3AF' }}
         >
           {subtitle}
           {createdAt && (

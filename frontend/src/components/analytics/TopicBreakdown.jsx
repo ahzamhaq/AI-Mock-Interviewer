@@ -15,7 +15,7 @@ import React from 'react';
  *   emptyText — copy shown when items is empty
  */
 const SCORE_COLOR = (s) => {
-  if (!s && s !== 0) return '#6B7280';
+  if (!s && s !== 0) return '#9CA3AF';
   if (s >= 8) return '#3FB950';
   if (s >= 6) return '#D29922';
   return '#F85149';
@@ -24,7 +24,7 @@ const SCORE_COLOR = (s) => {
 const TopicBreakdown = ({ items = [], emptyText = 'No weak topics tracked yet.' }) => {
   if (!items.length) {
     return (
-      <p className="text-xs" style={{ color: '#6B7280' }}>
+      <p className="text-xs" style={{ color: '#9CA3AF' }}>
         {emptyText}
       </p>
     );
@@ -54,7 +54,7 @@ const TopicBreakdown = ({ items = [], emptyText = 'No weak topics tracked yet.' 
             />
           </div>
           {typeof wt.attempts === 'number' && (
-            <div className="font-mono text-2xs mt-1" style={{ color: '#484F58' }}>
+            <div className="font-mono text-2xs mt-1" style={{ color: '#8B949E' }}>
               {wt.attempts} attempts
             </div>
           )}

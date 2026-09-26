@@ -119,7 +119,7 @@ const ChatMessage = ({
           {when && (
             <span
               className="font-mono text-2xs"
-              style={{ color: '#484F58' }}
+              style={{ color: '#8B949E' }}
               title={absolute}
             >
               {relative}
@@ -131,14 +131,14 @@ const ChatMessage = ({
             aria-label={isUser ? 'Copy your message' : 'Copy response'}
             className="inline-flex items-center gap-1 font-mono text-2xs transition-colors"
             style={{
-              color: copied ? '#3FB950' : '#6B7280',
+              color: copied ? '#3FB950' : '#9CA3AF',
               background: 'transparent',
               border: 'none',
               cursor: 'pointer',
               padding: '2px 4px',
             }}
             onMouseEnter={(e) => { if (!copied) e.currentTarget.style.color = '#F0F6FC'; }}
-            onMouseLeave={(e) => { if (!copied) e.currentTarget.style.color = '#6B7280'; }}
+            onMouseLeave={(e) => { if (!copied) e.currentTarget.style.color = '#9CA3AF'; }}
           >
             {copied ? <Check size={10} /> : <Copy size={10} />}
             {copied ? 'Copied' : isUser ? 'Copy' : 'Copy response'}
@@ -151,14 +151,14 @@ const ChatMessage = ({
               aria-label="Regenerate response"
               className="inline-flex items-center gap-1 font-mono text-2xs transition-colors"
               style={{
-                color: '#6B7280',
+                color: '#9CA3AF',
                 background: 'transparent',
                 border: 'none',
                 cursor: regenerating ? 'progress' : 'pointer',
                 padding: '2px 4px',
               }}
               onMouseEnter={(e) => { if (!regenerating) e.currentTarget.style.color = '#F0F6FC'; }}
-              onMouseLeave={(e) => { if (!regenerating) e.currentTarget.style.color = '#6B7280'; }}
+              onMouseLeave={(e) => { if (!regenerating) e.currentTarget.style.color = '#9CA3AF'; }}
             >
               {regenerating
                 ? <Loader2 size={10} className="animate-spin" />

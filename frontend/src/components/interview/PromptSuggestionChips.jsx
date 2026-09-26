@@ -38,7 +38,7 @@ const PromptSuggestionChips = ({ suggestions = [], onSelect, disabled = false })
           onMouseEnter={(e) => {
             if (disabled) return;
             e.currentTarget.style.background = '#161B22';
-            e.currentTarget.style.borderColor = '#484F58';
+            e.currentTarget.style.borderColor = '#8B949E';
             e.currentTarget.style.color = '#F0F6FC';
           }}
           onMouseLeave={(e) => {

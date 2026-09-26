@@ -28,7 +28,7 @@ const WorkspaceTabs = ({ tabs, activeId, onSelect }) => (
       const active = t.id === activeId;
       const baseClass = 'relative px-3 py-2 text-xs font-medium transition-colors flex-shrink-0 inline-flex items-center gap-1.5';
       const baseStyle = {
-        color: active ? '#F0F6FC' : t.disabled ? '#484F58' : '#9CA3AF',
+        color: active ? '#F0F6FC' : t.disabled ? '#8B949E' : '#9CA3AF',
         background: 'transparent',
         border: 'none',
         cursor: t.disabled ? 'not-allowed' : 'pointer',

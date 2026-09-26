@@ -20,7 +20,7 @@ const SkillRadar = ({ data = [], height = 220 }) => {
     return (
       <div
         className="flex items-center justify-center font-mono text-xs"
-        style={{ height, color: '#484F58' }}
+        style={{ height, color: '#8B949E' }}
       >
         {'// no data — complete sessions to populate'}
       </div>
@@ -42,7 +42,7 @@ const SkillRadar = ({ data = [], height = 220 }) => {
         />
         <PolarRadiusAxis
           domain={[0, domainMax]}
-          tick={{ fill: '#484F58', fontSize: 9, fontFamily: 'monospace' }}
+          tick={{ fill: '#8B949E', fontSize: 9, fontFamily: 'monospace' }}
           angle={90}
           tickCount={5}
         />

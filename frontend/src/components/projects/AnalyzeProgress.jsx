@@ -42,7 +42,7 @@ const AnalyzeProgress = () => {
           <li
             key={s.label}
             className="flex items-center gap-2 font-mono text-2xs"
-            style={{ color: done ? '#3FB950' : active ? '#F0F6FC' : '#484F58' }}
+            style={{ color: done ? '#3FB950' : active ? '#F0F6FC' : '#8B949E' }}
           >
             <span
               className="flex items-center justify-center flex-shrink-0"

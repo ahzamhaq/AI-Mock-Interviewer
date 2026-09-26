@@ -30,7 +30,7 @@ const EmptyState = ({ icon: Icon, title, description, action, compact = false })
           borderRadius: 6,
         }}
       >
-        <Icon size={compact ? 14 : 18} style={{ color: '#484F58' }} />
+        <Icon size={compact ? 14 : 18} style={{ color: '#8B949E' }} />
       </div>
     )}
     {title && (
@@ -44,7 +44,7 @@ const EmptyState = ({ icon: Icon, title, description, action, compact = false })
     {description && (
       <p
         className="text-xs leading-relaxed max-w-xs mb-3"
-        style={{ color: '#6B7280' }}
+        style={{ color: '#9CA3AF' }}
       >
         {description}
       </p>

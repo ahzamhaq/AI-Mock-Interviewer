@@ -313,7 +313,7 @@ const CommandPalette = () => {
               className="flex items-center gap-2 px-3 py-2.5"
               style={{ borderBottom: '1px solid #21262D' }}
             >
-              <Search size={14} style={{ color: '#6B7280' }} />
+              <Search size={14} style={{ color: '#9CA3AF' }} />
               <input
                 ref={inputRef}
                 type="text"
@@ -338,7 +338,7 @@ const CommandPalette = () => {
                 type="button"
                 onClick={closePalette}
                 className="p-1 rounded"
-                style={{ color: '#6B7280', background: 'transparent', border: 'none', cursor: 'pointer' }}
+                style={{ color: '#9CA3AF', background: 'transparent', border: 'none', cursor: 'pointer' }}
                 aria-label="Close"
               >
                 <X size={13} />
@@ -354,7 +354,7 @@ const CommandPalette = () => {
               style={{ maxHeight: 'min(60vh, 480px)' }}
             >
               {filtered.length === 0 ? (
-                <p className="px-4 py-10 text-center text-xs" style={{ color: '#6B7280' }}>
+                <p className="px-4 py-10 text-center text-xs" style={{ color: '#9CA3AF' }}>
                   {loaded ? 'No matches.' : 'Loading…'}
                 </p>
               ) : (
@@ -368,7 +368,7 @@ const CommandPalette = () => {
               style={{
                 background: '#0D1117',
                 borderTop: '1px solid #21262D',
-                color: '#484F58',
+                color: '#8B949E',
               }}
             >
               <span>↑↓ navigate · ↵ open · esc close</span>
@@ -396,7 +396,7 @@ const ResultsList = ({ filtered, cursor, setCursor, execute }) => {
             {showHeader && (
               <div
                 className="px-3 pt-3 pb-1 font-mono text-2xs uppercase tracking-wide"
-                style={{ color: '#6B7280' }}
+                style={{ color: '#9CA3AF' }}
               >
                 {it.group}
               </div>
@@ -430,7 +430,7 @@ const ResultsList = ({ filtered, cursor, setCursor, execute }) => {
                   {it.label}
                 </div>
                 {it.subtitle && (
-                  <div className="text-xs truncate" style={{ color: '#6B7280' }}>
+                  <div className="text-xs truncate" style={{ color: '#9CA3AF' }}>
                     {it.subtitle}
                   </div>
                 )}

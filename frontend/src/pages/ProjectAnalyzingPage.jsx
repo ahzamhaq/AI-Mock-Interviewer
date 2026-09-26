@@ -121,7 +121,7 @@ const ProjectAnalyzingPage = () => {
               {project?.metadata?.language && (
                 <span
                   className="inline-flex items-center gap-1 px-1.5 py-0.5 font-mono text-2xs"
-                  style={{ background: '#0D1117', border: '1px solid #30363D', borderRadius: 3, color: '#6B7280' }}
+                  style={{ background: '#0D1117', border: '1px solid #30363D', borderRadius: 3, color: '#9CA3AF' }}
                 >
                   <span className="w-1.5 h-1.5 rounded-full" style={{ background: '#58A6FF' }} />
                   {project.metadata.language}
@@ -166,7 +166,7 @@ const ProjectAnalyzingPage = () => {
             )}
           </div>
 
-          <p className="font-mono text-2xs mt-3" style={{ color: '#484F58' }}>
+          <p className="font-mono text-2xs mt-3" style={{ color: '#8B949E' }}>
             {'// analysis reads at most 40 files or 150 KB — quality over completeness'}
           </p>
         </div>

@@ -12,7 +12,7 @@ import { FileCode } from 'lucide-react';
 const KeyFilesList = ({ items = [] }) => {
   if (!items.length) {
     return (
-      <p className="text-xs" style={{ color: '#6B7280' }}>
+      <p className="text-xs" style={{ color: '#9CA3AF' }}>
         No key files identified.
       </p>
     );

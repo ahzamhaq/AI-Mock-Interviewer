@@ -54,7 +54,7 @@ const CodeBlock = ({ className = '', children }) => {
       >
         <span
           className="font-mono text-2xs uppercase tracking-wide"
-          style={{ color: '#6B7280' }}
+          style={{ color: '#9CA3AF' }}
         >
           {language}
         </span>

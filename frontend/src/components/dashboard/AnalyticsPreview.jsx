@@ -15,7 +15,7 @@ const ChartTooltip = ({ active, payload, label }) => {
       className="rounded px-2.5 py-1.5 font-mono text-2xs"
       style={{ background: '#1C2128', border: '1px solid #30363D' }}
     >
-      <div style={{ color: '#6B7280' }}>{label}</div>
+      <div style={{ color: '#9CA3AF' }}>{label}</div>
       <div className="font-bold" style={{ color: '#58A6FF' }}>{payload[0].value}/10</div>
     </div>
   );
@@ -54,15 +54,15 @@ const AnalyticsPreview = ({ scoreHistory }) => {
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="2 4" stroke="#21262D" vertical={false} />
-              <XAxis dataKey="date" tick={{ fill: '#484F58', fontSize: 10, fontFamily: 'monospace' }} axisLine={false} tickLine={false} />
-              <YAxis domain={[0, 10]} tick={{ fill: '#484F58', fontSize: 10, fontFamily: 'monospace' }} axisLine={false} tickLine={false} />
+              <XAxis dataKey="date" tick={{ fill: '#8B949E', fontSize: 10, fontFamily: 'monospace' }} axisLine={false} tickLine={false} />
+              <YAxis domain={[0, 10]} tick={{ fill: '#8B949E', fontSize: 10, fontFamily: 'monospace' }} axisLine={false} tickLine={false} />
               <Tooltip content={<ChartTooltip />} cursor={{ stroke: '#30363D', strokeDasharray: '2 2' }} />
-              <ReferenceLine y={7} stroke="#30363D" strokeDasharray="3 3" label={{ value: 'target', fill: '#484F58', fontSize: 9, position: 'right' }} />
+              <ReferenceLine y={7} stroke="#30363D" strokeDasharray="3 3" label={{ value: 'target', fill: '#8B949E', fontSize: 9, position: 'right' }} />
               <Area type="monotone" dataKey="Score" stroke="#58A6FF" strokeWidth={1.5} fill="url(#scoreFill)" dot={{ fill: '#58A6FF', r: 2.5, strokeWidth: 0 }} activeDot={{ r: 4, fill: '#7CBDFF' }} />
             </AreaChart>
           </ResponsiveContainer>
         ) : (
-          <div className="h-[220px] flex items-center justify-center font-mono text-xs" style={{ color: '#484F58' }}>
+          <div className="h-[220px] flex items-center justify-center font-mono text-xs" style={{ color: '#8B949E' }}>
             {'// no data — complete sessions to populate'}
           </div>
         )}

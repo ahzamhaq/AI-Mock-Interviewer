@@ -19,7 +19,7 @@ import AnalyticsPreview from '../components/dashboard/AnalyticsPreview';
 import EmptyState from '../components/common/EmptyState';
 
 const SCORE_COLOR = (s) => {
-  if (!s && s !== 0) return '#6B7280';
+  if (!s && s !== 0) return '#9CA3AF';
   if (s >= 8) return '#3FB950';
   if (s >= 6) return '#D29922';
   return '#F85149';
@@ -88,6 +88,14 @@ const DashboardPage = () => {
 
         <div className="max-w-[1600px] mx-auto px-3 sm:px-4 lg:px-6 py-4">
 
+          {/* ── Banner space reservation ──────────────────────────────
+              loadError/showOnboarding below are unknown until the
+              dashboard fetch resolves, so nothing occupies this spot
+              during loading — then a banner (or neither) can appear and
+              push PrimaryActions down (CLS). Reserving the same height
+              here, invisibly, while loading avoids that shift. */}
+          {loading && <div className="mb-4" style={{ height: 60 }} />}
+
           {/* ── Load error banner ─────────────────────────────────────
               Shown when the dashboard fetch fails outright, so a network
               hiccup doesn't silently read as "you have no history yet." */}
@@ -135,9 +143,9 @@ const DashboardPage = () => {
                 <button
                   onClick={dismissOnboarding}
                   className="flex-shrink-0 flex items-center justify-center transition-colors"
-                  style={{ width: 24, height: 24, color: '#6B7280', background: 'none', border: 'none', cursor: 'pointer' }}
+                  style={{ width: 24, height: 24, color: '#9CA3AF', background: 'none', border: 'none', cursor: 'pointer' }}
                   onMouseEnter={(e) => (e.currentTarget.style.color = '#9CA3AF')}
-                  onMouseLeave={(e) => (e.currentTarget.style.color = '#6B7280')}
+                  onMouseLeave={(e) => (e.currentTarget.style.color = '#9CA3AF')}
                   aria-label="Dismiss"
                   title="Dismiss"
                 >
@@ -182,7 +190,7 @@ const DashboardPage = () => {
                 <div className="p-3">
                   <div className="font-mono text-2xs mb-1" style={{ color: '#58A6FF' }}>{'// recommended'}</div>
                   <div className="text-sm font-medium mb-1" style={{ color: '#F0F6FC' }}>{suggestion.label}</div>
-                  <p className="text-xs leading-relaxed mb-3" style={{ color: '#6B7280' }}>{suggestion.reason}</p>
+                  <p className="text-xs leading-relaxed mb-3" style={{ color: '#9CA3AF' }}>{suggestion.reason}</p>
                   <button
                     onClick={() => navigate('/interviews')}
                     className="btn-accent w-full flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs"
@@ -226,7 +234,7 @@ const DashboardPage = () => {
                             style={{ width: `${(wt.avgScore / 10) * 100}%`, background: SCORE_COLOR(wt.avgScore) }}
                           />
                         </div>
-                        <div className="font-mono text-2xs mt-1" style={{ color: '#484F58' }}>
+                        <div className="font-mono text-2xs mt-1" style={{ color: '#8B949E' }}>
                           {wt.attempts} attempts
                         </div>
                       </div>
@@ -239,22 +247,22 @@ const DashboardPage = () => {
                 <PanelHeader icon={Activity} label="system" />
                 <div className="p-3 space-y-2 font-mono text-2xs">
                   <div className="flex items-center justify-between">
-                    <span style={{ color: '#6B7280' }}>AI</span>
+                    <span style={{ color: '#9CA3AF' }}>AI</span>
                     <span className="flex items-center gap-1.5" style={{ color: '#3FB950' }}>
                       <span className="w-1 h-1 rounded-full animate-pulse" style={{ background: '#3FB950' }} />
                       ready
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span style={{ color: '#6B7280' }}>memory</span>
+                    <span style={{ color: '#9CA3AF' }}>memory</span>
                     <span style={{ color: '#9CA3AF' }}>{totalSessions} indexed</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span style={{ color: '#6B7280' }}>weak topics</span>
+                    <span style={{ color: '#9CA3AF' }}>weak topics</span>
                     <span style={{ color: '#D29922' }}>{weakTopics.length} tracked</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span style={{ color: '#6B7280' }}>latency</span>
+                    <span style={{ color: '#9CA3AF' }}>latency</span>
                     <span style={{ color: '#3FB950' }}>~340ms</span>
                   </div>
                 </div>
@@ -285,7 +293,7 @@ const DashboardPage = () => {
                     >
                       <item.icon size={12} />
                       <span className="flex-1">{item.label}</span>
-                      <span className="font-mono text-2xs" style={{ color: '#484F58' }}>⌘{item.k}</span>
+                      <span className="font-mono text-2xs" style={{ color: '#8B949E' }}>⌘{item.k}</span>
                     </Link>
                   ))}
                 </div>
@@ -302,15 +310,15 @@ const DashboardPage = () => {
               { label: 'avg',      value: avgScore.toFixed(1),  sub: '/10',   color: SCORE_COLOR(avgScore) },
               { label: 'best',     value: bestScore.toFixed(1), sub: '/10',   color: '#D29922' },
               { label: 'sessions', value: totalSessions,        sub: 'total', color: '#F0F6FC' },
-              { label: 'streak',   value: streak,               sub: 'days',  color: streak > 0 ? '#D29922' : '#6B7280' },
+              { label: 'streak',   value: streak,               sub: 'days',  color: streak > 0 ? '#D29922' : '#9CA3AF' },
             ].map((m) => (
               <div key={m.label} className="px-3 py-2.5" style={{ background: '#0D1117' }}>
-                <div className="font-mono text-2xs uppercase tracking-wide mb-1" style={{ color: '#484F58' }}>
+                <div className="font-mono text-2xs uppercase tracking-wide mb-1" style={{ color: '#8B949E' }}>
                   {m.label}
                 </div>
                 <div className="flex items-baseline gap-1">
                   <span className="font-mono text-xl font-bold" style={{ color: m.color }}>{m.value}</span>
-                  <span className="font-mono text-2xs" style={{ color: '#6B7280' }}>{m.sub}</span>
+                  <span className="font-mono text-2xs" style={{ color: '#9CA3AF' }}>{m.sub}</span>
                 </div>
               </div>
             ))}

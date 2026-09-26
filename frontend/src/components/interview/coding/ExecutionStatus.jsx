@@ -14,7 +14,7 @@ import {
  */
 
 const STATUS_META = {
-  idle:                  { label: 'Idle',              color: '#6B7280', bg: 'rgba(107,114,128,0.1)',  border: 'rgba(107,114,128,0.3)',  Icon: MinusCircle,     spin: false },
+  idle:                  { label: 'Idle',              color: '#9CA3AF', bg: 'rgba(107,114,128,0.1)',  border: 'rgba(107,114,128,0.3)',  Icon: MinusCircle,     spin: false },
   running:               { label: 'Running…',          color: '#58A6FF', bg: 'rgba(88,166,255,0.1)',   border: 'rgba(88,166,255,0.3)',   Icon: Loader2,         spin: true  },
   queued:                { label: 'Queued…',           color: '#58A6FF', bg: 'rgba(88,166,255,0.1)',   border: 'rgba(88,166,255,0.3)',   Icon: Loader2,         spin: true  },
   success:               { label: 'Success',           color: '#3FB950', bg: 'rgba(63,185,80,0.1)',    border: 'rgba(63,185,80,0.3)',    Icon: CheckCircle,     spin: false },
@@ -26,7 +26,7 @@ const STATUS_META = {
   internal_error:        { label: 'Service Error',     color: '#F85149', bg: 'rgba(248,81,73,0.1)',    border: 'rgba(248,81,73,0.3)',    Icon: AlertCircle,     spin: false },
   config_error:          { label: 'Not Configured',    color: '#D29922', bg: 'rgba(210,153,34,0.1)',   border: 'rgba(210,153,34,0.3)',   Icon: AlertCircle,     spin: false },
   unsupported_language:  { label: 'Unsupported',       color: '#D29922', bg: 'rgba(210,153,34,0.1)',   border: 'rgba(210,153,34,0.3)',   Icon: AlertCircle,     spin: false },
-  empty_source:          { label: 'No Code',           color: '#6B7280', bg: 'rgba(107,114,128,0.1)',  border: 'rgba(107,114,128,0.3)',  Icon: MinusCircle,     spin: false },
+  empty_source:          { label: 'No Code',           color: '#9CA3AF', bg: 'rgba(107,114,128,0.1)',  border: 'rgba(107,114,128,0.3)',  Icon: MinusCircle,     spin: false },
   source_too_large:      { label: 'Source Too Large',  color: '#D29922', bg: 'rgba(210,153,34,0.1)',   border: 'rgba(210,153,34,0.3)',   Icon: AlertCircle,     spin: false },
 };
 

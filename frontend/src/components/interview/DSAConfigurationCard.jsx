@@ -61,7 +61,7 @@ const DSAConfigurationCard = ({ config, onChange }) => {
       <div className="mt-2">
         <label
           className="block font-mono text-2xs uppercase tracking-wide mb-1"
-          style={{ color: '#6B7280' }}
+          style={{ color: '#9CA3AF' }}
           htmlFor="dsa-custom-topic"
         >
           Or type any topic
@@ -85,7 +85,7 @@ const DSAConfigurationCard = ({ config, onChange }) => {
         <p
           id="dsa-custom-topic-help"
           className="font-mono text-2xs mt-1"
-          style={{ color: '#6B7280' }}
+          style={{ color: '#9CA3AF' }}
         >
           Freeform topics are supported. Interviewer will focus questions here.
         </p>
@@ -248,7 +248,7 @@ const SectionLabel = ({ icon: Icon, label, required, children }) => (
       </span>
     </div>
     {children && (
-      <p className="font-mono text-2xs" style={{ color: '#6B7280' }}>{children}</p>
+      <p className="font-mono text-2xs" style={{ color: '#9CA3AF' }}>{children}</p>
     )}
   </div>
 );

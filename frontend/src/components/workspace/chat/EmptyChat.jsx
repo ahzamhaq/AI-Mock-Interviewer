@@ -78,7 +78,7 @@ const EmptyChat = ({ onQuickStart }) => {
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.background = '#161B22';
-                    e.currentTarget.style.borderColor = '#484F58';
+                    e.currentTarget.style.borderColor = '#8B949E';
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.background = '#0D1117';

@@ -47,7 +47,7 @@ const ContinueWorking = ({ lastInterview }) => {
           <div className="text-xs font-medium truncate" style={{ color: '#F0F6FC' }}>
             {lastInterview.title}
           </div>
-          <div className="font-mono text-2xs mt-0.5" style={{ color: '#6B7280' }}>
+          <div className="font-mono text-2xs mt-0.5" style={{ color: '#9CA3AF' }}>
             {when}
             {lastInterview.config?.interviewType && (
               <>
@@ -57,7 +57,7 @@ const ContinueWorking = ({ lastInterview }) => {
             )}
           </div>
         </div>
-        <ChevronRight size={12} style={{ color: '#484F58' }} />
+        <ChevronRight size={12} style={{ color: '#8B949E' }} />
       </motion.button>
     </Panel>
   );

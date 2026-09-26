@@ -428,7 +428,7 @@ const InterviewReviewPage = () => {
             >
               <div
                 className="font-mono text-2xs uppercase tracking-wide mb-3"
-                style={{ color: '#6B7280' }}
+                style={{ color: '#9CA3AF' }}
               >
                 DSA Configuration
               </div>
@@ -680,7 +680,7 @@ const InterviewReviewPage = () => {
             defaultName={suggestedPresetName}
           />
 
-          <p className="font-mono text-2xs mt-4" style={{ color: '#484F58' }}>
+          <p className="font-mono text-2xs mt-4" style={{ color: '#8B949E' }}>
             {'// interview is created via the same endpoint as the guided wizard'}
           </p>
         </div>

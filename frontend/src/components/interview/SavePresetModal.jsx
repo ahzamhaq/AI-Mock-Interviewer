@@ -77,7 +77,7 @@ const SavePresetModal = ({ open, onClose, onSave, defaultName = '' }) => {
                 type="button"
                 onClick={onClose}
                 aria-label="Close"
-                style={{ background: 'transparent', border: 'none', color: '#6B7280', cursor: 'pointer' }}
+                style={{ background: 'transparent', border: 'none', color: '#9CA3AF', cursor: 'pointer' }}
               >
                 <X size={13} />
               </button>
@@ -89,7 +89,7 @@ const SavePresetModal = ({ open, onClose, onSave, defaultName = '' }) => {
 
             <label
               className="block font-mono text-2xs uppercase tracking-wide mb-1"
-              style={{ color: '#6B7280' }}
+              style={{ color: '#9CA3AF' }}
             >
               Preset name
             </label>

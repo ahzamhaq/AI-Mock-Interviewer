@@ -52,7 +52,7 @@ const LoginPage = () => {
         </Link>
 
         <h1 className="text-xl font-semibold mb-1" style={{ color: '#F0F6FC' }}>Sign in</h1>
-        <p className="text-sm mb-6" style={{ color: '#6B7280' }}>
+        <p className="text-sm mb-6" style={{ color: '#9CA3AF' }}>
           Continue your interview preparation
         </p>
 
@@ -72,7 +72,7 @@ const LoginPage = () => {
         {/* Divider */}
         <div className="flex items-center gap-3 mb-4">
           <div className="flex-1 h-px" style={{ background: '#30363D' }} />
-          <span className="text-xs" style={{ color: '#484F58' }}>or</span>
+          <span className="text-xs" style={{ color: '#8B949E' }}>or</span>
           <div className="flex-1 h-px" style={{ background: '#30363D' }} />
         </div>
 
@@ -83,7 +83,7 @@ const LoginPage = () => {
               Email address
             </label>
             <div className="relative">
-              <Mail size={14} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: '#484F58' }} />
+              <Mail size={14} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: '#8B949E' }} />
               <input
                 type="email"
                 placeholder="you@example.com"
@@ -101,7 +101,7 @@ const LoginPage = () => {
               Password
             </label>
             <div className="relative">
-              <Lock size={14} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: '#484F58' }} />
+              <Lock size={14} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: '#8B949E' }} />
               <input
                 type={showPassword ? 'text' : 'password'}
                 placeholder="••••••••"
@@ -115,9 +115,9 @@ const LoginPage = () => {
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-3 top-1/2 -translate-y-1/2 transition-colors"
-                style={{ color: '#484F58', background: 'none', border: 'none', cursor: 'pointer' }}
+                style={{ color: '#8B949E', background: 'none', border: 'none', cursor: 'pointer' }}
                 onMouseEnter={e => e.currentTarget.style.color = '#9CA3AF'}
-                onMouseLeave={e => e.currentTarget.style.color = '#484F58'}
+                onMouseLeave={e => e.currentTarget.style.color = '#8B949E'}
               >
                 {showPassword ? <EyeOff size={14} /> : <Eye size={14} />}
               </button>
@@ -150,7 +150,7 @@ const LoginPage = () => {
           </button>
         </form>
 
-        <p className="text-center text-xs mt-5" style={{ color: '#6B7280' }}>
+        <p className="text-center text-xs mt-5" style={{ color: '#9CA3AF' }}>
           Don't have an account?{' '}
           <Link
             to="/signup"

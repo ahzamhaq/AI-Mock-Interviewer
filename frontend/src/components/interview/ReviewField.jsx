@@ -83,7 +83,7 @@ const ReviewField = ({
                 border: 'none',
                 padding: 0,
                 cursor: 'help',
-                color: '#6B7280',
+                color: '#9CA3AF',
                 position: 'relative',
               }}
               aria-label={`Why: ${reason}`}
@@ -167,7 +167,7 @@ const ReviewField = ({
             style={{ padding: '6px 10px', width: 100 }}
           />
           {suffix && (
-            <span className="font-mono text-2xs" style={{ color: '#6B7280' }}>
+            <span className="font-mono text-2xs" style={{ color: '#9CA3AF' }}>
               {suffix}
             </span>
           )}
@@ -219,7 +219,7 @@ const ReviewField = ({
       {description && (
         <p
           className="text-xs mt-2"
-          style={{ color: '#6B7280' }}
+          style={{ color: '#9CA3AF' }}
         >
           {description}
         </p>
@@ -286,7 +286,7 @@ const TagsEditor = ({ value, onChange, placeholder }) => {
           style={{ padding: '4px 8px', flex: '1 1 120px', minWidth: 120 }}
         />
       </div>
-      <p className="font-mono text-2xs mt-1.5" style={{ color: '#484F58' }}>
+      <p className="font-mono text-2xs mt-1.5" style={{ color: '#8B949E' }}>
         Enter or comma to add
       </p>
     </div>

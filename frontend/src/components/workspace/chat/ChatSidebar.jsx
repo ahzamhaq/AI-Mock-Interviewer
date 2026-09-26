@@ -168,7 +168,7 @@ const ChatRow = ({ chat, active, onSelect, onRename, onArchive }) => {
         className="flex items-start gap-2 px-2.5 py-2 transition-colors"
         style={{
           background: active ? '#161B22' : 'transparent',
-          border: `1px solid ${active ? '#484F58' : 'transparent'}`,
+          border: `1px solid ${active ? '#8B949E' : 'transparent'}`,
           borderRadius: 6,
           cursor: editing ? 'text' : 'pointer',
         }}
@@ -184,7 +184,7 @@ const ChatRow = ({ chat, active, onSelect, onRename, onArchive }) => {
         <MessageSquare
           size={11}
           style={{
-            color: active ? '#58A6FF' : '#6B7280',
+            color: active ? '#58A6FF' : '#9CA3AF',
             marginTop: 3,
             flexShrink: 0,
           }}
@@ -236,7 +236,7 @@ const ChatRow = ({ chat, active, onSelect, onRename, onArchive }) => {
               <div className="text-xs truncate" style={{ color: active ? '#F0F6FC' : '#F0F6FC' }}>
                 {chat.title || 'Untitled'}
               </div>
-              <div className="font-mono text-2xs mt-0.5" style={{ color: '#6B7280' }}>
+              <div className="font-mono text-2xs mt-0.5" style={{ color: '#9CA3AF' }}>
                 {when ? formatDistanceToNow(new Date(when), { addSuffix: true }) : '—'}
               </div>
             </>
@@ -337,11 +337,11 @@ const SidebarSkeleton = () => (
 
 const SidebarEmpty = ({ onNewChat, creating }) => (
   <div className="flex flex-col items-center text-center px-3 py-6">
-    <MessageSquare size={18} style={{ color: '#484F58' }} className="mb-2" />
+    <MessageSquare size={18} style={{ color: '#8B949E' }} className="mb-2" />
     <p className="text-xs font-medium mb-1" style={{ color: '#F0F6FC' }}>
       No conversations yet
     </p>
-    <p className="text-2xs leading-relaxed mb-3" style={{ color: '#6B7280' }}>
+    <p className="text-2xs leading-relaxed mb-3" style={{ color: '#9CA3AF' }}>
       Create your first workspace chat.
     </p>
     <button

@@ -69,7 +69,7 @@ const ResultsHeader = ({ interview, emoji, gradeColorClass }) => {
           </span>
           <div className="text-left">
             <p className="text-4xl font-bold" style={{ color: '#F0F6FC' }}>{results.overallScore}/10</p>
-            <p className="text-sm" style={{ color: '#6B7280' }}>{results.recommendation || 'Overall Score'}</p>
+            <p className="text-sm" style={{ color: '#9CA3AF' }}>{results.recommendation || 'Overall Score'}</p>
           </div>
         </div>
 
@@ -91,7 +91,7 @@ const ResultsHeader = ({ interview, emoji, gradeColorClass }) => {
           </p>
         )}
 
-        <div className="flex items-center justify-center gap-6 mt-6 text-sm" style={{ color: '#6B7280' }}>
+        <div className="flex items-center justify-center gap-6 mt-6 text-sm" style={{ color: '#9CA3AF' }}>
           <span className="flex items-center gap-1"><Mic size={14} /> {questions.length} questions</span>
           <span className="flex items-center gap-1"><Clock size={14} /> {Math.floor(duration / 60)}m {duration % 60}s</span>
           <span className="flex items-center gap-1"><Star size={14} /> {results.totalFillerWords} filler words</span>

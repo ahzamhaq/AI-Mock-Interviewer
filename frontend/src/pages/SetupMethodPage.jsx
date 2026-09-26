@@ -118,7 +118,7 @@ const SetupMethodPage = () => {
             />
           </div>
 
-          <p className="font-mono text-2xs mt-4" style={{ color: '#484F58' }}>
+          <p className="font-mono text-2xs mt-4" style={{ color: '#8B949E' }}>
             {'// both methods produce the same InterviewBlueprint on the backend'}
           </p>
         </div>

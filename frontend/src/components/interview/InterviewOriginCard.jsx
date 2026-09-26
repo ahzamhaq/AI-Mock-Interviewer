@@ -42,7 +42,7 @@ const InterviewOriginCard = ({ creationSource, sourceMetadata = {}, dense = fals
     return (
       <span
         className="inline-flex items-center gap-1.5 font-mono text-2xs"
-        style={{ color: '#6B7280' }}
+        style={{ color: '#9CA3AF' }}
       >
         <Icon size={10} style={{ color: src.accent }} />
         <span>from</span>
@@ -84,7 +84,7 @@ const InterviewOriginCard = ({ creationSource, sourceMetadata = {}, dense = fals
         <div className="min-w-0 flex-1">
           <div
             className="font-mono text-2xs uppercase tracking-wide"
-            style={{ color: '#6B7280' }}
+            style={{ color: '#9CA3AF' }}
           >
             Created From
           </div>

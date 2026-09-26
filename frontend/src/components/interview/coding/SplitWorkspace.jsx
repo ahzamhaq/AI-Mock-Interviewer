@@ -169,7 +169,7 @@ const SplitWorkspace = ({
       >
         <GripVertical
           size={10}
-          style={{ color: '#484F58', pointerEvents: 'none' }}
+          style={{ color: '#8B949E', pointerEvents: 'none' }}
           aria-hidden
         />
       </div>

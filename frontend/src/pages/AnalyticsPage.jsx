@@ -17,7 +17,7 @@ import { format } from 'date-fns';
 // ── Atoms ────────────────────────────────────────────────────────────────────
 
 const SCORE_COLOR = (s) => {
-  if (!s && s !== 0) return '#6B7280';
+  if (!s && s !== 0) return '#9CA3AF';
   if (s >= 8) return '#3FB950';
   if (s >= 6) return '#D29922';
   return '#F85149';
@@ -28,7 +28,7 @@ const Tip = ({ active, payload, label }) => {
   return (
     <div className="rounded font-mono text-2xs px-2.5 py-1.5"
       style={{ background: '#1C2128', border: '1px solid #30363D' }}>
-      <div style={{ color: '#6B7280' }}>{label}</div>
+      <div style={{ color: '#9CA3AF' }}>{label}</div>
       {payload.map((p, i) => (
         <div key={i} style={{ color: p.color || '#58A6FF' }}>
           {p.name}: <span className="font-bold">{typeof p.value === 'number' ? p.value.toFixed(1) : p.value}</span>
@@ -42,9 +42,9 @@ const PanelHeader = ({ icon: Icon, label, hint, action }) => (
   <div className="flex items-center justify-between px-3 py-2 flex-shrink-0"
     style={{ borderBottom: '1px solid #21262D', background: '#161B22' }}>
     <div className="flex items-center gap-1.5">
-      {Icon && <Icon size={11} style={{ color: '#6B7280' }} />}
+      {Icon && <Icon size={11} style={{ color: '#9CA3AF' }} />}
       <span className="font-mono text-2xs uppercase tracking-wide" style={{ color: '#9CA3AF' }}>{label}</span>
-      {hint && <span className="font-mono text-2xs" style={{ color: '#484F58' }}>· {hint}</span>}
+      {hint && <span className="font-mono text-2xs" style={{ color: '#8B949E' }}>· {hint}</span>}
     </div>
     {action}
   </div>
@@ -59,12 +59,12 @@ const Panel = ({ children, className = '' }) => (
 
 const Metric = ({ label, value, sub, color = '#F0F6FC', delta }) => (
   <div className="px-3 py-2.5" style={{ background: '#0D1117' }}>
-    <div className="font-mono text-2xs uppercase tracking-wide mb-1" style={{ color: '#484F58' }}>
+    <div className="font-mono text-2xs uppercase tracking-wide mb-1" style={{ color: '#8B949E' }}>
       {label}
     </div>
     <div className="flex items-baseline gap-1.5">
       <span className="font-mono text-xl font-bold" style={{ color }}>{value}</span>
-      {sub && <span className="font-mono text-2xs" style={{ color: '#6B7280' }}>{sub}</span>}
+      {sub && <span className="font-mono text-2xs" style={{ color: '#9CA3AF' }}>{sub}</span>}
       {delta != null && (
         <span className="font-mono text-2xs ml-auto"
           style={{ color: delta >= 0 ? '#3FB950' : '#F85149' }}>
@@ -157,10 +157,10 @@ const AnalyticsPage = () => {
         <div className="flex items-center justify-between px-4 sm:px-6 lg:px-8"
           style={{ height: 40, borderBottom: '1px solid #21262D', background: '#161B22' }}>
           <div className="flex items-center gap-3">
-            <span className="font-mono text-2xs" style={{ color: '#484F58' }}>~/analytics</span>
+            <span className="font-mono text-2xs" style={{ color: '#8B949E' }}>~/analytics</span>
             <span style={{ color: '#30363D' }}>/</span>
             <span className="text-sm font-medium" style={{ color: '#F0F6FC' }}>diagnostics</span>
-            <span className="font-mono text-2xs" style={{ color: '#6B7280' }}>
+            <span className="font-mono text-2xs" style={{ color: '#9CA3AF' }}>
               · window {period}d
             </span>
           </div>
@@ -230,8 +230,8 @@ const AnalyticsPage = () => {
                   <ResponsiveContainer width="100%" height={240}>
                     <LineChart data={scoreProgression} margin={{ top: 5, right: 8, bottom: 0, left: -20 }}>
                       <CartesianGrid strokeDasharray="2 4" stroke="#21262D" vertical={false} />
-                      <XAxis dataKey="date" tick={{ fill: '#484F58', fontSize: 10, fontFamily: 'monospace' }} axisLine={false} tickLine={false} />
-                      <YAxis domain={[0, 10]} tick={{ fill: '#484F58', fontSize: 10, fontFamily: 'monospace' }} axisLine={false} tickLine={false} />
+                      <XAxis dataKey="date" tick={{ fill: '#8B949E', fontSize: 10, fontFamily: 'monospace' }} axisLine={false} tickLine={false} />
+                      <YAxis domain={[0, 10]} tick={{ fill: '#8B949E', fontSize: 10, fontFamily: 'monospace' }} axisLine={false} tickLine={false} />
                       <Tooltip content={<Tip />} cursor={{ stroke: '#30363D', strokeDasharray: '2 2' }} />
                       <ReferenceLine y={7} stroke="#30363D" strokeDasharray="3 3" />
                       <Line type="monotone" dataKey="Overall"        stroke="#58A6FF" strokeWidth={1.5} dot={{ r: 2.5, fill: '#58A6FF', strokeWidth: 0 }} activeDot={{ r: 4 }} />
@@ -240,7 +240,7 @@ const AnalyticsPage = () => {
                     </LineChart>
                   </ResponsiveContainer>
                 ) : (
-                  <div className="h-[240px] flex items-center justify-center font-mono text-xs" style={{ color: '#484F58' }}>
+                  <div className="h-[240px] flex items-center justify-center font-mono text-xs" style={{ color: '#8B949E' }}>
                     {'// no progression data'}
                   </div>
                 )}
@@ -259,7 +259,7 @@ const AnalyticsPage = () => {
                 <ResponsiveContainer width="100%" height={240}>
                   <RadarChart data={radarData} margin={{ top: 8, right: 18, bottom: 0, left: 18 }}>
                     <PolarGrid stroke="#21262D" />
-                    <PolarAngleAxis dataKey="subject" tick={{ fill: '#6B7280', fontSize: 10, fontFamily: 'monospace' }} />
+                    <PolarAngleAxis dataKey="subject" tick={{ fill: '#9CA3AF', fontSize: 10, fontFamily: 'monospace' }} />
                     <Radar dataKey="A" stroke="#58A6FF" fill="#58A6FF" fillOpacity={0.12} strokeWidth={1.5} />
                   </RadarChart>
                 </ResponsiveContainer>
@@ -278,14 +278,14 @@ const AnalyticsPage = () => {
                   <ResponsiveContainer width="100%" height={200}>
                     <BarChart data={typeData} margin={{ top: 5, right: 5, bottom: 0, left: -20 }}>
                       <CartesianGrid strokeDasharray="2 4" stroke="#21262D" vertical={false} />
-                      <XAxis dataKey="type" tick={{ fill: '#484F58', fontSize: 9, fontFamily: 'monospace' }} axisLine={false} tickLine={false} />
-                      <YAxis domain={[0, 10]} tick={{ fill: '#484F58', fontSize: 9, fontFamily: 'monospace' }} axisLine={false} tickLine={false} />
+                      <XAxis dataKey="type" tick={{ fill: '#8B949E', fontSize: 9, fontFamily: 'monospace' }} axisLine={false} tickLine={false} />
+                      <YAxis domain={[0, 10]} tick={{ fill: '#8B949E', fontSize: 9, fontFamily: 'monospace' }} axisLine={false} tickLine={false} />
                       <Tooltip content={<Tip />} cursor={{ fill: 'rgba(88,166,255,0.04)' }} />
                       <Bar dataKey="avg" fill="#58A6FF" radius={[2, 2, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
                 ) : (
-                  <div className="h-[200px] flex items-center justify-center font-mono text-xs" style={{ color: '#484F58' }}>
+                  <div className="h-[200px] flex items-center justify-center font-mono text-xs" style={{ color: '#8B949E' }}>
                     {'// no data'}
                   </div>
                 )}
@@ -309,7 +309,7 @@ const AnalyticsPage = () => {
                     </div>
                   );
                 }) : (
-                  <div className="h-[180px] flex items-center justify-center font-mono text-xs" style={{ color: '#484F58' }}>
+                  <div className="h-[180px] flex items-center justify-center font-mono text-xs" style={{ color: '#8B949E' }}>
                     {'// none detected'}
                   </div>
                 )}
@@ -330,14 +330,14 @@ const AnalyticsPage = () => {
                         </linearGradient>
                       </defs>
                       <CartesianGrid strokeDasharray="2 4" stroke="#21262D" vertical={false} />
-                      <XAxis dataKey="week" tick={{ fill: '#484F58', fontSize: 9, fontFamily: 'monospace' }} axisLine={false} tickLine={false} />
-                      <YAxis tick={{ fill: '#484F58', fontSize: 9, fontFamily: 'monospace' }} axisLine={false} tickLine={false} />
+                      <XAxis dataKey="week" tick={{ fill: '#8B949E', fontSize: 9, fontFamily: 'monospace' }} axisLine={false} tickLine={false} />
+                      <YAxis tick={{ fill: '#8B949E', fontSize: 9, fontFamily: 'monospace' }} axisLine={false} tickLine={false} />
                       <Tooltip content={<Tip />} cursor={{ stroke: '#30363D', strokeDasharray: '2 2' }} />
                       <Area type="monotone" dataKey="Count" stroke="#3FB950" strokeWidth={1.5} fill="url(#consFill)" dot={{ r: 2.5, fill: '#3FB950', strokeWidth: 0 }} />
                     </AreaChart>
                   </ResponsiveContainer>
                 ) : (
-                  <div className="h-[200px] flex items-center justify-center font-mono text-xs" style={{ color: '#484F58' }}>
+                  <div className="h-[200px] flex items-center justify-center font-mono text-xs" style={{ color: '#8B949E' }}>
                     {'// no sessions'}
                   </div>
                 )}
@@ -368,7 +368,7 @@ const AnalyticsPage = () => {
                             style={{ width: `${(score / 10) * 100}%`, background: SCORE_COLOR(score) }}
                           />
                         </div>
-                        <div className="font-mono text-2xs mt-1.5" style={{ color: '#484F58' }}>
+                        <div className="font-mono text-2xs mt-1.5" style={{ color: '#8B949E' }}>
                           {t.attempts || t.count || 0} attempts · last {t.lastAsked ? format(new Date(t.lastAsked), 'dd MMM') : '—'}
                         </div>
                       </div>
@@ -376,7 +376,7 @@ const AnalyticsPage = () => {
                   })}
                 </div>
               ) : (
-                <div className="h-24 flex items-center justify-center font-mono text-xs" style={{ color: '#484F58' }}>
+                <div className="h-24 flex items-center justify-center font-mono text-xs" style={{ color: '#8B949E' }}>
                   {'// no weak topics tracked yet'}
                 </div>
               )}
@@ -392,7 +392,7 @@ const AnalyticsPage = () => {
 const Legend = ({ dot, label }) => (
   <span className="flex items-center gap-1.5">
     <span className="w-2 h-0.5 rounded-sm" style={{ background: dot }} />
-    <span style={{ color: '#6B7280' }}>{label}</span>
+    <span style={{ color: '#9CA3AF' }}>{label}</span>
   </span>
 );
 

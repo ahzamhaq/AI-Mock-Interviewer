@@ -50,8 +50,8 @@ const FilesTab = ({ files = [], project }) => {
         className="p-6 text-center"
         style={{ background: '#161B22', border: '1px solid #30363D', borderRadius: 6 }}
       >
-        <FileCode size={20} style={{ color: '#484F58' }} className="mx-auto mb-3" />
-        <p className="text-xs" style={{ color: '#6B7280' }}>
+        <FileCode size={20} style={{ color: '#8B949E' }} className="mx-auto mb-3" />
+        <p className="text-xs" style={{ color: '#9CA3AF' }}>
           No files were identified for this repository.
         </p>
       </div>
@@ -62,7 +62,7 @@ const FilesTab = ({ files = [], project }) => {
     <div className="flex flex-col gap-3">
       {/* Search bar */}
       <div className="flex items-center" style={{ position: 'relative' }}>
-        <Search size={12} style={{ color: '#484F58', position: 'absolute', left: 10 }} />
+        <Search size={12} style={{ color: '#8B949E', position: 'absolute', left: 10 }} />
         <input
           type="text"
           value={query}
@@ -80,7 +80,7 @@ const FilesTab = ({ files = [], project }) => {
       >
         {filtered.length === 0 ? (
           <div className="p-6 text-center">
-            <p className="text-xs" style={{ color: '#6B7280' }}>
+            <p className="text-xs" style={{ color: '#9CA3AF' }}>
               No files match &quot;{query}&quot;.
             </p>
           </div>
@@ -127,7 +127,7 @@ const FilesTab = ({ files = [], project }) => {
                         {f.size ? (
                           <span
                             className="font-mono text-2xs flex-shrink-0"
-                            style={{ color: '#484F58' }}
+                            style={{ color: '#8B949E' }}
                           >
                             · {filesizeLabel(f.size)}
                           </span>
@@ -148,7 +148,7 @@ const FilesTab = ({ files = [], project }) => {
         )}
       </div>
 
-      <p className="font-mono text-2xs" style={{ color: '#484F58' }}>
+      <p className="font-mono text-2xs" style={{ color: '#8B949E' }}>
         {'// files opened on github.com — analysis reads at most 40 files or 150 KB'}
       </p>
     </div>

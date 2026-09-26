@@ -7,7 +7,7 @@ import { useAuth } from '../context/AuthContext';
 import Navbar from '../components/layout/Navbar';
 
 const SCORE_COLOR = (s) => {
-  if (!s && s !== 0) return '#6B7280';
+  if (!s && s !== 0) return '#9CA3AF';
   if (s >= 8) return '#3FB950';
   if (s >= 6) return '#D29922';
   return '#F85149';
@@ -15,7 +15,7 @@ const SCORE_COLOR = (s) => {
 
 const RANK_COLORS = {
   0: '#D29922',
-  1: '#6B7280',
+  1: '#9CA3AF',
   2: '#9B6942',
 };
 
@@ -50,21 +50,21 @@ const LeaderboardPage = () => {
               leaderboard
             </span>
             {!loading && (
-              <span className="font-mono text-2xs" style={{ color: '#484F58' }}>
+              <span className="font-mono text-2xs" style={{ color: '#8B949E' }}>
                 · {leaders.length} ranked
               </span>
             )}
           </div>
           <div className="flex items-center gap-2">
-            <span className="font-mono text-2xs" style={{ color: '#484F58' }}>
+            <span className="font-mono text-2xs" style={{ color: '#8B949E' }}>
               sorted by points · avg score tiebreaker
             </span>
             <Link
               to="/profile"
               className="font-mono text-2xs flex items-center gap-1 transition-colors"
-              style={{ color: '#6B7280' }}
+              style={{ color: '#9CA3AF' }}
               onMouseEnter={e => e.currentTarget.style.color = '#9CA3AF'}
-              onMouseLeave={e => e.currentTarget.style.color = '#6B7280'}
+              onMouseLeave={e => e.currentTarget.style.color = '#9CA3AF'}
             >
               <EyeOff size={10} /> privacy settings
             </Link>
@@ -88,7 +88,7 @@ const LeaderboardPage = () => {
             >
               <Trophy size={28} style={{ color: '#30363D' }} className="mb-4" />
               <p className="text-sm font-medium mb-1" style={{ color: '#F0F6FC' }}>No rankings yet</p>
-              <p className="text-xs mb-5" style={{ color: '#6B7280' }}>
+              <p className="text-xs mb-5" style={{ color: '#9CA3AF' }}>
                 Complete interviews to appear here
               </p>
               <button
@@ -106,7 +106,7 @@ const LeaderboardPage = () => {
                   className="mb-4 p-4"
                   style={{ border: '1px solid #30363D', borderRadius: 6, background: '#161B22' }}
                 >
-                  <div className="font-mono text-2xs uppercase tracking-widest mb-4" style={{ color: '#484F58' }}>
+                  <div className="font-mono text-2xs uppercase tracking-widest mb-4" style={{ color: '#8B949E' }}>
                     / top performers
                   </div>
                   <div className="flex items-end justify-center gap-3">
@@ -153,7 +153,7 @@ const LeaderboardPage = () => {
                             <span className="text-xl mb-1">
                               {rank === 1 ? '🥇' : rank === 2 ? '🥈' : '🥉'}
                             </span>
-                            <span className="font-mono text-2xs pb-2" style={{ color: RANK_COLORS[rank - 1] || '#6B7280' }}>
+                            <span className="font-mono text-2xs pb-2" style={{ color: RANK_COLORS[rank - 1] || '#9CA3AF' }}>
                               #{rank}
                             </span>
                           </div>
@@ -173,7 +173,7 @@ const LeaderboardPage = () => {
                     gridTemplateColumns: '40px 1fr 72px 72px 64px 56px',
                     background: '#161B22',
                     borderBottom: '1px solid #21262D',
-                    color: '#484F58',
+                    color: '#8B949E',
                   }}
                 >
                   <span>#</span>
@@ -203,7 +203,7 @@ const LeaderboardPage = () => {
                       {/* Rank */}
                       <span
                         className="font-mono text-sm font-bold"
-                        style={{ color: RANK_COLORS[i] || '#484F58' }}
+                        style={{ color: RANK_COLORS[i] || '#8B949E' }}
                       >
                         {i < 3 ? ['🥇', '🥈', '🥉'][i] : `${i + 1}`}
                       </span>
@@ -219,7 +219,7 @@ const LeaderboardPage = () => {
                         <span className="text-sm truncate" style={{ color: isYou ? '#58A6FF' : '#F0F6FC' }}>
                           {u.name}
                           {isYou && (
-                            <span className="font-mono text-2xs ml-1.5" style={{ color: '#484F58' }}>
+                            <span className="font-mono text-2xs ml-1.5" style={{ color: '#8B949E' }}>
                               (you)
                             </span>
                           )}
@@ -237,12 +237,12 @@ const LeaderboardPage = () => {
                       </span>
 
                       {/* Sessions */}
-                      <span className="font-mono text-xs text-right" style={{ color: '#6B7280' }}>
+                      <span className="font-mono text-xs text-right" style={{ color: '#9CA3AF' }}>
                         {u.totalInterviews}
                       </span>
 
                       {/* Streak */}
-                      <span className="font-mono text-xs text-right flex items-center justify-end gap-1" style={{ color: u.streak > 0 ? '#D29922' : '#484F58' }}>
+                      <span className="font-mono text-xs text-right flex items-center justify-end gap-1" style={{ color: u.streak > 0 ? '#D29922' : '#8B949E' }}>
                         {u.streak > 0 && <Flame size={10} />}
                         {u.streak}d
                       </span>
@@ -252,11 +252,11 @@ const LeaderboardPage = () => {
               </div>
 
               {/* Privacy note */}
-              <p className="font-mono text-2xs text-center mt-4" style={{ color: '#484F58' }}>
+              <p className="font-mono text-2xs text-center mt-4" style={{ color: '#8B949E' }}>
                 Not want to appear here?{' '}
-                <Link to="/profile" style={{ color: '#6B7280' }}
+                <Link to="/profile" style={{ color: '#9CA3AF' }}
                   onMouseEnter={e => e.currentTarget.style.color = '#9CA3AF'}
-                  onMouseLeave={e => e.currentTarget.style.color = '#6B7280'}
+                  onMouseLeave={e => e.currentTarget.style.color = '#9CA3AF'}
                 >
                   Turn off in Profile → Privacy
                 </Link>

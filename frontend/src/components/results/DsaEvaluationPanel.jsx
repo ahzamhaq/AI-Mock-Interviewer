@@ -170,7 +170,7 @@ const DsaEvaluationPanel = ({
           </div>
         </div>
         <div className="flex-1 min-w-0">
-          <div className="text-2xs uppercase tracking-wide" style={{ color: '#6B7280' }}>
+          <div className="text-2xs uppercase tracking-wide" style={{ color: '#9CA3AF' }}>
             Overall score
           </div>
           <p className="text-xs mt-1" style={{ color: '#F0F6FC', lineHeight: 1.55 }}>
@@ -204,7 +204,7 @@ const DsaEvaluationPanel = ({
         >
           <div className="flex items-center gap-1.5 mb-1.5">
             <MessageCircle size={12} style={{ color: '#58A6FF' }} aria-hidden />
-            <div className="text-2xs uppercase tracking-wide" style={{ color: '#6B7280' }}>
+            <div className="text-2xs uppercase tracking-wide" style={{ color: '#9CA3AF' }}>
               Communication Feedback
             </div>
           </div>
@@ -286,11 +286,11 @@ const ScoreCard = ({ icon: Icon, label, score }) => {
     >
       <div className="flex items-center gap-1.5 mb-1">
         <Icon size={11} style={{ color }} aria-hidden />
-        <span className="font-mono text-2xs uppercase tracking-wide" style={{ color: '#6B7280' }}>{label}</span>
+        <span className="font-mono text-2xs uppercase tracking-wide" style={{ color: '#9CA3AF' }}>{label}</span>
       </div>
       <div className="flex items-baseline gap-1">
         <span className="text-lg font-bold" style={{ color }}>{display}</span>
-        <span className="font-mono text-2xs" style={{ color: '#484F58' }}>/100</span>
+        <span className="font-mono text-2xs" style={{ color: '#8B949E' }}>/100</span>
       </div>
       {score != null && (
         <div className="mt-1.5 h-1 rounded-full overflow-hidden" style={{ background: '#161B22' }}>
@@ -311,7 +311,7 @@ const ComplexityPanel = ({ complexity = {} }) => {
       aria-label="Complexity analysis"
     >
       <div className="flex items-center justify-between mb-2">
-        <div className="text-2xs uppercase tracking-wide" style={{ color: '#6B7280' }}>
+        <div className="text-2xs uppercase tracking-wide" style={{ color: '#9CA3AF' }}>
           Complexity
         </div>
         <span
@@ -358,10 +358,10 @@ const ExecutionSummary = ({ execution }) => {
         style={{ background: '#0D1117', border: '1px solid #30363D', borderRadius: 8 }}
         aria-label="Execution summary"
       >
-        <div className="text-2xs uppercase tracking-wide mb-2" style={{ color: '#6B7280' }}>
+        <div className="text-2xs uppercase tracking-wide mb-2" style={{ color: '#9CA3AF' }}>
           Last Execution
         </div>
-        <p className="text-xs" style={{ color: '#6B7280' }}>
+        <p className="text-xs" style={{ color: '#9CA3AF' }}>
           The candidate did not execute their code.
         </p>
       </div>
@@ -377,7 +377,7 @@ const ExecutionSummary = ({ execution }) => {
       aria-label="Execution summary"
     >
       <div className="flex items-center justify-between mb-2">
-        <div className="text-2xs uppercase tracking-wide" style={{ color: '#6B7280' }}>
+        <div className="text-2xs uppercase tracking-wide" style={{ color: '#9CA3AF' }}>
           Last Execution
         </div>
         <span className="font-mono text-2xs uppercase" style={{ color: '#9CA3AF' }}>
@@ -385,15 +385,15 @@ const ExecutionSummary = ({ execution }) => {
         </span>
       </div>
       <dl className="grid grid-cols-2 gap-x-3 gap-y-1 text-xs" style={{ color: '#F0F6FC' }}>
-        <dt className="font-mono text-2xs" style={{ color: '#6B7280' }}>Status</dt>
+        <dt className="font-mono text-2xs" style={{ color: '#9CA3AF' }}>Status</dt>
         <dd>{execution.status}</dd>
-        <dt className="font-mono text-2xs" style={{ color: '#6B7280' }}>Time</dt>
+        <dt className="font-mono text-2xs" style={{ color: '#9CA3AF' }}>Time</dt>
         <dd>{execution.executionTime != null ? `${Number(execution.executionTime).toFixed(3)} s` : '—'}</dd>
-        <dt className="font-mono text-2xs" style={{ color: '#6B7280' }}>Memory</dt>
+        <dt className="font-mono text-2xs" style={{ color: '#9CA3AF' }}>Memory</dt>
         <dd>{execution.memory != null ? `${Number(execution.memory).toLocaleString()} KB` : '—'}</dd>
         {isSubmit && (
           <>
-            <dt className="font-mono text-2xs" style={{ color: '#6B7280' }}>Hidden tests</dt>
+            <dt className="font-mono text-2xs" style={{ color: '#9CA3AF' }}>Hidden tests</dt>
             <dd>{passRatio}</dd>
           </>
         )}
@@ -446,7 +446,7 @@ const Collapsible = ({ title, defaultOpen = false, icon: Icon, tone = 'accent', 
 
 const BulletList = ({ items, tone = 'accent', emptyText = 'Nothing to show.' }) => {
   if (!items || items.length === 0) {
-    return <p className="text-xs" style={{ color: '#6B7280' }}>{emptyText}</p>;
+    return <p className="text-xs" style={{ color: '#9CA3AF' }}>{emptyText}</p>;
   }
   const toneColor = tone === 'success' ? '#3FB950' : tone === 'warning' ? '#D29922' : '#58A6FF';
   return (
@@ -468,7 +468,7 @@ const BulletList = ({ items, tone = 'accent', emptyText = 'Nothing to show.' }) 
 const RecommendationList = ({ recs = {} }) => {
   const { topics = [], problems = [], concepts = [] } = recs;
   const hasAny = topics.length || problems.length || concepts.length;
-  if (!hasAny) return <p className="text-xs" style={{ color: '#6B7280' }}>No recommendations.</p>;
+  if (!hasAny) return <p className="text-xs" style={{ color: '#9CA3AF' }}>No recommendations.</p>;
   return (
     <div className="space-y-3">
       {topics.length > 0 && (
@@ -486,7 +486,7 @@ const RecommendationList = ({ recs = {} }) => {
 
 const RecGroup = ({ label, items, chip = false }) => (
   <div>
-    <div className="font-mono text-2xs uppercase tracking-wide mb-1.5" style={{ color: '#6B7280' }}>
+    <div className="font-mono text-2xs uppercase tracking-wide mb-1.5" style={{ color: '#9CA3AF' }}>
       {label}
     </div>
     {chip ? (
@@ -513,7 +513,7 @@ const RecGroup = ({ label, items, chip = false }) => (
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
 function colorForScore(s) {
-  if (s == null) return '#6B7280';
+  if (s == null) return '#9CA3AF';
   if (s >= 80) return '#3FB950';
   if (s >= 60) return '#D29922';
   return '#F85149';

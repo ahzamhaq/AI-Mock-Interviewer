@@ -37,7 +37,7 @@ const RepoUrlForm = ({ onSubmit, disabled = false }) => {
     <form onSubmit={submit} className="w-full">
       <label
         className="block font-mono text-2xs uppercase tracking-wide mb-2"
-        style={{ color: '#6B7280' }}
+        style={{ color: '#9CA3AF' }}
       >
         Public repository URL
       </label>
@@ -46,7 +46,7 @@ const RepoUrlForm = ({ onSubmit, disabled = false }) => {
         <div className="flex-1 flex items-center min-w-0" style={{ position: 'relative' }}>
           <Link2
             size={12}
-            style={{ color: '#484F58', position: 'absolute', left: 10 }}
+            style={{ color: '#8B949E', position: 'absolute', left: 10 }}
           />
           <input
             type="text"
@@ -92,7 +92,7 @@ const RepoUrlForm = ({ onSubmit, disabled = false }) => {
         </div>
       )}
 
-      <p className="font-mono text-2xs mt-2" style={{ color: '#484F58' }}>
+      <p className="font-mono text-2xs mt-2" style={{ color: '#8B949E' }}>
         {'// works with any public github.com repository'}
       </p>
     </form>

@@ -17,7 +17,7 @@ const SectionHeader = ({ eyebrow, title, subtitle, action }) => (
       {eyebrow && (
         <div
           className="font-mono text-2xs uppercase tracking-wide mb-1"
-          style={{ color: '#6B7280' }}
+          style={{ color: '#9CA3AF' }}
         >
           {eyebrow}
         </div>
