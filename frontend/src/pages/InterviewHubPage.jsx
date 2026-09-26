@@ -253,57 +253,7 @@ const InterviewHubPage = () => {
       <Navbar />
 
       <main className="flex-1 pt-12">
-        <div className="max-w-[1200px] mx-auto px-3 sm:px-4 lg:px-6 py-6">
-
-          {/* ── Continue Last Interview ─────────────────────────────
-              Sourced from the recommendations endpoint's `resume` card
-              (Sprint 3). Renders only when there's an in-progress
-              interview; hides silently otherwise. */}
-          {inProgress?.route && (
-            <div className="mb-6">
-              <SectionHeader
-                eyebrow="in progress"
-                title="Continue your last interview"
-              />
-              <button
-                type="button"
-                onClick={() => navigate(inProgress.route)}
-                className="flex items-center gap-3 w-full text-left p-4 transition-colors"
-                style={{
-                  background: '#0D1117',
-                  border: '1px solid #58A6FF',
-                  borderRadius: 6,
-                  cursor: 'pointer',
-                }}
-                onMouseEnter={(e) => { e.currentTarget.style.background = '#161B22'; }}
-                onMouseLeave={(e) => { e.currentTarget.style.background = '#0D1117'; }}
-              >
-                <div
-                  className="flex items-center justify-center flex-shrink-0"
-                  style={{
-                    width: 32, height: 32,
-                    background: '#161B22', border: '1px solid #30363D', borderRadius: 6,
-                  }}
-                >
-                  <Play size={13} style={{ color: '#58A6FF' }} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="text-sm font-medium truncate" style={{ color: '#F0F6FC' }}>
-                    {inProgress.subtitle || inProgress.title || 'Resume interview'}
-                  </div>
-                  <div className="font-mono text-2xs mt-0.5" style={{ color: '#9CA3AF' }}>
-                    {inProgress.meta || 'in progress'}
-                  </div>
-                </div>
-                <span
-                  className="font-mono text-2xs uppercase tracking-wide flex-shrink-0"
-                  style={{ color: '#58A6FF' }}
-                >
-                  Continue →
-                </span>
-              </button>
-            </div>
-          )}
+        <div className="max-w-[1200px] mx-auto px-3 sm:px-4 lg:px-6 py-6 pb-24">
 
           {/* ── Interview Templates ─────────────────────────────────
               Static, code-defined starting points. Click → Review page
@@ -325,12 +275,49 @@ const InterviewHubPage = () => {
             </div>
           </div>
 
+          <SectionHeader
+            eyebrow="interviews"
+            title="What kind of interview do you want?"
+            subtitle="Pick a type. Each one adapts to your role, experience, and goals."
+          />
+
+          {/* Available */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mb-6">
+            {primary.map((type) => (
+              <InterviewHubCard
+                key={type.id}
+                type={type}
+                info={infoFor(type.id)}
+                onClick={clickHandlers[type.id]}
+              />
+            ))}
+          </div>
+
+          {/* Reserved / coming soon */}
+          <div
+            className="font-mono text-2xs uppercase tracking-wide mb-2"
+            style={{ color: '#9CA3AF' }}
+          >
+            coming soon
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+            {reserved.map((type) => (
+              <InterviewHubCard key={type.id} type={type} />
+            ))}
+          </div>
+
+          <p className="font-mono text-2xs mt-4" style={{ color: '#8B949E' }}>
+            {'// more modes ship progressively — Sprint 5+ activates them one at a time'}
+          </p>
+
+          {/* Recent & Saved sits below the static content: presets load async,
+              and anything async above the fold shifts the layout (CLS). */}
           {/* ── Recent & Saved ──────────────────────────────────────
               Two stacked lists on a single row: recent configs (auto)
               and saved presets (user-named). Renders only when either
               list has data — new users don't see empty sections. */}
           {(recentConfigs.length > 0 || presets.length > 0) && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-8">
               {recentConfigs.length > 0 && (
                 <div>
                   <SectionHeader
@@ -419,43 +406,55 @@ const InterviewHubPage = () => {
               )}
             </div>
           )}
-
-          <SectionHeader
-            eyebrow="interviews"
-            title="What kind of interview do you want?"
-            subtitle="Pick a type. Each one adapts to your role, experience, and goals."
-          />
-
-          {/* Available */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mb-6">
-            {primary.map((type) => (
-              <InterviewHubCard
-                key={type.id}
-                type={type}
-                info={infoFor(type.id)}
-                onClick={clickHandlers[type.id]}
-              />
-            ))}
-          </div>
-
-          {/* Reserved / coming soon */}
-          <div
-            className="font-mono text-2xs uppercase tracking-wide mb-2"
-            style={{ color: '#9CA3AF' }}
-          >
-            coming soon
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-            {reserved.map((type) => (
-              <InterviewHubCard key={type.id} type={type} />
-            ))}
-          </div>
-
-          <p className="font-mono text-2xs mt-4" style={{ color: '#8B949E' }}>
-            {'// more modes ship progressively — Sprint 5+ activates them one at a time'}
-          </p>
         </div>
       </main>
+
+      {/* ── Continue Last Interview ─────────────────────────────
+          Sourced from the recommendations endpoint (Sprint 3). Loads
+          async, so it is pinned to the viewport bottom instead of sitting
+          in the page flow — a late-arriving fixed element cannot push the
+          content around (CLS). Renders only when an in-progress interview
+          exists. */}
+      {inProgress?.route && (
+        <div className="fixed inset-x-0 bottom-0 px-3 sm:px-4 pb-3 pointer-events-none" style={{ zIndex: 40 }}>
+          <button
+            type="button"
+            onClick={() => navigate(inProgress.route)}
+            className="pointer-events-auto flex items-center gap-3 w-full max-w-[1200px] mx-auto text-left p-3 transition-colors"
+            style={{
+              background: '#161B22',
+              border: '1px solid #58A6FF',
+              borderRadius: 6,
+              cursor: 'pointer',
+              boxShadow: '0 8px 24px rgba(1,4,9,0.7)',
+            }}
+          >
+            <div
+              className="flex items-center justify-center flex-shrink-0"
+              style={{ width: 32, height: 32, background: '#0D1117', border: '1px solid #30363D', borderRadius: 6 }}
+            >
+              <Play size={13} style={{ color: '#58A6FF' }} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="font-mono text-2xs uppercase tracking-wide" style={{ color: '#9CA3AF' }}>
+                in progress
+              </div>
+              <div className="text-sm font-medium truncate" style={{ color: '#F0F6FC' }}>
+                {inProgress.subtitle || inProgress.title || 'Resume interview'}
+              </div>
+              <div className="font-mono text-2xs mt-0.5 truncate" style={{ color: '#9CA3AF' }}>
+                {inProgress.meta || 'in progress'}
+              </div>
+            </div>
+            <span
+              className="font-mono text-2xs uppercase tracking-wide flex-shrink-0"
+              style={{ color: '#58A6FF' }}
+            >
+              Continue →
+            </span>
+          </button>
+        </div>
+      )}
 
       {/* ── Prompts (non-blocking) ─────────────────────────────────────── */}
       {prompt === 'resume' && (
